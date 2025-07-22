@@ -9,7 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-  <ProjectReference Include="..\extern\SDL3-CS\SDL3\SDL3.Core.csproj"/>
+    <ProjectReference Include="..\extern\SDL3-CS\SDL3\SDL3.Core.csproj"/>
+
+    <None Include="native\SDL3.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

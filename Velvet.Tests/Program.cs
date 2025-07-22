@@ -14,7 +14,7 @@ namespace Velvet.Tests
                 win.PollEvents();
             }
 
-            win.Destroy();
+            win.Dispose();
         }
     }
 }

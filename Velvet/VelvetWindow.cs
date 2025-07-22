@@ -47,7 +47,7 @@ namespace Velvet
             return true;
         }
 
-        public void Destroy()
+        public void Dispose()
         {
             if (_window != IntPtr.Zero)
             {

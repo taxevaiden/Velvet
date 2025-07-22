@@ -13,7 +13,7 @@
 
   <Target Name="CopySDL3NativeDll" AfterTargets="PostBuildEvent">
     <Copy
-      SourceFiles="C:\PATHStuff\SDL3.dll"
+      SourceFiles="..\Velvet\native\SDL3.dll"
       DestinationFolder="$(OutDir)"
       SkipUnchangedFiles="true" />
   </Target>
