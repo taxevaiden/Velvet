@@ -6,7 +6,7 @@ namespace Velvet
 {
     public class VelvetWindow
     {
-        private IntPtr _window;
+        public IntPtr windowPtr { get; private set; } = IntPtr.Zero;
         private bool _running = false;
         private SDL_Event _e;
 
@@ -14,16 +14,14 @@ namespace Velvet
         {
             if (!SDL_Init(SDL_InitFlags.SDL_INIT_VIDEO))
             {
-                Console.WriteLine($"Unable to initialize SDL: {SDL_GetError()}");
-                return;
+                throw new Exception ($"Unable to initialize SDL: {SDL_GetError()}");
             }
 
-            _window = SDL_CreateWindow(title, width, height, SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
-            if (_window == IntPtr.Zero)
+            windowPtr = SDL_CreateWindow(title, width, height, SDL_WindowFlags.SDL_WINDOW_MOUSE_FOCUS);
+            if (windowPtr == IntPtr.Zero)
             {
-                Console.WriteLine($"Window creation failed: {SDL_GetError()}");
                 SDL_Quit();
-                return;
+                throw new Exception($"Window creation failed: {SDL_GetError()}");
             }
 
             _running = true;
@@ -49,10 +47,10 @@ namespace Velvet
 
         public void Dispose()
         {
-            if (_window != IntPtr.Zero)
+            if (windowPtr != IntPtr.Zero)
             {
-                SDL_DestroyWindow(_window);
-                _window = IntPtr.Zero;
+                SDL_DestroyWindow(windowPtr);
+                windowPtr = IntPtr.Zero;
             }
             SDL_Quit();
         }

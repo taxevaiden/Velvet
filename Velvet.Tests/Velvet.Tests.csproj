@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Velvet\Velvet.csproj" />
+    <ProjectReference Include="..\Velvet.Graphics\Velvet.Graphics.csproj" />
   </ItemGroup>
 
   <Target Name="CopySDL3NativeDll" AfterTargets="PostBuildEvent">
