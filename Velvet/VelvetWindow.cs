@@ -14,7 +14,7 @@ namespace Velvet
         {
             if (!SDL_Init(SDL_InitFlags.SDL_INIT_VIDEO))
             {
-                throw new Exception ($"Unable to initialize SDL: {SDL_GetError()}");
+                throw new Exception($"Unable to initialize SDL: {SDL_GetError()}");
             }
 
             windowPtr = SDL_CreateWindow(title, width, height, SDL_WindowFlags.SDL_WINDOW_MOUSE_FOCUS);
@@ -40,7 +40,7 @@ namespace Velvet
                 }
             }
 
-            SDL_Delay(16);
+            SDL_Delay(1);
 
             return true;
         }
@@ -53,6 +53,18 @@ namespace Velvet
                 windowPtr = IntPtr.Zero;
             }
             SDL_Quit();
+        }
+
+        public int GetWidth()
+        {
+            SDL_GetWindowSizeInPixels(windowPtr, out int w, out int h);
+            return w;
+        }
+
+        public int GetHeight()
+        {
+            SDL_GetWindowSizeInPixels(windowPtr, out int w, out int h);
+            return h;
         }
 
     }
