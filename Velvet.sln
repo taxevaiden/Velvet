@@ -7,13 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Velvet", "Velvet\Velvet.csp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extern", "extern", "{D6CAE8B3-BF67-4006-BE5F-6DD83BD3EC7C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SDL3-CS", "SDL3-CS", "{0A532B0D-1D45-44AE-BC60-F4D6D4167BEA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDL3.Core", "extern\SDL3-CS\SDL3\SDL3.Core.csproj", "{500943C6-4549-47C3-9B94-990B479745F4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Velvet.Tests", "Velvet.Tests\Velvet.Tests.csproj", "{529BEF78-4E21-4320-B061-853D262EE6C0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Velvet.Graphics", "Velvet.Graphics\Velvet.Graphics.csproj", "{C265074A-B5DE-4457-B4B0-BBB5DB58EB64}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Velvet.Input", "Velvet.Input\Velvet.Input.csproj", "{FB786A73-C29C-446A-8FFA-B7831625569B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,6 +38,10 @@ Global
 		{C265074A-B5DE-4457-B4B0-BBB5DB58EB64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C265074A-B5DE-4457-B4B0-BBB5DB58EB64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C265074A-B5DE-4457-B4B0-BBB5DB58EB64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB786A73-C29C-446A-8FFA-B7831625569B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB786A73-C29C-446A-8FFA-B7831625569B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB786A73-C29C-446A-8FFA-B7831625569B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB786A73-C29C-446A-8FFA-B7831625569B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0A532B0D-1D45-44AE-BC60-F4D6D4167BEA} = {D6CAE8B3-BF67-4006-BE5F-6DD83BD3EC7C}

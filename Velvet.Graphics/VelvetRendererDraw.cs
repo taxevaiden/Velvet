@@ -6,7 +6,12 @@ namespace Velvet.Graphics
 {
     public partial class Renderer
     {
-
+        /// <summary>
+        /// Draws a rectangle.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="size"></param>
+        /// <param name="color"></param>
         public void DrawRectangle(Vector2 pos, Vector2 size, System.Drawing.Color color)
         {
             _vertices.Add(new VertexPositionColor(pos, pos + size / 2, 0.0f, PackColor(color)));
@@ -24,6 +29,13 @@ namespace Velvet.Graphics
             _indices.Add((ushort)(baseIndex + 0));
         }
 
+        /// <summary>
+        /// Draws a rectangle.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="size"></param>
+        /// <param name="rotation"></param>
+        /// <param name="color"></param>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, System.Drawing.Color color)
         {
             _vertices.Add(new VertexPositionColor(pos, pos + size / 2, rotation, PackColor(color)));
@@ -41,9 +53,15 @@ namespace Velvet.Graphics
             _indices.Add((ushort)(baseIndex + 0));
         }
 
+        /// <summary>
+        /// Draws a circle.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="radius"></param>
+        /// <param name="color"></param>
         public void DrawCircle(Vector2 pos, float radius, System.Drawing.Color color)
         {
-            int segments = 6 * (int)(radius / 20);
+            int segments = 24;
             int baseIndex = _vertices.Count;
             for (int i = 0; i < segments; i++)
             {
@@ -54,6 +72,13 @@ namespace Velvet.Graphics
             }
         }
 
+        /// <summary>
+        /// Draws a circle.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="radius"></param>
+        /// <param name="segments"></param>
+        /// <param name="color"></param>
         public void DrawCircle(Vector2 pos, float radius, int segments, System.Drawing.Color color)
         {
             int baseIndex = _vertices.Count;
@@ -66,6 +91,9 @@ namespace Velvet.Graphics
             }
         }
 
+        /// <summary>
+        /// Begins the command list. Call this before drawing anything.
+        /// </summary>
         public void Begin()
         {
             _commandList.Begin();
@@ -80,6 +108,9 @@ namespace Velvet.Graphics
             _graphicsDevice.UpdateBuffer(_uniformBuffer, 0, ref resolutionData);
         }
 
+        /// <summary>
+        /// Renders everything to the screen. Call this after drawing.
+        /// </summary>
         public void End()
         {
             if (_vertices.Count > 0)
@@ -108,6 +139,10 @@ namespace Velvet.Graphics
             _indices.Clear();
         }
 
+        /// <summary>
+        /// Clears the screen to a color.
+        /// </summary>
+        /// <param name="color"></param>
         public void ClearColor(System.Drawing.Color color)
         {
             _commandList.ClearColorTarget(0, ToRgbaFloat(color));

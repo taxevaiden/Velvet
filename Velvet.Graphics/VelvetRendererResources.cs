@@ -59,7 +59,7 @@ void main()
     pos += Anchor;
 
     vec2 ndc = (pos / vec2(windowResolution)) * 2.0 - 1.0;
-    gl_Position = vec4(ndc, 0.0, 1.0);
+    gl_Position = vec4(ndc.x, -ndc.y, 0.0, 1.0);
     fsin_Color = UnpackColor(Color);
 }";
 
@@ -74,6 +74,12 @@ void main()
     fsout_Color = fsin_Color;
 }";
 
+        /// <summary>
+        /// Initializes Veldrid, with the specifed RendererAPI and VelvetWindow on Windows.
+        /// </summary>
+        /// <param name="rendererAPI"></param>
+        /// <param name="window"></param>
+        /// <exception cref="PlatformNotSupportedException"></exception>
         private void InitVeldrid_WIN(RendererAPI rendererAPI, VelvetWindow window)
         {
             _logger.Information("Platform: Windows");
@@ -137,6 +143,9 @@ void main()
             CreateResources();
         }
 
+        /// <summary>
+        /// Creates the resources for Veldrid.
+        /// </summary>
         private void CreateResources()
         {
             _logger.Information("Creating buffers...");
@@ -182,7 +191,7 @@ void main()
                 RasterizerState = new RasterizerStateDescription(
                     cullMode: FaceCullMode.Back,
                     fillMode: PolygonFillMode.Solid,
-                    frontFace: FrontFace.Clockwise,
+                    frontFace: FrontFace.CounterClockwise,
                     depthClipEnabled: true,
                     scissorTestEnabled: false),
 

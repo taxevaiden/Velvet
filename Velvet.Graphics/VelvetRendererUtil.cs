@@ -47,11 +47,21 @@ namespace Velvet.Graphics
 
     public partial class Renderer
     {
+        /// <summary>
+        /// Packs a System.Drawing.Color into a single uint.
+        /// </summary>
+        /// <param name="color"></param>
+        /// <returns>The color packed into a uint</returns>
         private static uint PackColor(Color color)
         {
             return (uint)(color.R | (color.G << 8) | (color.B << 16) | (color.A << 24));
         }
 
+        /// <summary>
+        /// Converts a System.Drawing.Color to an RgbaFloat.
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns>The converted RgbaFloat.</returns>
         private static RgbaFloat ToRgbaFloat(Color c)
         {
             return new RgbaFloat(c.R / 255f, c.G / 255f, c.B / 255f, c.A / 255f);

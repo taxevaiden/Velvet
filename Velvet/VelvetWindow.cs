@@ -1,4 +1,6 @@
-﻿using SDL3;
+﻿using Velvet.Input;
+
+using SDL3;
 
 using Serilog;
 using Serilog.Events;
@@ -12,6 +14,13 @@ namespace Velvet
         private bool _running = false;
         private SDL.Event _e;
 
+        /// <summary>
+        /// Initializes a new VelvetWindow.
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <exception cref="Exception"></exception>
         public VelvetWindow(string title, int width, int height)
         {
             Log.Logger = new LoggerConfiguration()
@@ -38,10 +47,16 @@ namespace Velvet
             _running = true;
         }
 
+        /// <summary>
+        /// Poll for currently pending events.
+        /// </summary>
+        /// <returns></returns>
         public bool PollEvents()
         {
+            InputManager.ClearEvents();
             while (SDL.PollEvent(out _e))
             {
+                InputManager.PollEvent(_e);
                 if (_e.Type == (uint)SDL.EventType.Quit)
                 {
                     _running = false;
@@ -54,6 +69,9 @@ namespace Velvet
             return true;
         }
 
+        /// <summary>
+        /// Destroys the window and quits SDL.
+        /// </summary>
         public void Dispose()
         {
             _logger.Information("Destroying window...");
