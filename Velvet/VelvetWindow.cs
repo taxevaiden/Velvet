@@ -1,71 +1,60 @@
-﻿using System.Security.Principal;
-using SDL3;
-using static SDL3.SDL;
+﻿using SDL3;
 
 namespace Velvet
 {
-    public class VelvetWindow
+    public partial class VelvetWindow
     {
         public IntPtr windowPtr { get; private set; } = IntPtr.Zero;
         private bool _running = false;
-        private SDL_Event _e;
+        private SDL.Event _e;
 
         public VelvetWindow(string title, int width, int height)
         {
-            if (!SDL_Init(SDL_InitFlags.SDL_INIT_VIDEO))
+            Console.WriteLine("Initializing SDL3...");
+            if (!SDL.Init(SDL.InitFlags.Video))
             {
-                throw new Exception($"Unable to initialize SDL: {SDL_GetError()}");
+                throw new Exception($"Unable to initialize SDL: {SDL.GetError()}");
             }
 
-            windowPtr = SDL_CreateWindow(title, width, height, SDL_WindowFlags.SDL_WINDOW_MOUSE_FOCUS);
+            Console.WriteLine("Creating window...");
+            windowPtr = SDL.CreateWindow(title, width, height, SDL.WindowFlags.MouseFocus);
             if (windowPtr == IntPtr.Zero)
             {
-                SDL_Quit();
-                throw new Exception($"Window creation failed: {SDL_GetError()}");
+                SDL.Quit();
+                throw new Exception($"Window creation failed: {SDL.GetError()}");
             }
 
+            Console.WriteLine("Running!");
             _running = true;
         }
 
-        public bool IsRunning() { return _running; }
-
         public bool PollEvents()
         {
-            while (SDL_PollEvent(out _e))
+            while (SDL.PollEvent(out _e))
             {
-                if (_e.type == (uint)SDL_EventType.SDL_EVENT_QUIT)
+                if (_e.Type == (uint)SDL.EventType.Quit)
                 {
                     _running = false;
                     return false;
                 }
             }
 
-            SDL_Delay(1);
+            SDL.Delay(1);
 
             return true;
         }
 
         public void Dispose()
         {
+            Console.WriteLine("Destroying window...");
             if (windowPtr != IntPtr.Zero)
             {
-                SDL_DestroyWindow(windowPtr);
+                SDL.DestroyWindow(windowPtr);
                 windowPtr = IntPtr.Zero;
             }
-            SDL_Quit();
+            Console.WriteLine("Quitting SDL3...");
+            SDL.Quit();
+            Console.WriteLine("Session ended");
         }
-
-        public int GetWidth()
-        {
-            SDL_GetWindowSizeInPixels(windowPtr, out int w, out int h);
-            return w;
-        }
-
-        public int GetHeight()
-        {
-            SDL_GetWindowSizeInPixels(windowPtr, out int w, out int h);
-            return h;
-        }
-
     }
 }

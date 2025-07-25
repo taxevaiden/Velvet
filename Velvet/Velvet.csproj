@@ -9,11 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\extern\SDL3-CS\SDL3\SDL3.Core.csproj"/>
+    
+  </ItemGroup>
 
-    <None Include="native\SDL3.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+  <ItemGroup>
+    <PackageReference Include="SDL3-CS" Version="3.2.18" />
   </ItemGroup>
 
 </Project>
