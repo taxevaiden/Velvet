@@ -31,8 +31,8 @@ namespace Velvet.Graphics
     {
         public uint w;
         public uint h;
-        uint p0;
-        uint p1;
+        private uint p0;
+        private uint p1;
 
         public ResolutionData(uint width, uint height)
         {

@@ -12,17 +12,17 @@ namespace Velvet.Graphics
     {
         private static readonly ILogger _logger = Log.ForContext<Renderer>();
         public const float DEG2RAD = MathF.PI / 180.0f;
-        private static VelvetWindow _window;
-        private static GraphicsDevice _graphicsDevice;
-        private static CommandList _commandList;
-        private static DeviceBuffer _vertexBuffer;
-        private static DeviceBuffer _uniformBuffer;
-        private static ResourceSet _resourceSet;
-        private static DeviceBuffer _indexBuffer;
-        private static Shader[] _shaders;
-        private static Pipeline _pipeline;
-        private List<VertexPositionColor> _vertices;
-        private List<uint> _indices;
+        private static VelvetWindow _window = null!;
+        private static GraphicsDevice _graphicsDevice = null!;
+        private static CommandList _commandList = null!;
+        private static DeviceBuffer _vertexBuffer = null!;
+        private static DeviceBuffer _uniformBuffer = null!;
+        private static ResourceSet _resourceSet = null!;
+        private static DeviceBuffer _indexBuffer = null!;
+        private static Shader[] _shaders = null!;
+        private static Pipeline _pipeline = null!;
+        private List<VertexPositionColor> _vertices = null!;
+        private List<uint> _indices = null!;
 
 
         // TODO: either move this somewhere else or clean it up
@@ -137,8 +137,6 @@ void main()
 
                 case RendererAPI.Metal:
                     throw new PlatformNotSupportedException("Metal is not supported. Please use either D3D11 or Vulkan.");
-                    break;
-
             }
 
             CreateResources();

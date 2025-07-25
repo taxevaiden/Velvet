@@ -13,7 +13,9 @@ tbh idk if i'll finish this i'll just put this here for progress, if anyone want
 ## things i'm done with
 
 - basic window
-- drawing rectangles
-- that's about it
+- drawing rectangles, circles, any polygon you could think of, with color!
+- input from keyboard and mouse
 
-i'm not experienced with Veldrid or C# that much so again. please help out
+![Stress Test](assets/image.png)
+
+Stress Test, ~60 FPS with ~60,000 rectangles
