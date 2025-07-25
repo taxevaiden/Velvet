@@ -11,19 +11,19 @@ namespace Velvet.Graphics
 
         public void Dispose()
         {
-            Console.WriteLine("Disposing pipeline...");
+            _logger.Information("Disposing pipeline...");
             _pipeline.Dispose();
-            Console.WriteLine("Disposing shaders...");
+            _logger.Information("Disposing shaders...");
             foreach (Shader shader in _shaders)
             {
                 shader.Dispose();
             }
-            Console.WriteLine("Disposing command list...");
+            _logger.Information("Disposing command list...");
             _commandList.Dispose();
-            Console.WriteLine("Disposing buffers...");
+            _logger.Information("Disposing buffers...");
             _vertexBuffer.Dispose();
             _indexBuffer.Dispose();
-            Console.WriteLine("Disposing graphics device...");
+            _logger.Information("Disposing graphics device...");
             _graphicsDevice.Dispose();
             
         }

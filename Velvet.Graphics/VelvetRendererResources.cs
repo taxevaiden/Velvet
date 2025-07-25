@@ -4,11 +4,13 @@ using Veldrid.SPIRV;
 
 using SDL3;
 using Veldrid.Vk;
+using Serilog;
 
 namespace Velvet.Graphics
 {
     public partial class Renderer
     {
+        private static readonly ILogger _logger = Log.ForContext<Renderer>();
         public const float DEG2RAD = MathF.PI / 180.0f;
         private static VelvetWindow _window;
         private static GraphicsDevice _graphicsDevice;
@@ -74,18 +76,18 @@ void main()
 
         private void InitVeldrid_WIN(RendererAPI rendererAPI, VelvetWindow window)
         {
-            Console.WriteLine("Platform: Windows");
-            Console.WriteLine("Initializing Veldrid...");
+            _logger.Information("Platform: Windows");
+            _logger.Information("Initializing Veldrid...");
             switch (rendererAPI)
             {
                 case RendererAPI.D3D11:
                     {
-                        Console.WriteLine("Using D3D11");
+                        _logger.Information("Using D3D11");
                         _window = window;
                         _vertices = [];
                         _indices = [];
 
-                        Console.WriteLine("Creating graphics device...");
+                        _logger.Information("Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
@@ -96,19 +98,19 @@ void main()
 
                         IntPtr hwmd = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), "SDL.window.win32.hwnd", IntPtr.Zero);
                         _graphicsDevice = GraphicsDevice.CreateD3D11(options, hwmd, (uint)_window.GetWidth(), (uint)_window.GetHeight());
-                        Console.WriteLine("Complete!");
+                        _logger.Information("Complete!");
                         break;
                     }
 
 
                 case RendererAPI.Vulkan:
                     {
-                        Console.WriteLine("Using Vulkan");
+                        _logger.Information("Using Vulkan");
                         _window = window;
                         _vertices = new();
                         _indices = new();
 
-                        Console.WriteLine("Creating graphics device...");
+                        _logger.Information("Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
@@ -137,7 +139,7 @@ void main()
 
         private void CreateResources()
         {
-            Console.WriteLine("Creating buffers...");
+            _logger.Information("Creating buffers...");
             _vertexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(1024 * 1024, BufferUsage.VertexBuffer));
             _uniformBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(ResolutionData.SizeInBytes, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
             _indexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(512 * 1024, BufferUsage.IndexBuffer));
@@ -152,7 +154,7 @@ void main()
                 resourceLayout,
                 _uniformBuffer));
 
-            Console.WriteLine("Creating shaders...");
+            _logger.Information("Creating shaders...");
             VertexLayoutDescription vertexLayout = new VertexLayoutDescription(
             new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
             new VertexElementDescription("Anchor", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
@@ -170,7 +172,7 @@ void main()
 
             _shaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(vertexShaderDesc, fragmentShaderDesc);
 
-            Console.WriteLine("Creating pipeline...");
+            _logger.Information("Creating pipeline...");
             GraphicsPipelineDescription pipelineDescription = new GraphicsPipelineDescription
             {
                 BlendState = BlendStateDescription.SINGLE_OVERRIDE_BLEND,
@@ -195,9 +197,9 @@ void main()
             };
             _pipeline = _graphicsDevice.ResourceFactory.CreateGraphicsPipeline(pipelineDescription);
 
-            Console.WriteLine("Creating command list...");
+            _logger.Information("Creating command list...");
             _commandList = _graphicsDevice.ResourceFactory.CreateCommandList();
-            Console.WriteLine("Complete!");
+            _logger.Information("Complete!");
         }
     }
 }
