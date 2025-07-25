@@ -12,11 +12,4 @@
     <ProjectReference Include="..\Velvet.Graphics\Velvet.Graphics.csproj" />
   </ItemGroup>
 
-  <Target Name="CopySDL3NativeDll" AfterTargets="PostBuildEvent">
-    <Copy
-      SourceFiles="..\Velvet\native\SDL3.dll"
-      DestinationFolder="$(OutDir)"
-      SkipUnchangedFiles="true" />
-  </Target>
-
 </Project>
