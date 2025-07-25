@@ -29,5 +29,11 @@ namespace Velvet
             SDL.GetWindowSizeInPixels(windowPtr, out _, out int h);
             return h;
         }
+
+        /// <summary>
+        /// Gets the delta time.
+        /// </summary>
+        /// <returns>The delta time, in seconds.</returns>
+        public float GetDeltaTime() { return _deltaTime; }
     }
 }

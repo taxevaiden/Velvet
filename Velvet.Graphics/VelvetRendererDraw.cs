@@ -9,9 +9,9 @@ namespace Velvet.Graphics
         /// <summary>
         /// Draws a rectangle.
         /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="size"></param>
-        /// <param name="color"></param>
+        /// <param name="pos">The position of the rectangle.</param>
+        /// <param name="size">The size of the rectangle.</param>
+        /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, System.Drawing.Color color)
         {
             _vertices.Add(new VertexPositionColor(pos, pos + size / 2, 0.0f, PackColor(color)));
@@ -21,21 +21,21 @@ namespace Velvet.Graphics
 
             int baseIndex = _vertices.Count - 4;
 
-            _indices.Add((ushort)(baseIndex + 0));
-            _indices.Add((ushort)(baseIndex + 1));
-            _indices.Add((ushort)(baseIndex + 2));
-            _indices.Add((ushort)(baseIndex + 2));
-            _indices.Add((ushort)(baseIndex + 3));
-            _indices.Add((ushort)(baseIndex + 0));
+            _indices.Add((uint)(baseIndex + 0));
+            _indices.Add((uint)(baseIndex + 1));
+            _indices.Add((uint)(baseIndex + 2));
+            _indices.Add((uint)(baseIndex + 2));
+            _indices.Add((uint)(baseIndex + 3));
+            _indices.Add((uint)(baseIndex + 0));
         }
 
         /// <summary>
-        /// Draws a rectangle.
+        /// Draws a rectangle, rotated around the center.
         /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="size"></param>
-        /// <param name="rotation"></param>
-        /// <param name="color"></param>
+        /// <param name="pos">The position of the rectangle.</param>
+        /// <param name="size">The size of the rectangle.</param>
+        /// <param name="rotation">The rotation of the rectangle, in radians.</param>
+        /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, System.Drawing.Color color)
         {
             _vertices.Add(new VertexPositionColor(pos, pos + size / 2, rotation, PackColor(color)));
@@ -45,49 +45,70 @@ namespace Velvet.Graphics
 
             int baseIndex = _vertices.Count - 4;
 
-            _indices.Add((ushort)(baseIndex + 0));
-            _indices.Add((ushort)(baseIndex + 1));
-            _indices.Add((ushort)(baseIndex + 2));
-            _indices.Add((ushort)(baseIndex + 2));
-            _indices.Add((ushort)(baseIndex + 3));
-            _indices.Add((ushort)(baseIndex + 0));
+            _indices.Add((uint)(baseIndex + 0));
+            _indices.Add((uint)(baseIndex + 1));
+            _indices.Add((uint)(baseIndex + 2));
+            _indices.Add((uint)(baseIndex + 2));
+            _indices.Add((uint)(baseIndex + 3));
+            _indices.Add((uint)(baseIndex + 0));
         }
 
         /// <summary>
         /// Draws a circle.
         /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="radius"></param>
-        /// <param name="color"></param>
+        /// <param name="pos">The position of the circle.</param>
+        /// <param name="radius">The radius of the circle.</param>
+        /// <param name="color">The color of the circle.</param>
         public void DrawCircle(Vector2 pos, float radius, System.Drawing.Color color)
         {
-            int segments = 24;
+            int segments = Math.Max(12, (int)(radius / 50) * (int)(radius / 50 * 2.5));
             int baseIndex = _vertices.Count;
             for (int i = 0; i < segments; i++)
             {
                 _vertices.Add(new VertexPositionColor(pos + new Vector2(MathF.Sin(360.0f / segments * i * DEG2RAD) * radius, MathF.Cos(360.0f / segments * i * DEG2RAD) * radius), pos, 0.0f, PackColor(color)));
-                _indices.Add((ushort)(baseIndex + 0));
-                _indices.Add((ushort)(baseIndex + i));
-                _indices.Add((ushort)(baseIndex + (i + 1) % segments));
+                _indices.Add((uint)(baseIndex + 0));
+                _indices.Add((uint)(baseIndex + i));
+                _indices.Add((uint)(baseIndex + (i + 1) % segments));
             }
         }
 
         /// <summary>
         /// Draws a circle.
         /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="radius"></param>
-        /// <param name="segments"></param>
-        /// <param name="color"></param>
+        /// <param name="pos">The position of the circle.</param>
+        /// <param name="radius">The radius of the circle.</param>
+        /// <param name="segments">The amount of segments that make up the circle.</param>
+        /// <param name="color">The color of the circle.</param>
         public void DrawCircle(Vector2 pos, float radius, int segments, System.Drawing.Color color)
         {
             int baseIndex = _vertices.Count;
             for (int i = 0; i < segments; i++)
             {
                 _vertices.Add(new VertexPositionColor(pos + new Vector2(MathF.Sin(360.0f / segments * i * DEG2RAD) * radius, MathF.Cos(360.0f / segments * i * DEG2RAD) * radius), pos, 0.0f, PackColor(color)));
-                _indices.Add((ushort)(baseIndex + 0));
-                _indices.Add((ushort)(baseIndex + i));
-                _indices.Add((ushort)(baseIndex + (i + 1) % segments));
+                _indices.Add((uint)(baseIndex + 0));
+                _indices.Add((uint)(baseIndex + i));
+                _indices.Add((uint)(baseIndex + (i + 1) % segments));
+            }
+        }
+
+        /// <summary>
+        /// Draws a polygon.
+        /// </summary>
+        /// <param name="pos">The position of the polygon.</param>
+        /// <param name="vertices">An array of vertices to render.</param>
+        /// <param name="indices">An array of indices that determine the drawing order of the vertices.</param>
+        /// <param name="color">The color of the polygon.</param>
+        public void DrawPolygon(Vector2 pos, Vector2[] vertices, uint[] indices, System.Drawing.Color color)
+        {
+            int baseIndex = _vertices.Count;
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                _vertices.Add(new VertexPositionColor(pos + vertices[i], pos, 0.0f, PackColor(color)));
+            }
+
+            for (int i = 0; i < indices.Length; i++)
+            {
+                _indices.Add((uint)(baseIndex + indices[i]));
             }
         }
 
@@ -120,7 +141,7 @@ namespace Velvet.Graphics
                 _graphicsDevice.UpdateBuffer(_indexBuffer, 0, _indices.ToArray());
 
             _commandList.SetVertexBuffer(0, _vertexBuffer);
-            _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt16);
+            _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
             _commandList.SetPipeline(_pipeline);
             _commandList.SetGraphicsResourceSet(0, _resourceSet);
             _commandList.DrawIndexed(

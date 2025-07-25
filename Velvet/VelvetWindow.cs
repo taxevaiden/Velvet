@@ -14,6 +14,10 @@ namespace Velvet
         private bool _running = false;
         private SDL.Event _e;
 
+        private ulong lastCounter = SDL.GetPerformanceCounter();
+        private ulong freq = SDL.GetPerformanceFrequency();
+        private float _deltaTime = 1 / 1000.0f;
+
         /// <summary>
         /// Initializes a new VelvetWindow.
         /// </summary>
@@ -24,10 +28,10 @@ namespace Velvet
         public VelvetWindow(string title, int width, int height)
         {
             Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
-    .Enrich.FromLogContext()
-    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}")
-    .CreateLogger();
+                .MinimumLevel.Debug()
+                .Enrich.FromLogContext()
+                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}")
+                .CreateLogger();
 
             _logger.Information("Initializing SDL3...");
             if (!SDL.Init(SDL.InitFlags.Video))
@@ -53,6 +57,10 @@ namespace Velvet
         /// <returns></returns>
         public bool PollEvents()
         {
+            ulong currentCounter = SDL.GetPerformanceCounter();
+            _deltaTime = (currentCounter - lastCounter) / (float)freq;
+            lastCounter = currentCounter;
+
             InputManager.ClearEvents();
             while (SDL.PollEvent(out _e))
             {

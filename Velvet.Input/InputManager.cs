@@ -107,10 +107,10 @@ namespace Velvet.Input
         }
 
         /// <summary>
-        /// Returns if a key has been pressed.
+        /// Returns if a key has been pressed during the current frame.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns>A bool.</returns>
+        /// <param name="key">The key to check.</param>
+        /// <returns>Returns true if the key was pressed; otherwise, false.</returns>
         public static bool IsKeyPressed(KeyCode key)
         {
             foreach (Event e in _events)
@@ -121,10 +121,10 @@ namespace Velvet.Input
         }
 
         /// <summary>
-        /// Returns if a mouse button has been pressed
+        /// Returns if a mouse button has been pressed during the current frame.
         /// </summary>
-        /// <param name="mouseButton"></param>
-        /// <returns>A bool</returns>
+        /// <param name="mouseButton">The mouse button to check.</param>
+        /// <returns>Returns true if the mouse button was pressed; otherwise, false.</returns>
         public static bool IsMouseButtonPressed(MouseButton mouseButton)
         {
             foreach (Event e in _events)
@@ -137,33 +137,33 @@ namespace Velvet.Input
         /// <summary>
         /// Returns if a key is being pressed down.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns>A bool.</returns>
+        /// <param name="key">The key to check.</param>
+        /// <returns>Returns true if the key is being pressed down; otherwise, false.</returns>
         public static bool IsKeyDown(KeyCode key) => _heldKeys.Contains((uint)key);
         /// <summary>
         /// Returns if a key is not being pressed down.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">The key to check.</param>
+        /// <returns>Returns true if the key is not being pressed down; otherwise, false.</returns>
         public static bool IsKeyUp(KeyCode key) => !_heldKeys.Contains((uint)key);
 
         /// <summary>
         /// Returns if a mouse button is being pressed down.
         /// </summary>
-        /// <param name="mouseButton"></param>
-        /// <returns>A bool.</returns>
+        /// <param name="mouseButton">The mouse button to check.</param>
+        /// <returns>Returns true if the mouse button is being pressed down; otherwise, false.</returns>
         public static bool IsMouseButtonDown(MouseButton mouseButton) => _heldButtons.Contains((byte)mouseButton);
         /// <summary>
         /// Returns if a mouse button is not being pressed down.
         /// </summary>
-        /// <param name="mouseButton"></param>
-        /// <returns>A bool.</returns>
+        /// <param name="mouseButton">The mouse button to check.</param>
+        /// <returns>Returns true if the mouse button is not being pressed down; otherwise, false.</returns>
         public static bool IsMouseButtonUp(MouseButton mouseButton) => !_heldButtons.Contains((byte)mouseButton);
 
         /// <summary>
         /// Returns the current mouse position.
         /// </summary>
-        /// <returns>A Vector2.</returns>
+        /// <returns>The mouse position as a Vector2.</returns>
         public static Vector2 GetMousePosition()
         {
             float x, y;

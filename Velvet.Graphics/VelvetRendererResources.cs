@@ -22,7 +22,7 @@ namespace Velvet.Graphics
         private static Shader[] _shaders;
         private static Pipeline _pipeline;
         private List<VertexPositionColor> _vertices;
-        private List<ushort> _indices;
+        private List<uint> _indices;
 
 
         // TODO: either move this somewhere else or clean it up
@@ -54,12 +54,13 @@ void main()
     vec2 pos = Position - Anchor;
     float c = cos(Rotation);
     float s = sin(Rotation);
-    mat2 rot = mat2(c, s, -s, c);
+    mat2 rot = mat2(c, -s, s, c);
     pos *= rot;
     pos += Anchor;
 
     vec2 ndc = (pos / vec2(windowResolution)) * 2.0 - 1.0;
     gl_Position = vec4(ndc.x, -ndc.y, 0.0, 1.0);
+    gl_PointSize = 5.0;
     fsin_Color = UnpackColor(Color);
 }";
 
@@ -149,9 +150,9 @@ void main()
         private void CreateResources()
         {
             _logger.Information("Creating buffers...");
-            _vertexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(1024 * 1024, BufferUsage.VertexBuffer));
+            _vertexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(1024 * 1024 * 20, BufferUsage.VertexBuffer));
             _uniformBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(ResolutionData.SizeInBytes, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-            _indexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(512 * 1024, BufferUsage.IndexBuffer));
+            _indexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(1024 * 1024 * 15, BufferUsage.IndexBuffer));
 
             ResourceLayout resourceLayout = _graphicsDevice.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(
