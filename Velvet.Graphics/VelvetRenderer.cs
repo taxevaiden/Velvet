@@ -1,4 +1,5 @@
 ﻿using Veldrid;
+using System.Runtime.InteropServices;
 
 namespace Velvet.Graphics
 {
@@ -11,7 +12,10 @@ namespace Velvet.Graphics
         /// <param name="window"></param>
         public Renderer(RendererAPI rendererAPI, VelvetWindow window)
         {
-            InitVeldrid_WIN(rendererAPI, window);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                InitVeldrid_WIN(rendererAPI, window);
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                InitVeldrid_LINUX(rendererAPI, window);
         }
 
         /// <summary>

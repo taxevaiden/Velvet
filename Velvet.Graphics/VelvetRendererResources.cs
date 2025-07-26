@@ -126,8 +126,8 @@ void main()
                             preferStandardClipSpaceYDirection: true,
                             preferDepthRangeZeroToOne: true);
 
-                        var hinstance = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), "SDL.window.win32.hwnd", IntPtr.Zero);
-                        var hwmd = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), "SDL.window.win32.hwnd", IntPtr.Zero);
+                        var hinstance = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
+                        var hwmd = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
 
                         VkSurfaceSource vkSurfaceSource = VkSurfaceSource.CreateWin32(hinstance, hwmd);
 
@@ -136,7 +136,70 @@ void main()
                     }
 
                 case RendererAPI.Metal:
-                    throw new PlatformNotSupportedException("Metal is not supported. Please use either D3D11 or Vulkan.");
+                    throw new PlatformNotSupportedException("Metal is not supported on Windows. Please use either D3D11 or Vulkan.");
+            }
+
+            CreateResources();
+        }
+
+        private void InitVeldrid_LINUX(RendererAPI rendererAPI, VelvetWindow window)
+        {
+            _logger.Information("Platform: Linux");
+            _logger.Information("Initializing Veldrid...");
+            switch (rendererAPI)
+            {
+                case RendererAPI.D3D11:
+                    {
+                        throw new PlatformNotSupportedException("D3D11 is not supported on Linux. Please use Vulkan.");
+                    }
+
+
+                case RendererAPI.Vulkan:
+                    {
+                        _logger.Information("Using Vulkan");
+                        _window = window;
+                        _vertices = new();
+                        _indices = new();
+
+                        _logger.Information("Creating graphics device...");
+                        var options = new GraphicsDeviceOptions(
+                            debug: false,
+                            swapchainDepthFormat: null,
+                            syncToVerticalBlank: true,
+                            resourceBindingModel: ResourceBindingModel.Improved,
+                            preferStandardClipSpaceYDirection: true,
+                            preferDepthRangeZeroToOne: true);
+
+                        SwapchainSource source;
+
+                        IntPtr wlDisplay = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWaylandDisplayPointer, IntPtr.Zero);
+                        IntPtr wlSurface = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWaylandSurfacePointer, IntPtr.Zero);
+
+                        if (wlDisplay != IntPtr.Zero && wlSurface != IntPtr.Zero)
+                        {
+                            source = SwapchainSource.CreateWayland(wlDisplay, wlSurface);
+                        }
+                        else
+                        {
+                            IntPtr x11Display = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowX11DisplayPointer, IntPtr.Zero);
+                            uint x11Window = (uint)SDL.GetNumberProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowX11WindowNumber, 0);
+                            source = SwapchainSource.CreateXlib(x11Display, (IntPtr)x11Window);
+                        }
+
+                        SwapchainDescription scDesc = new SwapchainDescription(
+                            source,
+                            (uint)_window.GetWidth(),
+                            (uint)_window.GetHeight(),
+                            PixelFormat.R32Float,
+                            true);
+
+                        _graphicsDevice = GraphicsDevice.CreateVulkan(options, scDesc);
+
+                        break;
+                    }
+
+                case RendererAPI.Metal:
+                    throw new PlatformNotSupportedException("Metal is not supported on Linux. Please use Vulkan.");
             }
 
             CreateResources();
