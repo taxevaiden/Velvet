@@ -4,7 +4,7 @@
     {
         static void Main(string[] args)
         {
-            var test = new ShapeTest();
+            var test = new StressTest();
             test.Run();
         }
     }
