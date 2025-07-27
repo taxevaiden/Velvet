@@ -18,7 +18,7 @@ tbh idk if i'll finish this i'll just put this here for progress, if anyone want
 
 ![Stress Test](assets/image.png)
 
-Stress Test, ~25 FPS with ~200,000 rectangles
+Stress Test, ~25 FPS with ~200,000 rectangles on an Apple M1 chip with 16GB ram
 
 ## how to test
 
