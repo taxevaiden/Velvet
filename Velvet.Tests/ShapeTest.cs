@@ -8,10 +8,10 @@ namespace Velvet.Tests
     class ShapeTest : BaseTest
     {
         public ShapeTest() {}
-        public void Run()
+        public void Run(RendererAPI rendererAPI)
         {
             var win = new VelvetWindow("Hello, world!", 1600, 900);
-            var renderer = new Renderer(RendererAPI.Vulkan, win);
+            var renderer = new Renderer(rendererAPI, win);
 
             float rot = 22.5f;
 

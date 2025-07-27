@@ -15,37 +15,45 @@ namespace Velvet.Tests
             velocities = [];
         }
 
-        public new void Run()
+        public new void Run(RendererAPI rendererAPI)
         {
             var win = new VelvetWindow("Stress test", 1600, 900);
-            var renderer = new Renderer(RendererAPI.Vulkan, win);
+            var renderer = new Renderer(rendererAPI, win);
             var random = new Random();
 
             while (win.IsRunning())
             {
                 win.PollEvents();
 
-                if (InputManager.IsMouseButtonDown(MouseButton.Left))
+                for (int i = 0; i < 50; i++)
                 {
-                    for (int i = 0; i < 20; i++)
-                    {
-                        particles.Add(InputManager.GetMousePosition());
-                        velocities.Add(new Vector2(random.Next() % 200 - 100, random.Next() % 200 - 100) / 100.0f);
-                    }
+                    particles.Add(new Vector2(800, 450));
+                    velocities.Add(new Vector2(random.Next() % 2000 - 1000, random.Next() % 2000 - 1000) / 100.0f);
                 }
 
-                for (int i = 0; i < particles.Count(); i++)
+                // for (int i = 0; i < particles.Count(); i++)
+                // {
+                //     particles[i] += velocities[i];
+                //     velocities[i] *= 0.99f;
+                // }
+
+                Parallel.For(0, particles.Count, i =>
                 {
                     particles[i] += velocities[i];
+                    if (particles[i].X < 0) { particles[i] = new Vector2(0.0f, particles[i].Y); velocities[i] = new Vector2(-velocities[i].X, velocities[i].Y); };
+                    if (particles[i].X > 1600) { particles[i] = new Vector2(1600.0f, particles[i].Y); velocities[i] = new Vector2(-velocities[i].X, velocities[i].Y); };
+                    if (particles[i].Y < 0) { particles[i] = new Vector2(particles[i].X, 0.0f); velocities[i] = new Vector2(velocities[i].X, -velocities[i].Y); };
+                    if (particles[i].Y > 900) { particles[i] = new Vector2(particles[i].X, 900.0f); velocities[i] = new Vector2(velocities[i].X, -velocities[i].Y); };
+
                     velocities[i] *= 0.99f;
-                }
+                });
 
                 renderer.Begin();
                 renderer.ClearColor(Color.Black);
 
-                for (int i = 0; i < particles.Count(); i++)
+                for (int i = 0; i < particles.Count; i++)
                 {
-                    renderer.DrawRectangle(particles[i], Vector2.One * 10.0f, i, Color.FromArgb(255, i * 325 % 255, i * 412 % 255, i * 176 % 255));
+                    renderer.DrawCircle(particles[i], 10.0f, 4, Color.FromArgb(255, i * 325 % 255, i * 412 % 255, i * 176 % 255));
                 }
 
                 Console.WriteLine($"{1 / win.GetDeltaTime()} : {particles.Count()}");

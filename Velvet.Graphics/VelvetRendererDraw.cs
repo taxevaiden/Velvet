@@ -14,10 +14,10 @@ namespace Velvet.Graphics
         /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, System.Drawing.Color color)
         {
-            _vertices.Add(new VertexPositionColor(pos, pos + size / 2, 0.0f, PackColor(color)));
-            _vertices.Add(new VertexPositionColor(pos + size * Vector2.UnitY, pos + size / 2, 0.0f, PackColor(color)));
-            _vertices.Add(new VertexPositionColor(pos + size, pos + size / 2, 0.0f, PackColor(color)));
-            _vertices.Add(new VertexPositionColor(pos + size * Vector2.UnitX, pos + size / 2, 0.0f, PackColor(color)));
+            _vertices.Add(new Vertex(pos, pos + size / 2, 0.0f, PackColor(color)));
+            _vertices.Add(new Vertex(pos + size * Vector2.UnitY, pos + size / 2, 0.0f, PackColor(color)));
+            _vertices.Add(new Vertex(pos + size, pos + size / 2, 0.0f, PackColor(color)));
+            _vertices.Add(new Vertex(pos + size * Vector2.UnitX, pos + size / 2, 0.0f, PackColor(color)));
 
             int baseIndex = _vertices.Count - 4;
 
@@ -38,10 +38,10 @@ namespace Velvet.Graphics
         /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, System.Drawing.Color color)
         {
-            _vertices.Add(new VertexPositionColor(pos, pos + size / 2, rotation, PackColor(color)));
-            _vertices.Add(new VertexPositionColor(pos + size * Vector2.UnitY, pos + size / 2, rotation, PackColor(color)));
-            _vertices.Add(new VertexPositionColor(pos + size, pos + size / 2, rotation, PackColor(color)));
-            _vertices.Add(new VertexPositionColor(pos + size * Vector2.UnitX, pos + size / 2, rotation, PackColor(color)));
+            _vertices.Add(new Vertex(pos, pos + size / 2, rotation, PackColor(color)));
+            _vertices.Add(new Vertex(pos + size * Vector2.UnitY, pos + size / 2, rotation, PackColor(color)));
+            _vertices.Add(new Vertex(pos + size, pos + size / 2, rotation, PackColor(color)));
+            _vertices.Add(new Vertex(pos + size * Vector2.UnitX, pos + size / 2, rotation, PackColor(color)));
 
             int baseIndex = _vertices.Count - 4;
 
@@ -65,7 +65,7 @@ namespace Velvet.Graphics
             int baseIndex = _vertices.Count;
             for (int i = 0; i < segments; i++)
             {
-                _vertices.Add(new VertexPositionColor(pos + new Vector2(MathF.Sin(360.0f / segments * i * DEG2RAD) * radius, MathF.Cos(360.0f / segments * i * DEG2RAD) * radius), pos, 0.0f, PackColor(color)));
+                _vertices.Add(new Vertex(pos + new Vector2(MathF.Sin(360.0f / segments * i * DEG2RAD) * radius, MathF.Cos(360.0f / segments * i * DEG2RAD) * radius), pos, 0.0f, PackColor(color)));
                 _indices.Add((uint)(baseIndex + 0));
                 _indices.Add((uint)(baseIndex + i));
                 _indices.Add((uint)(baseIndex + (i + 1) % segments));
@@ -84,7 +84,7 @@ namespace Velvet.Graphics
             int baseIndex = _vertices.Count;
             for (int i = 0; i < segments; i++)
             {
-                _vertices.Add(new VertexPositionColor(pos + new Vector2(MathF.Sin(360.0f / segments * i * DEG2RAD) * radius, MathF.Cos(360.0f / segments * i * DEG2RAD) * radius), pos, 0.0f, PackColor(color)));
+                _vertices.Add(new Vertex(pos + new Vector2(MathF.Sin(360.0f / segments * i * DEG2RAD) * radius, MathF.Cos(360.0f / segments * i * DEG2RAD) * radius), pos, 0.0f, PackColor(color)));
                 _indices.Add((uint)(baseIndex + 0));
                 _indices.Add((uint)(baseIndex + i));
                 _indices.Add((uint)(baseIndex + (i + 1) % segments));
@@ -103,7 +103,7 @@ namespace Velvet.Graphics
             int baseIndex = _vertices.Count;
             for (int i = 0; i < vertices.Length; i++)
             {
-                _vertices.Add(new VertexPositionColor(pos + vertices[i], pos, 0.0f, PackColor(color)));
+                _vertices.Add(new Vertex(pos + vertices[i], pos, 0.0f, PackColor(color)));
             }
 
             for (int i = 0; i < indices.Length; i++)

@@ -11,13 +11,13 @@ namespace Velvet.Graphics
         Metal
     }
 
-    struct VertexPositionColor
+    struct Vertex
     {
         public Vector2 Position;
         public Vector2 Anchor;
         public float Rotation;
         public uint Color;
-        public VertexPositionColor(Vector2 position, Vector2 anchor, float rotation, uint color)
+        public Vertex(Vector2 position, Vector2 anchor, float rotation, uint color)
         {
             Position = position;
             Anchor = anchor;
@@ -45,6 +45,17 @@ namespace Velvet.Graphics
         public const uint SizeInBytes = 16;
     }
 
+    struct DrawResult
+    {
+        public List<Vertex> vertices;
+        public List<uint> indices;
+        public DrawResult(List<Vertex> vertices, List<uint> indices)
+        {
+            this.vertices = vertices;
+            this.indices = indices;
+        }
+    }
+
     public partial class Renderer
     {
         /// <summary>
@@ -67,6 +78,6 @@ namespace Velvet.Graphics
             return new RgbaFloat(c.R / 255f, c.G / 255f, c.B / 255f, c.A / 255f);
         }
 
-        
+
     }
 }

@@ -21,7 +21,7 @@ namespace Velvet.Graphics
         private static DeviceBuffer _indexBuffer = null!;
         private static Shader[] _shaders = null!;
         private static Pipeline _pipeline = null!;
-        private List<VertexPositionColor> _vertices = null!;
+        private List<Vertex> _vertices = null!;
         private List<uint> _indices = null!;
 
 
@@ -91,8 +91,6 @@ void main()
                     {
                         _logger.Information("Using D3D11");
                         _window = window;
-                        _vertices = [];
-                        _indices = [];
 
                         _logger.Information("Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
@@ -103,7 +101,7 @@ void main()
                             preferStandardClipSpaceYDirection: true,
                             preferDepthRangeZeroToOne: true);
 
-                        IntPtr hwmd = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), "SDL.window.win32.hwnd", IntPtr.Zero);
+                        IntPtr hwmd = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
                         _graphicsDevice = GraphicsDevice.CreateD3D11(options, hwmd, (uint)_window.GetWidth(), (uint)_window.GetHeight());
                         _logger.Information("Complete!");
                         break;
@@ -114,8 +112,6 @@ void main()
                     {
                         _logger.Information("Using Vulkan");
                         _window = window;
-                        _vertices = new();
-                        _indices = new();
 
                         _logger.Information("Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
@@ -132,6 +128,7 @@ void main()
                         VkSurfaceSource vkSurfaceSource = VkSurfaceSource.CreateWin32(hinstance, hwmd);
 
                         _graphicsDevice = GraphicsDevice.CreateVulkan(options, vkSurfaceSource, (uint)_window.GetWidth(), (uint)_window.GetHeight());
+                        _logger.Information("Complete!");
                         break;
                     }
 
@@ -158,8 +155,6 @@ void main()
                     {
                         _logger.Information("Using Vulkan");
                         _window = window;
-                        _vertices = new();
-                        _indices = new();
 
                         _logger.Information("Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
@@ -177,10 +172,12 @@ void main()
 
                         if (wlDisplay != IntPtr.Zero && wlSurface != IntPtr.Zero)
                         {
+                            _logger.Information("Using Wayland");
                             source = SwapchainSource.CreateWayland(wlDisplay, wlSurface);
                         }
                         else
                         {
+                            _logger.Information("Using X11");
                             IntPtr x11Display = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowX11DisplayPointer, IntPtr.Zero);
                             uint x11Window = (uint)SDL.GetNumberProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowX11WindowNumber, 0);
                             source = SwapchainSource.CreateXlib(x11Display, (IntPtr)x11Window);
@@ -194,12 +191,50 @@ void main()
                             true);
 
                         _graphicsDevice = GraphicsDevice.CreateVulkan(options, scDesc);
-
+                        _logger.Information("Complete!");
                         break;
                     }
 
                 case RendererAPI.Metal:
+
                     throw new PlatformNotSupportedException("Metal is not supported on Linux. Please use Vulkan.");
+            }
+
+            CreateResources();
+        }
+
+
+        private void InitVeldrid_OSX(RendererAPI rendererAPI, VelvetWindow window)
+        {
+            _logger.Information("Platform: OSX");
+            _logger.Information("Initializing Veldrid...");
+            switch (rendererAPI)
+            {
+                case RendererAPI.D3D11:
+                    throw new PlatformNotSupportedException("D3D11 is not supported on OSX. Please use Metal.");
+                case RendererAPI.Vulkan:
+                    throw new PlatformNotSupportedException("Vulkan is not supported on OSX. Please use Metal.");
+
+                case RendererAPI.Metal:
+                    {
+                        _logger.Information("Using Metal");
+                        _window = window;
+
+                        _logger.Information("Creating graphics device...");
+                        var options = new GraphicsDeviceOptions(
+                            debug: false,
+                            swapchainDepthFormat: null,
+                            syncToVerticalBlank: true,
+                            resourceBindingModel: ResourceBindingModel.Improved,
+                            preferStandardClipSpaceYDirection: true,
+                            preferDepthRangeZeroToOne: true);
+
+                        IntPtr nsWindow = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowCocoaWindowPointer, IntPtr.Zero);
+
+                        _graphicsDevice = GraphicsDevice.CreateMetal(options, nsWindow);
+                        _logger.Information("Complete!");
+                        break;
+                    }
             }
 
             CreateResources();
@@ -210,10 +245,13 @@ void main()
         /// </summary>
         private void CreateResources()
         {
+            _vertices = [];
+            _indices = [];
+
             _logger.Information("Creating buffers...");
-            _vertexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(1024 * 1024 * 20, BufferUsage.VertexBuffer));
+            _vertexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(1024 * 1024 * 20, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
             _uniformBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(ResolutionData.SizeInBytes, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-            _indexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(1024 * 1024 * 15, BufferUsage.IndexBuffer));
+            _indexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(1024 * 1024 * 15, BufferUsage.IndexBuffer | BufferUsage.Dynamic));
 
             ResourceLayout resourceLayout = _graphicsDevice.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(
