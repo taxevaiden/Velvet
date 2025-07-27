@@ -8,7 +8,7 @@ namespace Velvet.Tests
     class BaseTest
     {
         public BaseTest() {}
-        public void Run()
+        public virtual void Run(RendererAPI rendererAPI)
         {
             var win = new VelvetWindow("Hello, world!", 1600, 900);
 

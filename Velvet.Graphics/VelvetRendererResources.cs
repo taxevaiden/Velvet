@@ -5,22 +5,25 @@ using Veldrid.SPIRV;
 using SDL3;
 using Veldrid.Vk;
 using Serilog;
+using Veldrid.OpenGLBindings;
+using Veldrid.OpenGL;
+using System.Runtime.InteropServices;
 
 namespace Velvet.Graphics
 {
     public partial class Renderer
     {
-        private static readonly ILogger _logger = Log.ForContext<Renderer>();
+        private readonly ILogger _logger = Log.ForContext<Renderer>();
         public const float DEG2RAD = MathF.PI / 180.0f;
-        private static VelvetWindow _window = null!;
-        private static GraphicsDevice _graphicsDevice = null!;
-        private static CommandList _commandList = null!;
-        private static DeviceBuffer _vertexBuffer = null!;
-        private static DeviceBuffer _uniformBuffer = null!;
-        private static ResourceSet _resourceSet = null!;
-        private static DeviceBuffer _indexBuffer = null!;
-        private static Shader[] _shaders = null!;
-        private static Pipeline _pipeline = null!;
+        private VelvetWindow _window = null!;
+        private GraphicsDevice _graphicsDevice = null!;
+        private CommandList _commandList = null!;
+        private DeviceBuffer _vertexBuffer = null!;
+        private DeviceBuffer _uniformBuffer = null!;
+        private ResourceSet _resourceSet = null!;
+        private DeviceBuffer _indexBuffer = null!;
+        private Shader[] _shaders = null!;
+        private Pipeline _pipeline = null!;
         private List<Vertex> _vertices = null!;
         private List<uint> _indices = null!;
 
@@ -81,43 +84,43 @@ void main()
         /// <param name="rendererAPI"></param>
         /// <param name="window"></param>
         /// <exception cref="PlatformNotSupportedException"></exception>
-        private void InitVeldrid_WIN(RendererAPI rendererAPI, VelvetWindow window)
+        private void InitVeldrid_WIN(RendererAPI rendererAPI, VelvetWindow window, bool vsync)
         {
-            _logger.Information("Platform: Windows");
-            _logger.Information("Initializing Veldrid...");
+            _logger.Information($"Window-{window.windowID}: Platform: Windows");
+            _logger.Information($"Window-{window.windowID}: Initializing Veldrid...");
             switch (rendererAPI)
             {
                 case RendererAPI.D3D11:
                     {
-                        _logger.Information("Using D3D11");
+                        _logger.Information($"Window-{window.windowID}: Using D3D11");
                         _window = window;
 
-                        _logger.Information("Creating graphics device...");
+                        _logger.Information($"Window-{window.windowID}: Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
-                            syncToVerticalBlank: true,
+                            syncToVerticalBlank: vsync,
                             resourceBindingModel: ResourceBindingModel.Improved,
                             preferStandardClipSpaceYDirection: true,
                             preferDepthRangeZeroToOne: true);
 
                         IntPtr hwmd = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
                         _graphicsDevice = GraphicsDevice.CreateD3D11(options, hwmd, (uint)_window.GetWidth(), (uint)_window.GetHeight());
-                        _logger.Information("Complete!");
+                        _logger.Information($"Window-{window.windowID}: Complete!");
                         break;
                     }
 
 
                 case RendererAPI.Vulkan:
                     {
-                        _logger.Information("Using Vulkan");
+                        _logger.Information($"Window-{window.windowID}: Using Vulkan");
                         _window = window;
 
-                        _logger.Information("Creating graphics device...");
+                        _logger.Information($"Window-{window.windowID}: Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
-                            syncToVerticalBlank: true,
+                            syncToVerticalBlank: vsync,
                             resourceBindingModel: ResourceBindingModel.Improved,
                             preferStandardClipSpaceYDirection: true,
                             preferDepthRangeZeroToOne: true);
@@ -128,39 +131,38 @@ void main()
                         VkSurfaceSource vkSurfaceSource = VkSurfaceSource.CreateWin32(hinstance, hwmd);
 
                         _graphicsDevice = GraphicsDevice.CreateVulkan(options, vkSurfaceSource, (uint)_window.GetWidth(), (uint)_window.GetHeight());
-                        _logger.Information("Complete!");
+                        _logger.Information($"Window-{window.windowID}: Complete!");
                         break;
                     }
 
                 case RendererAPI.Metal:
                     throw new PlatformNotSupportedException("Metal is not supported on Windows. Please use either D3D11 or Vulkan.");
+
             }
 
             CreateResources();
         }
 
-        private void InitVeldrid_LINUX(RendererAPI rendererAPI, VelvetWindow window)
+        private void InitVeldrid_LINUX(RendererAPI rendererAPI, VelvetWindow window, bool vsync)
         {
-            _logger.Information("Platform: Linux");
-            _logger.Information("Initializing Veldrid...");
+            _logger.Information($"Window-{window.windowID}: Platform: Linux");
+            _logger.Information($"Window-{window.windowID}: Initializing Veldrid...");
             switch (rendererAPI)
             {
                 case RendererAPI.D3D11:
-                    {
-                        throw new PlatformNotSupportedException("D3D11 is not supported on Linux. Please use Vulkan.");
-                    }
+                    throw new PlatformNotSupportedException("D3D11 is not supported on Linux. Please use Vulkan.");
 
 
                 case RendererAPI.Vulkan:
                     {
-                        _logger.Information("Using Vulkan");
+                        _logger.Information($"Window-{window.windowID}: Using Vulkan");
                         _window = window;
 
-                        _logger.Information("Creating graphics device...");
+                        _logger.Information($"Window-{window.windowID}: Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
-                            syncToVerticalBlank: true,
+                            syncToVerticalBlank: vsync,
                             resourceBindingModel: ResourceBindingModel.Improved,
                             preferStandardClipSpaceYDirection: true,
                             preferDepthRangeZeroToOne: true);
@@ -172,12 +174,12 @@ void main()
 
                         if (wlDisplay != IntPtr.Zero && wlSurface != IntPtr.Zero)
                         {
-                            _logger.Information("Using Wayland");
+                            _logger.Information($"Window-{window.windowID}: Using Wayland");
                             source = SwapchainSource.CreateWayland(wlDisplay, wlSurface);
                         }
                         else
                         {
-                            _logger.Information("Using X11");
+                            _logger.Information($"Window-{window.windowID}: Using X11");
                             IntPtr x11Display = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowX11DisplayPointer, IntPtr.Zero);
                             uint x11Window = (uint)SDL.GetNumberProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowX11WindowNumber, 0);
                             source = SwapchainSource.CreateXlib(x11Display, (IntPtr)x11Window);
@@ -191,12 +193,11 @@ void main()
                             true);
 
                         _graphicsDevice = GraphicsDevice.CreateVulkan(options, scDesc);
-                        _logger.Information("Complete!");
+                        _logger.Information($"Window-{window.windowID}: Complete!");
                         break;
                     }
 
                 case RendererAPI.Metal:
-
                     throw new PlatformNotSupportedException("Metal is not supported on Linux. Please use Vulkan.");
             }
 
@@ -204,10 +205,10 @@ void main()
         }
 
 
-        private void InitVeldrid_OSX(RendererAPI rendererAPI, VelvetWindow window)
+        private void InitVeldrid_OSX(RendererAPI rendererAPI, VelvetWindow window, bool vsync)
         {
-            _logger.Information("Platform: OSX");
-            _logger.Information("Initializing Veldrid...");
+            _logger.Information($"Window-{window.windowID}: Platform: OSX");
+            _logger.Information($"Window-{window.windowID}: Initializing Veldrid...");
             switch (rendererAPI)
             {
                 case RendererAPI.D3D11:
@@ -217,14 +218,14 @@ void main()
 
                 case RendererAPI.Metal:
                     {
-                        _logger.Information("Using Metal");
+                        _logger.Information($"Window-{window.windowID}: Using Metal");
                         _window = window;
 
-                        _logger.Information("Creating graphics device...");
+                        _logger.Information($"Window-{window.windowID}: Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
-                            syncToVerticalBlank: true,
+                            syncToVerticalBlank: vsync,
                             resourceBindingModel: ResourceBindingModel.Improved,
                             preferStandardClipSpaceYDirection: true,
                             preferDepthRangeZeroToOne: true);
@@ -232,7 +233,7 @@ void main()
                         IntPtr nsWindow = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowCocoaWindowPointer, IntPtr.Zero);
 
                         _graphicsDevice = GraphicsDevice.CreateMetal(options, nsWindow);
-                        _logger.Information("Complete!");
+                        _logger.Information($"Window-{window.windowID}: Complete!");
                         break;
                     }
             }
@@ -248,7 +249,7 @@ void main()
             _vertices = [];
             _indices = [];
 
-            _logger.Information("Creating buffers...");
+            _logger.Information($"Window-{_window.windowID}: Creating buffers...");
             _vertexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(1024 * 1024 * 20, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
             _uniformBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(ResolutionData.SizeInBytes, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
             _indexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(1024 * 1024 * 15, BufferUsage.IndexBuffer | BufferUsage.Dynamic));
@@ -263,7 +264,7 @@ void main()
                 resourceLayout,
                 _uniformBuffer));
 
-            _logger.Information("Creating shaders...");
+            _logger.Information($"Window-{_window.windowID}: Creating shaders...");
             VertexLayoutDescription vertexLayout = new VertexLayoutDescription(
             new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
             new VertexElementDescription("Anchor", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
@@ -281,7 +282,7 @@ void main()
 
             _shaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(vertexShaderDesc, fragmentShaderDesc);
 
-            _logger.Information("Creating pipeline...");
+            _logger.Information($"Window-{_window.windowID}: Creating pipeline...");
             GraphicsPipelineDescription pipelineDescription = new GraphicsPipelineDescription
             {
                 BlendState = BlendStateDescription.SINGLE_OVERRIDE_BLEND,
@@ -306,9 +307,9 @@ void main()
             };
             _pipeline = _graphicsDevice.ResourceFactory.CreateGraphicsPipeline(pipelineDescription);
 
-            _logger.Information("Creating command list...");
+            _logger.Information($"Window-{_window.windowID}: Creating command list...");
             _commandList = _graphicsDevice.ResourceFactory.CreateCommandList();
-            _logger.Information("Complete!");
+            _logger.Information($"Window-{_window.windowID}: Complete!");
         }
     }
 }

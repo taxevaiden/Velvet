@@ -13,11 +13,11 @@ namespace Velvet.Graphics
         public Renderer(VelvetWindow window)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                InitVeldrid_WIN(RendererAPI.D3D11, window);
+                InitVeldrid_WIN(RendererAPI.D3D11, window, true);
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                InitVeldrid_OSX(RendererAPI.Metal, window);
+                InitVeldrid_OSX(RendererAPI.Metal, window, true);
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                InitVeldrid_LINUX(RendererAPI.Vulkan, window);
+                InitVeldrid_LINUX(RendererAPI.Vulkan, window, true);
         }
 
         /// <summary>
@@ -28,11 +28,26 @@ namespace Velvet.Graphics
         public Renderer(RendererAPI rendererAPI, VelvetWindow window)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                InitVeldrid_WIN(rendererAPI, window);
+                InitVeldrid_WIN(rendererAPI, window, true);
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                InitVeldrid_OSX(rendererAPI, window);
+                InitVeldrid_OSX(rendererAPI, window, true);
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                InitVeldrid_LINUX(rendererAPI, window);
+                InitVeldrid_LINUX(rendererAPI, window, true);
+        }
+
+        /// <summary>
+        /// Initializes a Renderer with the specified RendererAPI with a VelvetWindow.
+        /// </summary>
+        /// <param name="rendererAPI"></param>
+        /// <param name="window"></param>
+        public Renderer(RendererAPI rendererAPI, VelvetWindow window, bool vsync)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                InitVeldrid_WIN(rendererAPI, window, vsync);
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                InitVeldrid_OSX(rendererAPI, window, vsync);
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                InitVeldrid_LINUX(rendererAPI, window, vsync);
         }
 
         /// <summary>

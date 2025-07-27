@@ -15,7 +15,7 @@ namespace Velvet.Tests
             velocities = [];
         }
 
-        public new void Run(RendererAPI rendererAPI)
+        public override void Run(RendererAPI rendererAPI)
         {
             var win = new VelvetWindow("Stress test", 1600, 900);
             var renderer = new Renderer(rendererAPI, win);
@@ -53,7 +53,7 @@ namespace Velvet.Tests
 
                 for (int i = 0; i < particles.Count; i++)
                 {
-                    renderer.DrawCircle(particles[i], 10.0f, 4, Color.FromArgb(255, i * 325 % 255, i * 412 % 255, i * 176 % 255));
+                    renderer.DrawRectangle(particles[i], Vector2.One * 20.0f, 0.0f, Color.FromArgb(255, i * 325 % 255, i * 412 % 255, i * 176 % 255));
                 }
 
                 Console.WriteLine($"{1 / win.GetDeltaTime()} : {particles.Count()}");

@@ -9,7 +9,8 @@ namespace Velvet
 {
     public partial class VelvetWindow
     {
-        private static readonly ILogger _logger = Log.ForContext<VelvetWindow>();
+        private readonly ILogger _logger = Log.ForContext<VelvetWindow>();
+        public uint windowID { get; private set; } = uint.MinValue;
         public IntPtr windowPtr { get; private set; } = IntPtr.Zero;
         private bool _running = false;
         private SDL.Event _e;
@@ -41,13 +42,15 @@ namespace Velvet
 
             _logger.Information("Creating window...");
             windowPtr = SDL.CreateWindow(title, width, height, SDL.WindowFlags.MouseFocus);
+            windowID = SDL.GetWindowID(windowPtr);
+            _logger.Information($"Window ID: {windowID}");
             if (windowPtr == IntPtr.Zero)
             {
                 SDL.Quit();
                 throw new Exception($"Window creation failed: {SDL.GetError()}");
             }
 
-            _logger.Information("Running!");
+            _logger.Information($"Window-{windowID}: Running!");
             _running = true;
         }
 
@@ -72,6 +75,17 @@ namespace Velvet
                 }
             }
 
+            if (_e.Type == (uint)SDL.EventType.WindowCloseRequested)
+            {
+                uint eventWindowID = _e.Window.WindowID;
+
+                if (eventWindowID == windowID)
+                {
+                    _running = false;
+                    return false;
+                }
+            }
+
             SDL.Delay(1);
 
             return true;
@@ -82,15 +96,16 @@ namespace Velvet
         /// </summary>
         public void Dispose()
         {
-            _logger.Information("Destroying window...");
+            _running = false;
+            _logger.Information($"Window-{windowID}: Destroying window...");
             if (windowPtr != IntPtr.Zero)
             {
                 SDL.DestroyWindow(windowPtr);
                 windowPtr = IntPtr.Zero;
             }
-            _logger.Information("Quitting SDL3...");
+            _logger.Information($"Window-{windowID}: Quitting SDL3...");
             SDL.Quit();
-            _logger.Information("Session ended");
+            _logger.Information($"Window-{windowID}: Session ended");
         }
     }
 }
