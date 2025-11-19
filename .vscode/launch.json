@@ -8,7 +8,7 @@
             "name": "C#: Velvet.Tests Debug",
             "type": "dotnet",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/Velvet.Tests/Velvet.Tests.csproj"
+            "projectPath": "${workspaceFolder}/Velvet.Tests/Velvet.Tests.csproj",
         }
 
     ]

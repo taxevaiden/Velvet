@@ -5,16 +5,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <InternalsVisibleTo>Velvet.Graphics</InternalsVisibleTo>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
-    
-  </ItemGroup>
 
-  <ItemGroup>
-    
-     <ProjectReference Include="..\Velvet.Input\Velvet.Input.csproj" />
+    <ProjectReference Include="..\Velvet.Input\Velvet.Input.csproj" />
 
     <PackageReference Include="SDL3-CS" Version="3.2.18" />
 
@@ -22,5 +18,26 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
   </ItemGroup>
+
+
+  <!-- <ItemGroup
+    Condition="'$(RuntimeIdentifier)' == 'osx-arm64' Or '$(RuntimeIdentifier)' == 'osx-x64'"
+  >
+    <None
+      Include="runtimes/$(RuntimeIdentifier)/native/libSDL3.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libSDL3.dylib</Link>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup
+    Condition="'$(RuntimeIdentifier)' == 'linux-x64'"
+  >
+    <None
+      Include="runtimes/$(RuntimeIdentifier)/native/libSDL3.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libSDL3.so</Link>
+    </None>
+  </ItemGroup> -->
 
 </Project>

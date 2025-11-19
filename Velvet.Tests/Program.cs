@@ -7,7 +7,7 @@ namespace Velvet.Tests
     {
         static void Main(string[] args)
         {
-            var test = new MultiWindowTest();
+            var test = new ShapeTest();
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 test.Run(RendererAPI.D3D11); // You can change this to either D3D11 or Vulkan
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
