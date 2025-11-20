@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Velvet.Graphics
 {
-    public partial class Renderer
+    public partial class Renderer : IDisposable
     {
         /// <summary>
         /// Initializes a Renderer with a VelvetWindow.

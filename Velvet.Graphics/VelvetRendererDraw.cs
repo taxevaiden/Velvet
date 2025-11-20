@@ -4,7 +4,7 @@ using System.Drawing;
 
 namespace Velvet.Graphics
 {
-    public partial class Renderer
+    public partial class Renderer : IDisposable
     {
         /// <summary>
         /// Draws a rectangle.

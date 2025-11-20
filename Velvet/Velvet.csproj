@@ -12,7 +12,7 @@
 
     <ProjectReference Include="..\Velvet.Input\Velvet.Input.csproj" />
 
-    <PackageReference Include="SDL3-CS" Version="3.2.18" />
+    <PackageReference Include="SDL3-CS" Version="3.3.2.1" />
 
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />

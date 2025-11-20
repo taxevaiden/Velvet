@@ -8,7 +8,8 @@ namespace Velvet.Graphics
     {
         D3D11,
         Vulkan,
-        Metal
+        Metal,
+        OpenGL
     }
 
     struct Vertex

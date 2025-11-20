@@ -7,7 +7,7 @@ using Serilog.Events;
 
 namespace Velvet
 {
-    public partial class VelvetWindow
+    public partial class VelvetWindow : IDisposable
     {
         private readonly ILogger _logger = Log.ForContext<VelvetWindow>();
         public uint windowID { get; private set; } = uint.MinValue;
@@ -41,7 +41,7 @@ namespace Velvet
             }
 
             _logger.Information("Creating window...");
-            windowPtr = SDL.CreateWindow(title, width, height, SDL.WindowFlags.MouseFocus);
+            windowPtr = SDL.CreateWindow(title, width, height, SDL.WindowFlags.MouseFocus | SDL.WindowFlags.OpenGL);
             windowID = SDL.GetWindowID(windowPtr);
             _logger.Information($"Window ID: {windowID}");
             if (windowPtr == IntPtr.Zero)

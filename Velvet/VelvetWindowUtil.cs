@@ -2,7 +2,7 @@ using SDL3;
 
 namespace Velvet
 {
-    public partial class VelvetWindow
+    public partial class VelvetWindow : IDisposable
     {
         /// <summary>
         /// Returns if the window is currently running.
