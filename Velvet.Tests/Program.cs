@@ -9,7 +9,7 @@ namespace Velvet.Tests
         {
             var test = new ShapeTest();
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                test.Run(RendererAPI.OpenGL); // You can change this to either D3D11, Vulkan, or OpenGL
+                test.Run(RendererAPI.D3D11); // You can change this to either D3D11, Vulkan, or OpenGL
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 test.Run(RendererAPI.Metal);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))

@@ -16,12 +16,14 @@ namespace Velvet.Graphics
     {
         public Vector2 Position;
         public Vector2 Anchor;
+        public Vector2 UV;
         public float Rotation;
         public uint Color;
-        public Vertex(Vector2 position, Vector2 anchor, float rotation, uint color)
+        public Vertex(Vector2 position, Vector2 anchor, Vector2 uv, float rotation, uint color)
         {
             Position = position;
             Anchor = anchor;
+            UV = uv;
             Rotation = rotation;
             Color = color;
         }

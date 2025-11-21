@@ -11,6 +11,10 @@ using Veldrid.OpenGL;
 using System.Runtime.InteropServices;
 using System.Globalization;
 using System.Reflection;
+using System.Data.SqlTypes;
+using SixLabors.ImageSharp.PixelFormats;
+using System.Runtime.CompilerServices;
+using System.Drawing;
 
 namespace Velvet.Graphics
 {
@@ -19,14 +23,14 @@ namespace Velvet.Graphics
         private readonly ILogger _logger = Log.ForContext<Renderer>();
         public const float DEG2RAD = MathF.PI / 180.0f;
         private VelvetWindow _window = null!;
-        private GraphicsDevice _graphicsDevice = null!;
+        internal GraphicsDevice _graphicsDevice = null!;
         private CommandList _commandList = null!;
         private DeviceBuffer _vertexBuffer = null!;
         private DeviceBuffer _indexBuffer = null!;
         private DeviceBuffer _uniformBuffer = null!;
         private uint _vertexBufferSize = 1024 * 1024 * 8; // 8 MB
         private uint _indexBufferSize = 1024 * 1024 * 12; // 12 MB
-        private ResourceSet _resourceSet = null!;
+        private ResourceSet _resourceSetV = null!;
         private Shader[] _shaders = null!;
         private Pipeline _pipeline = null!;
         private List<Vertex> _vertices = null!;
@@ -39,10 +43,12 @@ namespace Velvet.Graphics
 
 layout(location = 0) in vec2 Position;
 layout(location = 1) in vec2 Anchor;
-layout(location = 2) in float Rotation;
-layout(location = 3) in uint Color;
+layout(location = 2) in vec2 UV;
+layout(location = 3) in float Rotation;
+layout(location = 4) in uint Color;
 
-layout(location = 0) out vec4 fsin_Color;
+layout(location = 0) out vec2 fsin_UV;
+layout(location = 1) out vec4 fsin_Color;
 
 layout(std140, binding = 0) uniform Resolution {
     uvec2 windowResolution;
@@ -69,18 +75,24 @@ void main()
     vec2 ndc = (pos / vec2(windowResolution)) * 2.0 - 1.0;
     gl_Position = vec4(ndc.x, -ndc.y, 0.0, 1.0);
     gl_PointSize = 5.0;
+    fsin_UV = UV;
     fsin_Color = UnpackColor(Color);
 }";
 
         private const string FragmentCode = @"
 #version 450
 
-layout(location = 0) in vec4 fsin_Color;
+layout(location = 0) in vec2 fsin_UV;
+layout(location = 1) in vec4 fsin_Color;
 layout(location = 0) out vec4 fsout_Color;
+
+layout(set = 1, binding = 0) uniform texture2D Texture2D;
+layout(set = 1, binding = 1) uniform sampler Sampler;
 
 void main()
 {
-    fsout_Color = fsin_Color;
+    vec4 color = texture(sampler2D(Texture2D, Sampler), fsin_UV);
+    fsout_Color = color * fsin_Color;
 }";
 
         /// <summary>
@@ -160,30 +172,13 @@ void main()
                             preferDepthRangeZeroToOne: true);
 
                         IntPtr glContextHandle = SDL.GLCreateContext(window.windowPtr);
-
-                        Func<string, IntPtr> getProc = name =>
-                        {
-                            SDL.FunctionPointer fp = SDL.GLGetProcAddress(name);
-                            return Marshal.GetFunctionPointerForDelegate<SDL.FunctionPointer>(fp);
-                        };
-
-                        Action<IntPtr> makeCurrent = pointer =>
-                        {
-                            bool fp = SDL.GLMakeCurrent(window.windowPtr, pointer);
-                        };
-
+                        Func<string, IntPtr> getProc = name => Marshal.GetFunctionPointerForDelegate<SDL.FunctionPointer>(SDL.GLGetProcAddress(name));
+                        Action<IntPtr> makeCurrent = pointer => SDL.GLMakeCurrent(window.windowPtr, pointer); ;
                         Func<IntPtr> getCurrentContext = SDL.GLGetCurrentContext;
-
-                        Action clearCurrentContext = () => { SDL.GLMakeCurrent(IntPtr.Zero, IntPtr.Zero); };
-
-                        Action<IntPtr> deleteContext = pointer => { SDL.GLDestroyContext(window.windowPtr); };
-
-                        Action swapBuffers = () => {SDL.GLSwapWindow(window.windowPtr);};
-
-                        Action<bool> setSyncToVerticalBlank = vSync =>
-                        {
-                            SDL.GLSetSwapInterval(vsync ? 1 : 0);
-                        };
+                        Action clearCurrentContext = () => SDL.GLMakeCurrent(IntPtr.Zero, IntPtr.Zero);
+                        Action<IntPtr> deleteContext = pointer => SDL.GLDestroyContext(window.windowPtr);
+                        Action swapBuffers = () => SDL.GLSwapWindow(window.windowPtr); ;
+                        Action<bool> setSyncToVerticalBlank = vSync => SDL.GLSetSwapInterval(vsync ? 1 : 0);
 
                         var glPlatformInfo = new OpenGLPlatformInfo(
                             glContextHandle,
@@ -298,7 +293,7 @@ void main()
 
                         Action<IntPtr> deleteContext = pointer => { SDL.GLDestroyContext(window.windowPtr); };
 
-                        Action swapBuffers = () => {SDL.GLSwapWindow(window.windowPtr);};
+                        Action swapBuffers = () => { SDL.GLSwapWindow(window.windowPtr); };
 
                         Action<bool> setSyncToVerticalBlank = vSync =>
                         {
@@ -371,6 +366,9 @@ void main()
         private void CreateResources()
         {
             _logger.Information($"Window-{_window.windowID}: Creating resources");
+
+            
+
             _vertices = [];
             _indices = [];
 
@@ -384,20 +382,29 @@ void main()
             _logger.Information($"Window-{_window.windowID}: > Index Buffer Size: {_indexBufferSize} bytes ({_indexBufferSize / 1024} KB, {_indexBufferSize / (1024 * 1024)} MB)");
             _logger.Information($"Window-{_window.windowID}: > Uniform Buffer Size: {ResolutionData.SizeInBytes} bytes ({ResolutionData.SizeInBytes / 1024} KB, {ResolutionData.SizeInBytes / (1024 * 1024)} MB)");
 
-            ResourceLayout resourceLayout = _graphicsDevice.ResourceFactory.CreateResourceLayout(
+            ResourceLayout resourceLayoutV = _graphicsDevice.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(
                     new ResourceLayoutElementDescription("Resolution", ResourceKind.UniformBuffer, ShaderStages.Vertex | ShaderStages.Fragment)
                 )
             );
 
-            _resourceSet = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
-                resourceLayout,
-                _uniformBuffer));
+            _resourceSetV = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
+                resourceLayoutV,
+                _uniformBuffer
+            ));
+
+            ResourceLayout resourceLayoutF = _graphicsDevice.ResourceFactory.CreateResourceLayout(
+                new ResourceLayoutDescription(
+                    new ResourceLayoutElementDescription("Texture2D", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+                    new ResourceLayoutElementDescription("Sampler", ResourceKind.Sampler, ShaderStages.Fragment)
+                )
+            );
 
             _logger.Information($"Window-{_window.windowID}: Creating shaders...");
             VertexLayoutDescription vertexLayout = new VertexLayoutDescription(
             new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
             new VertexElementDescription("Anchor", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
+            new VertexElementDescription("UV", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
             new VertexElementDescription("Rotation", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float1),
             new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.UInt1));
 
@@ -428,7 +435,7 @@ void main()
                     scissorTestEnabled: false),
 
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
-                ResourceLayouts = [resourceLayout],
+                ResourceLayouts = [resourceLayoutV, resourceLayoutF],
 
                 ShaderSet = new ShaderSetDescription(
                     vertexLayouts: [vertexLayout],
@@ -437,6 +444,10 @@ void main()
                 Outputs = _graphicsDevice.SwapchainFramebuffer.OutputDescription
             };
             _pipeline = _graphicsDevice.ResourceFactory.CreateGraphicsPipeline(pipelineDescription);
+
+            byte[] whitePixelData = [255, 255, 255, 255];
+            _defaultTexture = new VelvetTexture(_graphicsDevice, whitePixelData, 1, 1);
+            _currentTexture = _defaultTexture;
 
             _logger.Information($"Window-{_window.windowID}: Creating command list...");
             _commandList = _graphicsDevice.ResourceFactory.CreateCommandList();
