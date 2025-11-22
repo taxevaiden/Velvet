@@ -42,17 +42,11 @@ namespace Velvet.Graphics
 #version 450
 
 layout(location = 0) in vec2 Position;
-layout(location = 1) in vec2 Anchor;
-layout(location = 2) in vec2 UV;
-layout(location = 3) in float Rotation;
-layout(location = 4) in uint Color;
+layout(location = 1) in vec2 UV;
+layout(location = 2) in uint Color;
 
 layout(location = 0) out vec2 fsin_UV;
 layout(location = 1) out vec4 fsin_Color;
-
-layout(std140, binding = 0) uniform Resolution {
-    uvec2 windowResolution;
-};
 
 vec4 UnpackColor(uint packed)
 {
@@ -65,15 +59,7 @@ vec4 UnpackColor(uint packed)
 
 void main()
 {
-    vec2 pos = Position - Anchor;
-    float c = cos(Rotation);
-    float s = sin(Rotation);
-    mat2 rot = mat2(c, -s, s, c);
-    pos *= rot;
-    pos += Anchor;
-
-    vec2 ndc = (pos / vec2(windowResolution)) * 2.0 - 1.0;
-    gl_Position = vec4(ndc.x, -ndc.y, 0.0, 1.0);
+    gl_Position = vec4(Position, 0.0, 1.0);
     gl_PointSize = 5.0;
     fsin_UV = UV;
     fsin_Color = UnpackColor(Color);
@@ -86,8 +72,8 @@ layout(location = 0) in vec2 fsin_UV;
 layout(location = 1) in vec4 fsin_Color;
 layout(location = 0) out vec4 fsout_Color;
 
-layout(set = 1, binding = 0) uniform texture2D Texture2D;
-layout(set = 1, binding = 1) uniform sampler Sampler;
+layout(set = 0, binding = 0) uniform texture2D Texture2D;
+layout(set = 0, binding = 1) uniform sampler Sampler;
 
 void main()
 {
@@ -375,23 +361,11 @@ void main()
             _logger.Information($"Window-{_window.windowID}: Creating buffers...");
             _vertexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(_vertexBufferSize, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
             _indexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(_indexBufferSize, BufferUsage.IndexBuffer | BufferUsage.Dynamic));
-            _uniformBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(ResolutionData.SizeInBytes, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
             _logger.Information($"Window-{_window.windowID}: Buffers created");
             _logger.Information($"Window-{_window.windowID}: > Vertex Buffer Size: {_vertexBufferSize} bytes ({_vertexBufferSize / 1024} KB, {_vertexBufferSize / (1024 * 1024)} MB)");
             _logger.Information($"Window-{_window.windowID}: > Index Buffer Size: {_indexBufferSize} bytes ({_indexBufferSize / 1024} KB, {_indexBufferSize / (1024 * 1024)} MB)");
             _logger.Information($"Window-{_window.windowID}: > Uniform Buffer Size: {ResolutionData.SizeInBytes} bytes ({ResolutionData.SizeInBytes / 1024} KB, {ResolutionData.SizeInBytes / (1024 * 1024)} MB)");
-
-            ResourceLayout resourceLayoutV = _graphicsDevice.ResourceFactory.CreateResourceLayout(
-                new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("Resolution", ResourceKind.UniformBuffer, ShaderStages.Vertex | ShaderStages.Fragment)
-                )
-            );
-
-            _resourceSetV = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
-                resourceLayoutV,
-                _uniformBuffer
-            ));
 
             ResourceLayout resourceLayoutF = _graphicsDevice.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(
@@ -403,9 +377,7 @@ void main()
             _logger.Information($"Window-{_window.windowID}: Creating shaders...");
             VertexLayoutDescription vertexLayout = new VertexLayoutDescription(
             new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-            new VertexElementDescription("Anchor", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
             new VertexElementDescription("UV", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-            new VertexElementDescription("Rotation", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float1),
             new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.UInt1));
 
             ShaderDescription vertexShaderDesc = new(
@@ -435,7 +407,7 @@ void main()
                     scissorTestEnabled: false),
 
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
-                ResourceLayouts = [resourceLayoutV, resourceLayoutF],
+                ResourceLayouts = [resourceLayoutF],
 
                 ShaderSet = new ShaderSetDescription(
                     vertexLayouts: [vertexLayout],

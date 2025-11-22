@@ -20,10 +20,10 @@ namespace Velvet.Graphics
         /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, System.Drawing.Color color)
         {
-            _vertices.Add(new Vertex(pos, pos + size / 2, new Vector2(0.0f, 0.0f), 0.0f, PackColor(color)));
-            _vertices.Add(new Vertex(pos + size * Vector2.UnitY, pos + size / 2, new Vector2(0.0f, 1.0f), 0.0f, PackColor(color)));
-            _vertices.Add(new Vertex(pos + size, pos + size / 2, new Vector2(1.0f, 1.0f), 0.0f, PackColor(color)));
-            _vertices.Add(new Vertex(pos + size * Vector2.UnitX, pos + size / 2, new Vector2(1.0f, 0.0f), 0.0f, PackColor(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos), new Vector2(0.0f, 0.0f), PackColor(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitY), new Vector2(0.0f, 1.0f), PackColor(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size), new Vector2(1.0f, 1.0f), PackColor(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitX), new Vector2(1.0f, 0.0f), PackColor(color)));
 
             int baseIndex = _vertices.Count - 4;
 
@@ -44,10 +44,10 @@ namespace Velvet.Graphics
         /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, System.Drawing.Color color)
         {
-            _vertices.Add(new Vertex(pos, pos + size / 2, new Vector2(0.0f, 0.0f), rotation, PackColor(color)));
-            _vertices.Add(new Vertex(pos + size * Vector2.UnitY, pos + size / 2, new Vector2(0.0f, 1.0f), rotation, PackColor(color)));
-            _vertices.Add(new Vertex(pos + size, pos + size / 2, new Vector2(1.0f, 1.0f), rotation, PackColor(color)));
-            _vertices.Add(new Vertex(pos + size * Vector2.UnitX, pos + size / 2, new Vector2(1.0f, 0.0f), rotation, PackColor(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos, pos + size / 2, rotation), new Vector2(0.0f, 0.0f), PackColor(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitY, pos + size / 2, rotation), new Vector2(0.0f, 1.0f), PackColor(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size, pos + size / 2, rotation), new Vector2(1.0f, 1.0f), PackColor(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitX, pos + size / 2, rotation), new Vector2(1.0f, 0.0f), PackColor(color)));
             int baseIndex = _vertices.Count - 4;
 
             _indices.Add((uint)(baseIndex + 0));
@@ -71,7 +71,7 @@ namespace Velvet.Graphics
             for (int i = 0; i < segments; i++)
             {
                 Vector2 dir = new Vector2(MathF.Sin(360.0f / segments * i * DEG2RAD), MathF.Cos(360.0f / segments * i * DEG2RAD));
-                _vertices.Add(new Vertex(pos + dir * radius, pos, Vector2.One * 0.5f + dir/2, 0.0f, PackColor(color)));
+                _vertices.Add(new Vertex(TranslateVertex(pos + dir * radius), Vector2.One * 0.5f + dir / 2, PackColor(color)));
                 _indices.Add((uint)(baseIndex + 0));
                 _indices.Add((uint)(baseIndex + i));
                 _indices.Add((uint)(baseIndex + (i + 1) % segments));
@@ -91,7 +91,7 @@ namespace Velvet.Graphics
             for (int i = 0; i < segments; i++)
             {
                 Vector2 dir = new Vector2(MathF.Sin(360.0f / segments * i * DEG2RAD), MathF.Cos(360.0f / segments * i * DEG2RAD));
-                _vertices.Add(new Vertex(pos + dir * radius, pos, Vector2.One * 0.5f + dir/2, 0.0f, PackColor(color)));
+                _vertices.Add(new Vertex(TranslateVertex(pos + dir * radius), Vector2.One * 0.5f + dir / 2, PackColor(color)));
                 _indices.Add((uint)(baseIndex + 0));
                 _indices.Add((uint)(baseIndex + i));
                 _indices.Add((uint)(baseIndex + (i + 1) % segments));
@@ -111,13 +111,56 @@ namespace Velvet.Graphics
             for (int i = 0; i < vertices.Length; i++)
             {
                 // TODO: Implement UVs for Polygons so textures can be added onto them
-                _vertices.Add(new Vertex(pos + vertices[i], pos, Vector2.Zero, 0.0f, PackColor(color)));
+                _vertices.Add(new Vertex(TranslateVertex(pos + vertices[i]), Vector2.Zero, PackColor(color)));
             }
 
             for (int i = 0; i < indices.Length; i++)
             {
                 _indices.Add((uint)(baseIndex + indices[i]));
             }
+        }
+
+        private Vector2 TranslateVertex(Vector2 pos)
+        {
+            Matrix3x2 projection = Matrix3x2.CreateScale(2f / _window.GetWidth(), 2f / _window.GetHeight());
+            projection *= Matrix3x2.CreateTranslation(-1f, -1f);
+            projection *= Matrix3x2.CreateScale(1.0f, -1.0f);
+
+            pos = Vector2.Transform(pos, projection);
+
+            _logger.Information(pos.ToString());
+
+            return pos;
+        }
+
+        private Vector2 TranslateVertex(Vector2 pos, Vector2 anchor, float rotation)
+        {
+            pos -= anchor;
+
+            float c = MathF.Cos(rotation);
+            float s = MathF.Sin(rotation);
+
+            Matrix3x2 rot = new Matrix3x2(
+                c,
+                s,
+                -s,
+                c,
+                0f,
+                0f
+            );
+            
+            pos = Vector2.Transform(pos, rot);
+            pos += anchor;
+
+            Matrix3x2 projection = Matrix3x2.CreateScale(2f / _window.GetWidth(), 2f / _window.GetHeight());
+            projection *= Matrix3x2.CreateTranslation(-1f, -1f);
+            projection *= Matrix3x2.CreateScale(1.0f, -1.0f);
+
+            pos = Vector2.Transform(pos, projection);
+
+            _logger.Information(pos.ToString());
+
+            return pos;
         }
 
         /// <summary>
@@ -135,8 +178,6 @@ namespace Velvet.Graphics
                 (uint)_window.GetWidth(),
                 (uint)_window.GetHeight()
             );
-
-            _graphicsDevice.UpdateBuffer(_uniformBuffer, 0, ref resolutionData);
         }
 
         /// <summary>
@@ -168,8 +209,7 @@ namespace Velvet.Graphics
             _commandList.SetVertexBuffer(0, _vertexBuffer);
             _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
             _commandList.SetPipeline(_pipeline);
-            _commandList.SetGraphicsResourceSet(0, _resourceSetV);
-            _commandList.SetGraphicsResourceSet(1, _currentTexture.ResourceSet);
+            _commandList.SetGraphicsResourceSet(0, _currentTexture.ResourceSet);
             _commandList.DrawIndexed(
                 indexCount: (uint)_indices.Count,
                 instanceCount: 1,
@@ -203,7 +243,7 @@ namespace Velvet.Graphics
 
                 _currentTexture = _defaultTexture;
             }
-            
+
         }
 
         /// <summary>
