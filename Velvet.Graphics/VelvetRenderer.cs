@@ -55,19 +55,19 @@ namespace Velvet.Graphics
         /// </summary>
         public void Dispose()
         {
-            _logger.Information("Disposing pipeline...");
+            _logger.Information($"(Window-{_window.windowID}): Disposing pipeline...");
             _pipeline.Dispose();
-            _logger.Information("Disposing shaders...");
+            _logger.Information($"(Window-{_window.windowID}): Disposing shaders...");
             foreach (Shader shader in _shaders)
             {
                 shader.Dispose();
             }
-            _logger.Information("Disposing command list...");
+            _logger.Information($"(Window-{_window.windowID}): Disposing command list...");
             _commandList.Dispose();
-            _logger.Information("Disposing buffers...");
+            _logger.Information($"(Window-{_window.windowID}): Disposing buffers...");
             _vertexBuffer.Dispose();
             _indexBuffer.Dispose();
-            _logger.Information("Disposing graphics device...");
+            _logger.Information($"(Window-{_window.windowID}): Disposing graphics device...");
             _graphicsDevice.Dispose();
 
         }

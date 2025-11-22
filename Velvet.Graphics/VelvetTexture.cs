@@ -83,10 +83,10 @@ namespace Velvet.Graphics
                 ]
             ));
 
-            _logger.Information("Texture Loaded:");
-            _logger.Information($"> Width: {image.Width}");
-            _logger.Information($"> Height: {image.Height}");
-            _logger.Information($"> SizeInBytes: {pixelBytes.Length} bytes ({pixelBytes.Length / 1024} KB, {pixelBytes.Length / (1024 * 1024)} MB)");
+            _logger.Information($"(Window-{renderer._window.windowID}): Texture Loaded:");
+            _logger.Information($"(Window-{renderer._window.windowID}): > Width: {image.Width}");
+            _logger.Information($"(Window-{renderer._window.windowID}): > Height: {image.Height}");
+            _logger.Information($"(Window-{renderer._window.windowID}): > SizeInBytes: {pixelBytes.Length} bytes ({pixelBytes.Length / 1024} KB, {pixelBytes.Length / (1024 * 1024)} MB)");
         }
 
         /// <summary>
@@ -152,10 +152,10 @@ namespace Velvet.Graphics
                 ]
             ));
 
-            _logger.Information("Texture Loaded:");
-            _logger.Information($"> Width: {width}");
-            _logger.Information($"> Height: {height}");
-            _logger.Information($"> SizeInBytes: {imageData.Length} bytes ({imageData.Length / 1024} KB, {imageData.Length / (1024 * 1024)} MB)");
+            _logger.Information($"(Window-{renderer._window.windowID}): Texture Loaded:");
+            _logger.Information($"(Window-{renderer._window.windowID}): > Width: {width}");
+            _logger.Information($"(Window-{renderer._window.windowID}): > Height: {height}");
+            _logger.Information($"(Window-{renderer._window.windowID}): > SizeInBytes: {imageData.Length} bytes ({imageData.Length / 1024} KB, {imageData.Length / (1024 * 1024)} MB)");
         }
 
         // Use in Renderer class
@@ -220,10 +220,10 @@ namespace Velvet.Graphics
                 ]
             ));
 
-            _logger.Information("Texture Loaded:");
-            _logger.Information($"> Width: {image.Width}");
-            _logger.Information($"> Height: {image.Height}");
-            _logger.Information($"> SizeInBytes: {pixelBytes.Length} bytes ({pixelBytes.Length / 1024} KB, {pixelBytes.Length / (1024 * 1024)} MB)");
+            _logger.Information("(Within Renderer): Texture Loaded:");
+            _logger.Information($"(Within Renderer): > Width: {image.Width}");
+            _logger.Information($"(Within Renderer): > Height: {image.Height}");
+            _logger.Information($"(Within Renderer): > SizeInBytes: {pixelBytes.Length} bytes ({pixelBytes.Length / 1024} KB, {pixelBytes.Length / (1024 * 1024)} MB)");
         }
 
         internal VelvetTexture(GraphicsDevice gd, byte[] imageData, uint width, uint height)
@@ -283,10 +283,10 @@ namespace Velvet.Graphics
             ));
 
 
-            _logger.Information("Texture Loaded:");
-            _logger.Information($"> Width: {width}");
-            _logger.Information($"> Height: {height}");
-            _logger.Information($"> SizeInBytes: {imageData.Length} bytes ({imageData.Length / 1024} KB, {imageData.Length / (1024 * 1024)} MB)");
+            _logger.Information("(Within Renderer): Texture Loaded:");
+            _logger.Information($"(Within Renderer): > Width: {width}");
+            _logger.Information($"(Within Renderer): > Height: {height}");
+            _logger.Information($"(Within Renderer): > SizeInBytes: {imageData.Length} bytes ({imageData.Length / 1024} KB, {imageData.Length / (1024 * 1024)} MB)");
         }
 
         public void Dispose()

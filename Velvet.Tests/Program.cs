@@ -13,7 +13,7 @@ namespace Velvet.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 test.Run(RendererAPI.Metal);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                test.Run(RendererAPI.OpenGL); // You can change this to either Vulkan or OpenGL
+                test.Run(RendererAPI.OpenGL); // You can change this to either Vulkan or OpenGL (Vulkan was verified to work on Linux, however OpenGL hasn't been tested yet.)
         }
     }
 }

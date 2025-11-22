@@ -22,7 +22,7 @@ namespace Velvet.Graphics
     {
         private readonly ILogger _logger = Log.ForContext<Renderer>();
         public const float DEG2RAD = MathF.PI / 180.0f;
-        private VelvetWindow _window = null!;
+        internal VelvetWindow _window = null!;
         internal GraphicsDevice _graphicsDevice = null!;
         private CommandList _commandList = null!;
         private DeviceBuffer _vertexBuffer = null!;
@@ -89,18 +89,18 @@ void main()
         /// <exception cref="PlatformNotSupportedException"></exception>
         private void InitVeldrid_WIN(RendererAPI rendererAPI, VelvetWindow window, bool vsync)
         {
-            _logger.Information($"Window-{window.windowID}: Initializing Veldrid...");
-            _logger.Information($"Window-{window.windowID}: > Platform: Windows");
+            _logger.Information($"(Window-{window.windowID}): Initializing Veldrid...");
+            _logger.Information($"(Window-{window.windowID}): > Platform: Windows");
             switch (rendererAPI)
             {
                 case RendererAPI.D3D11:
                     {
 
-                        _logger.Information($"Window-{window.windowID}: > GraphicsAPI: D3D11");
-                        _logger.Information($"Window-{window.windowID}: > VSync: {vsync}");
+                        _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: D3D11");
+                        _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
                         _window = window;
 
-                        _logger.Information($"Window-{window.windowID}: Creating graphics device...");
+                        _logger.Information($"(Window-{window.windowID}): Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
@@ -117,11 +117,11 @@ void main()
 
                 case RendererAPI.Vulkan:
                     {
-                        _logger.Information($"Window-{window.windowID}: > GraphicsAPI: Vulkan");
-                        _logger.Information($"Window-{window.windowID}: > VSync: {vsync}");
+                        _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: Vulkan");
+                        _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
                         _window = window;
 
-                        _logger.Information($"Window-{window.windowID}: Creating graphics device...");
+                        _logger.Information($"(Window-{window.windowID}): Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
@@ -136,7 +136,7 @@ void main()
                         VkSurfaceSource vkSurfaceSource = VkSurfaceSource.CreateWin32(hinstance, hwmd);
 
                         _graphicsDevice = GraphicsDevice.CreateVulkan(options, vkSurfaceSource, (uint)_window.GetWidth(), (uint)_window.GetHeight());
-                        _logger.Information($"Window-{window.windowID}: Complete!");
+                        _logger.Information($"(Window-{window.windowID}): Complete!");
                         break;
                     }
 
@@ -144,11 +144,11 @@ void main()
                     throw new PlatformNotSupportedException("Metal is not supported on Windows. Please use either D3D11 or Vulkan.");
                 case RendererAPI.OpenGL:
                     {
-                        _logger.Information($"Window-{window.windowID}: > GraphicsAPI: OpenGL");
-                        _logger.Information($"Window-{window.windowID}: > VSync: {vsync}");
+                        _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: OpenGL");
+                        _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
                         _window = window;
 
-                        _logger.Information($"Window-{window.windowID}: Creating graphics device...");
+                        _logger.Information($"(Window-{window.windowID}): Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
@@ -178,7 +178,7 @@ void main()
                         );
 
                         _graphicsDevice = GraphicsDevice.CreateOpenGL(options, glPlatformInfo, (uint)window.GetWidth(), (uint)window.GetHeight());
-                        _logger.Information($"Window-{window.windowID}: Complete! (im praying thatit works)");
+                        _logger.Information($"(Window-{window.windowID}): Complete! (im praying thatit works)");
                         break;
                     }
 
@@ -190,8 +190,8 @@ void main()
 
         private void InitVeldrid_LINUX(RendererAPI rendererAPI, VelvetWindow window, bool vsync)
         {
-            _logger.Information($"Window-{window.windowID}: Initializing Veldrid...");
-            _logger.Information($"Window-{window.windowID}: > Platform: Linux");
+            _logger.Information($"(Window-{window.windowID}): Initializing Veldrid...");
+            _logger.Information($"(Window-{window.windowID}): > Platform: Linux");
             switch (rendererAPI)
             {
                 case RendererAPI.D3D11:
@@ -200,11 +200,11 @@ void main()
 
                 case RendererAPI.Vulkan:
                     {
-                        _logger.Information($"Window-{window.windowID}: > GraphicsAPI: Vulkan");
-                        _logger.Information($"Window-{window.windowID}: > VSync: {vsync}");
+                        _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: Vulkan");
+                        _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
                         _window = window;
 
-                        _logger.Information($"Window-{window.windowID}: Creating graphics device...");
+                        _logger.Information($"(Window-{window.windowID}): Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
@@ -220,12 +220,12 @@ void main()
 
                         if (wlDisplay != IntPtr.Zero && wlSurface != IntPtr.Zero)
                         {
-                            _logger.Information($"Window-{window.windowID}: > Display Protocol: Wayland");
+                            _logger.Information($"(Window-{window.windowID}): > Display Protocol: Wayland");
                             source = SwapchainSource.CreateWayland(wlDisplay, wlSurface);
                         }
                         else
                         {
-                            _logger.Information($"Window-{window.windowID}: > Display Protocol: X11");
+                            _logger.Information($"(Window-{window.windowID}): > Display Protocol: X11");
                             IntPtr x11Display = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowX11DisplayPointer, IntPtr.Zero);
                             uint x11Window = (uint)SDL.GetNumberProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowX11WindowNumber, 0);
                             source = SwapchainSource.CreateXlib(x11Display, (IntPtr)x11Window);
@@ -239,7 +239,7 @@ void main()
                             true);
 
                         _graphicsDevice = GraphicsDevice.CreateVulkan(options, scDesc);
-                        _logger.Information($"Window-{window.windowID}: Complete!");
+                        _logger.Information($"(Window-{window.windowID}): Complete!");
                         break;
                     }
 
@@ -247,11 +247,11 @@ void main()
                     throw new PlatformNotSupportedException("Metal is not supported on Linux. Please use Vulkan.");
                 case RendererAPI.OpenGL:
                     {
-                        _logger.Information($"Window-{window.windowID}: > GraphicsAPI: OpenGL (This has not been confirmed to run and work correctly yet!)");
-                        _logger.Information($"Window-{window.windowID}: > VSync: {vsync}");
+                        _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: OpenGL (This has not been confirmed to run and work correctly yet!)");
+                        _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
                         _window = window;
 
-                        _logger.Information($"Window-{window.windowID}: Creating graphics device...");
+                        _logger.Information($"(Window-{window.windowID}): Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
@@ -298,7 +298,7 @@ void main()
                         );
 
                         _graphicsDevice = GraphicsDevice.CreateOpenGL(options, glPlatformInfo, (uint)window.GetWidth(), (uint)window.GetHeight());
-                        _logger.Information($"Window-{window.windowID}: Complete! (im praying thatit works)");
+                        _logger.Information($"(Window-{window.windowID}): Complete! (im praying thatit works)");
                         break;
                     }
             }
@@ -309,8 +309,8 @@ void main()
 
         private void InitVeldrid_OSX(RendererAPI rendererAPI, VelvetWindow window, bool vsync)
         {
-            _logger.Information($"Window-{window.windowID}: Initializing Veldrid...");
-            _logger.Information($"Window-{window.windowID}: > Platform: OSX");
+            _logger.Information($"(Window-{window.windowID}): Initializing Veldrid...");
+            _logger.Information($"(Window-{window.windowID}): > Platform: OSX");
             switch (rendererAPI)
             {
                 case RendererAPI.D3D11:
@@ -320,11 +320,11 @@ void main()
 
                 case RendererAPI.Metal:
                     {
-                        _logger.Information($"Window-{window.windowID}: > GraphicsAPI: Metal");
-                        _logger.Information($"Window-{window.windowID}: > VSync: {vsync}");
+                        _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: Metal");
+                        _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
                         _window = window;
 
-                        _logger.Information($"Window-{window.windowID}: Creating graphics device...");
+                        _logger.Information($"(Window-{window.windowID}): Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
                             debug: false,
                             swapchainDepthFormat: null,
@@ -336,7 +336,7 @@ void main()
                         IntPtr nsWindow = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowCocoaWindowPointer, IntPtr.Zero);
 
                         _graphicsDevice = GraphicsDevice.CreateMetal(options, nsWindow);
-                        _logger.Information($"Window-{window.windowID}: Complete!");
+                        _logger.Information($"(Window-{window.windowID}): Complete!");
                         break;
                     }
                 case RendererAPI.OpenGL:
@@ -351,21 +351,21 @@ void main()
         /// </summary>
         private void CreateResources()
         {
-            _logger.Information($"Window-{_window.windowID}: Creating resources");
+            _logger.Information($"(Window-{_window.windowID}): Creating resources");
 
             
 
             _vertices = [];
             _indices = [];
 
-            _logger.Information($"Window-{_window.windowID}: Creating buffers...");
+            _logger.Information($"(Window-{_window.windowID}): Creating buffers...");
             _vertexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(_vertexBufferSize, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
             _indexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(_indexBufferSize, BufferUsage.IndexBuffer | BufferUsage.Dynamic));
 
-            _logger.Information($"Window-{_window.windowID}: Buffers created");
-            _logger.Information($"Window-{_window.windowID}: > Vertex Buffer Size: {_vertexBufferSize} bytes ({_vertexBufferSize / 1024} KB, {_vertexBufferSize / (1024 * 1024)} MB)");
-            _logger.Information($"Window-{_window.windowID}: > Index Buffer Size: {_indexBufferSize} bytes ({_indexBufferSize / 1024} KB, {_indexBufferSize / (1024 * 1024)} MB)");
-            _logger.Information($"Window-{_window.windowID}: > Uniform Buffer Size: {ResolutionData.SizeInBytes} bytes ({ResolutionData.SizeInBytes / 1024} KB, {ResolutionData.SizeInBytes / (1024 * 1024)} MB)");
+            _logger.Information($"(Window-{_window.windowID}): Buffers created");
+            _logger.Information($"(Window-{_window.windowID}): > Vertex Buffer Size: {_vertexBufferSize} bytes ({_vertexBufferSize / 1024} KB, {_vertexBufferSize / (1024 * 1024)} MB)");
+            _logger.Information($"(Window-{_window.windowID}): > Index Buffer Size: {_indexBufferSize} bytes ({_indexBufferSize / 1024} KB, {_indexBufferSize / (1024 * 1024)} MB)");
+            _logger.Information($"(Window-{_window.windowID}): > Uniform Buffer Size: {ResolutionData.SizeInBytes} bytes ({ResolutionData.SizeInBytes / 1024} KB, {ResolutionData.SizeInBytes / (1024 * 1024)} MB)");
 
             ResourceLayout resourceLayoutF = _graphicsDevice.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(
@@ -374,7 +374,7 @@ void main()
                 )
             );
 
-            _logger.Information($"Window-{_window.windowID}: Creating shaders...");
+            _logger.Information($"(Window-{_window.windowID}): Creating shaders...");
             VertexLayoutDescription vertexLayout = new VertexLayoutDescription(
             new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
             new VertexElementDescription("UV", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
@@ -389,10 +389,10 @@ void main()
                 Encoding.UTF8.GetBytes(FragmentCode),
                 "main");
 
-            _logger.Information($"Window-{_window.windowID}: > Compiling shaders...");
+            _logger.Information($"(Window-{_window.windowID}): > Compiling shaders...");
             _shaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(vertexShaderDesc, fragmentShaderDesc);
 
-            _logger.Information($"Window-{_window.windowID}: Creating pipeline...");
+            _logger.Information($"(Window-{_window.windowID}): Creating pipeline...");
             GraphicsPipelineDescription pipelineDescription = new GraphicsPipelineDescription
             {
                 BlendState = BlendStateDescription.SINGLE_OVERRIDE_BLEND,
@@ -421,9 +421,9 @@ void main()
             _defaultTexture = new VelvetTexture(_graphicsDevice, whitePixelData, 1, 1);
             _currentTexture = _defaultTexture;
 
-            _logger.Information($"Window-{_window.windowID}: Creating command list...");
+            _logger.Information($"(Window-{_window.windowID}): Creating command list...");
             _commandList = _graphicsDevice.ResourceFactory.CreateCommandList();
-            _logger.Information($"Window-{_window.windowID}: Finished creating resources");
+            _logger.Information($"(Window-{_window.windowID}): Finished creating resources");
         }
     }
 }

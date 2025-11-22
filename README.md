@@ -6,12 +6,13 @@ you can make games, tools, whatever
 
 tbh idk if i'll finish this i'll just put this here for progress, if anyone wants to help out please do i am not great at C# :sob:
 
-there are better frameworks/libraries out there that can do a lot more than this library can. this was only made for fun and to learn more about how graphics and rendering work.
+there are better frameworks/libraries out there that can do a lot more than this library can,, like [Bliss](https://github.com/MrScautHD/Bliss). this was only made for fun and to learn more about how graphics and rendering work.
 
 ## things i'm done with
 
 - basic window
 - drawing rectangles, circles, any polygon you could think of, with color!
+- textures
 - input from keyboard and mouse
 - support for all four major graphics APIs (if OpenGL counts)
     - D3D11

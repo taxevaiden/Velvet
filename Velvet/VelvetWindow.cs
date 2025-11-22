@@ -50,7 +50,7 @@ namespace Velvet
                 throw new Exception($"Window creation failed: {SDL.GetError()}");
             }
 
-            _logger.Information($"Window-{windowID}: Running!");
+            _logger.Information($"(Window-{windowID}): Running!");
             _running = true;
         }
 
@@ -97,15 +97,15 @@ namespace Velvet
         public void Dispose()
         {
             _running = false;
-            _logger.Information($"Window-{windowID}: Destroying window...");
+            _logger.Information($"(Window-{windowID}): Destroying window...");
             if (windowPtr != IntPtr.Zero)
             {
                 SDL.DestroyWindow(windowPtr);
                 windowPtr = IntPtr.Zero;
             }
-            _logger.Information($"Window-{windowID}: Quitting SDL3...");
+            _logger.Information($"(Window-{windowID}): Quitting SDL3...");
             SDL.Quit();
-            _logger.Information($"Window-{windowID}: Session ended");
+            _logger.Information($"(Window-{windowID}): Session ended");
         }
     }
 }
