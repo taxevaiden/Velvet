@@ -8,8 +8,6 @@ namespace Velvet.Graphics
     {
         private VelvetTexture _defaultTexture;
         private VelvetTexture _currentTexture;
-
-        private uint _vertexOff = 0;
         private uint _indexOff = 0;
 
         /// <summary>
