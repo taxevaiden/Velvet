@@ -12,7 +12,7 @@ namespace Velvet.Tests
         {
             var win = new VelvetWindow("Hello, world!", 1600, 900);
 
-            while (win.IsRunning())
+            while (win.Running)
             {
                 win.PollEvents();
             }

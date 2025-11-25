@@ -6,9 +6,11 @@ namespace Velvet.Graphics
 {
     public partial class Renderer : IDisposable
     {
-        private VelvetTexture _defaultTexture;
-        private VelvetTexture _currentTexture;
+        private VelvetTexture _defaultTexture = null!;
+        private VelvetTexture _currentTexture = null!;
+        private uint _vertexOff = 0;
         private uint _indexOff = 0;
+        private List<Batch> _batches;
 
         /// <summary>
         /// Draws a rectangle.
@@ -120,13 +122,11 @@ namespace Velvet.Graphics
 
         private Vector2 TranslateVertex(Vector2 pos)
         {
-            Matrix3x2 projection = Matrix3x2.CreateScale(2f / _window.GetWidth(), 2f / _window.GetHeight());
+            Matrix3x2 projection = Matrix3x2.CreateScale(2f / _window.Width, 2f / _window.Height);
             projection *= Matrix3x2.CreateTranslation(-1f, -1f);
             projection *= Matrix3x2.CreateScale(1.0f, -1.0f);
 
             pos = Vector2.Transform(pos, projection);
-
-            _logger.Information(pos.ToString());
 
             return pos;
         }
@@ -150,13 +150,11 @@ namespace Velvet.Graphics
             pos = Vector2.Transform(pos, rot);
             pos += anchor;
 
-            Matrix3x2 projection = Matrix3x2.CreateScale(2f / _window.GetWidth(), 2f / _window.GetHeight());
+            Matrix3x2 projection = Matrix3x2.CreateScale(2f / _window.Width, 2f / _window.Height);
             projection *= Matrix3x2.CreateTranslation(-1f, -1f);
             projection *= Matrix3x2.CreateScale(1.0f, -1.0f);
 
             pos = Vector2.Transform(pos, projection);
-
-            _logger.Information(pos.ToString());
 
             return pos;
         }
@@ -171,11 +169,6 @@ namespace Velvet.Graphics
             _commandList.Begin();
 
             _commandList.SetFramebuffer(_graphicsDevice.SwapchainFramebuffer);
-
-            ResolutionData resolutionData = new(
-                (uint)_window.GetWidth(),
-                (uint)_window.GetHeight()
-            );
         }
 
         /// <summary>
@@ -186,6 +179,28 @@ namespace Velvet.Graphics
             if (_vertices.Count > 0 && _indices.Count > 0)
                 Flush();
 
+            foreach (Batch batch in _batches)
+            {
+                _graphicsDevice.UpdateBuffer(_vertexBuffer, _vertexOff * Vertex.SizeInBytes, batch.Vertices);
+                _graphicsDevice.UpdateBuffer(_indexBuffer, _indexOff * 4, batch.Indices);
+
+                _commandList.SetVertexBuffer(0, _vertexBuffer);
+                _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
+                _commandList.SetPipeline(_pipeline);
+                _commandList.SetGraphicsResourceSet(0, batch.Texture.ResourceSet);
+                // _logger.Debug(batch.Vertices.Length.ToString());
+                // _logger.Debug(batch.Indices.Length.ToString());
+                _commandList.DrawIndexed(
+                indexCount: (uint)batch.Indices.Length,
+                instanceCount: 1,
+                indexStart: _indexOff,
+                vertexOffset: (int)_vertexOff,
+                instanceStart: 0);
+
+                _vertexOff += (uint)batch.Vertices.Length;
+                _indexOff += (uint)batch.Indices.Length;
+            }
+
             _commandList.End();
             _graphicsDevice.SubmitCommands(_commandList);
 
@@ -193,7 +208,9 @@ namespace Velvet.Graphics
 
             _vertices.Clear();
             _indices.Clear();
+            _batches.Clear();
 
+            _vertexOff = 0;
             _indexOff = 0;
         }
 
@@ -201,21 +218,42 @@ namespace Velvet.Graphics
         {
             if (!(_vertices.Count > 0)) return;
 
-            _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, _vertices.ToArray());
-            _graphicsDevice.UpdateBuffer(_indexBuffer, 0, _indices.ToArray());
+            Batch batch = new([.. _vertices], [.. _indices], _currentTexture);
 
-            _commandList.SetVertexBuffer(0, _vertexBuffer);
-            _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
-            _commandList.SetPipeline(_pipeline);
-            _commandList.SetGraphicsResourceSet(0, _currentTexture.ResourceSet);
-            _commandList.DrawIndexed(
-                indexCount: (uint)_indices.Count,
-                instanceCount: 1,
-                indexStart: _indexOff,
-                vertexOffset: 0,
-                instanceStart: 0);
+            _batches.Add(batch);
 
-            _indexOff = (uint)_indices.Count();
+            _vertices.Clear();
+            _indices.Clear();
+
+            // _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, _vertices.ToArray());
+            // _graphicsDevice.UpdateBuffer(_indexBuffer, 0, _indices.ToArray());
+
+            // _commandList.SetVertexBuffer(0, _vertexBuffer);
+            // _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
+            // _commandList.SetPipeline(_pipeline);
+            // _commandList.SetGraphicsResourceSet(0, _currentTexture.ResourceSet);
+            // _commandList.DrawIndexed(
+            //     indexCount: (uint)_indices.Count - _indexOff,
+            //     instanceCount: 1,
+            //     indexStart: _indexOff,
+            //     vertexOffset: 0,
+            //     instanceStart: 0);
+
+            // _vertexOff = (uint)_vertices.Count();
+            // _indexOff = (uint)_indices.Count();
+        }
+
+        private bool IsAlmostFull()
+        {
+            uint _verticesSizeInBytes = (uint)(_vertices.Count() * Vertex.SizeInBytes);
+            uint _indicesSizeInBytes = (uint)(_indices.Count() * 4);
+
+            if (_verticesSizeInBytes > _vertexBufferSize - Vertex.SizeInBytes * 128 || _indicesSizeInBytes > _indexBufferSize - 4 * 128)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -6,15 +6,8 @@ using Veldrid.SPIRV;
 using SDL3;
 using Veldrid.Vk;
 using Serilog;
-using Veldrid.OpenGLBindings;
 using Veldrid.OpenGL;
 using System.Runtime.InteropServices;
-using System.Globalization;
-using System.Reflection;
-using System.Data.SqlTypes;
-using SixLabors.ImageSharp.PixelFormats;
-using System.Runtime.CompilerServices;
-using System.Drawing;
 
 namespace Velvet.Graphics
 {
@@ -27,10 +20,8 @@ namespace Velvet.Graphics
         private CommandList _commandList = null!;
         private DeviceBuffer _vertexBuffer = null!;
         private DeviceBuffer _indexBuffer = null!;
-        private DeviceBuffer _uniformBuffer = null!;
-        private uint _vertexBufferSize = 1024 * 1024 * 8; // 8 MB
-        private uint _indexBufferSize = 1024 * 1024 * 12; // 12 MB
-        private ResourceSet _resourceSetV = null!;
+        private uint _vertexBufferSize = 1024 * 1024 * 32; // 32 MB
+        private uint _indexBufferSize = 1024 * 1024 * 48; // 48 MB
         private Shader[] _shaders = null!;
         private Pipeline _pipeline = null!;
         private List<Vertex> _vertices = null!;
@@ -102,7 +93,7 @@ void main()
 
                         _logger.Information($"(Window-{window.windowID}): Creating graphics device...");
                         var options = new GraphicsDeviceOptions(
-                            debug: false,
+                            debug: true,
                             swapchainDepthFormat: null,
                             syncToVerticalBlank: vsync,
                             resourceBindingModel: ResourceBindingModel.Improved,
@@ -110,7 +101,7 @@ void main()
                             preferDepthRangeZeroToOne: true);
 
                         IntPtr hwmd = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
-                        _graphicsDevice = GraphicsDevice.CreateD3D11(options, hwmd, (uint)_window.GetWidth(), (uint)_window.GetHeight());
+                        _graphicsDevice = GraphicsDevice.CreateD3D11(options, hwmd, (uint)window.Width, (uint)window.Height);
                         break;
                     }
 
@@ -135,7 +126,7 @@ void main()
 
                         VkSurfaceSource vkSurfaceSource = VkSurfaceSource.CreateWin32(hinstance, hwmd);
 
-                        _graphicsDevice = GraphicsDevice.CreateVulkan(options, vkSurfaceSource, (uint)_window.GetWidth(), (uint)_window.GetHeight());
+                        _graphicsDevice = GraphicsDevice.CreateVulkan(options, vkSurfaceSource, (uint)window.Width, (uint)window.Height);
                         _logger.Information($"(Window-{window.windowID}): Complete!");
                         break;
                     }
@@ -177,7 +168,7 @@ void main()
                             setSyncToVerticalBlank
                         );
 
-                        _graphicsDevice = GraphicsDevice.CreateOpenGL(options, glPlatformInfo, (uint)window.GetWidth(), (uint)window.GetHeight());
+                        _graphicsDevice = GraphicsDevice.CreateOpenGL(options, glPlatformInfo, (uint)window.Width, (uint)window.Height);
                         _logger.Information($"(Window-{window.windowID}): Complete! (im praying thatit works)");
                         break;
                     }
@@ -233,8 +224,8 @@ void main()
 
                         SwapchainDescription scDesc = new SwapchainDescription(
                             source,
-                            (uint)_window.GetWidth(),
-                            (uint)_window.GetHeight(),
+                            (uint)window.Width,
+                            (uint)window.Height,
                             PixelFormat.R32Float,
                             true);
 
@@ -270,20 +261,36 @@ void main()
 
                         Action<IntPtr> makeCurrent = pointer =>
                         {
-                            bool fp = SDL.GLMakeCurrent(window.windowPtr, pointer);
+                            bool err = SDL.GLMakeCurrent(window.windowPtr, pointer);
+                            if (!err)
+                                throw new Exception($"Failed to set up OpenGL context: {SDL.GetError()}");
                         };
 
                         Func<IntPtr> getCurrentContext = SDL.GLGetCurrentContext;
 
-                        Action clearCurrentContext = () => { SDL.GLMakeCurrent(IntPtr.Zero, IntPtr.Zero); };
+                        Action clearCurrentContext = () => {
+                            bool err = SDL.GLMakeCurrent(IntPtr.Zero, IntPtr.Zero); 
+                            if (!err)
+                                throw new Exception($"Failed to clear OpenGL context: {SDL.GetError()}");
+                        };
 
-                        Action<IntPtr> deleteContext = pointer => { SDL.GLDestroyContext(window.windowPtr); };
+                        Action<IntPtr> deleteContext = pointer => {
+                            bool err = SDL.GLDestroyContext(window.windowPtr); 
+                            if (!err)
+                                throw new Exception($"Failed to destroy OpenGL context: {SDL.GetError()}");
+                        };
 
-                        Action swapBuffers = () => { SDL.GLSwapWindow(window.windowPtr); };
+                        Action swapBuffers = () => {
+                            bool err = SDL.GLSwapWindow(window.windowPtr);
+                            if (!err)
+                                throw new Exception($"Failed to swap buffers: {SDL.GetError()}");
+                        };
 
                         Action<bool> setSyncToVerticalBlank = vSync =>
                         {
-                            SDL.GLSetSwapInterval(vsync ? 1 : 0);
+                            bool err = SDL.GLSetSwapInterval(vsync ? 1 : 0);
+                            if (!err)
+                                throw new Exception($"Failed to set swap interval for OpenGL context: {SDL.GetError()}");
                         };
 
                         var glPlatformInfo = new OpenGLPlatformInfo(
@@ -297,7 +304,7 @@ void main()
                             setSyncToVerticalBlank
                         );
 
-                        _graphicsDevice = GraphicsDevice.CreateOpenGL(options, glPlatformInfo, (uint)window.GetWidth(), (uint)window.GetHeight());
+                        _graphicsDevice = GraphicsDevice.CreateOpenGL(options, glPlatformInfo, (uint)window.Width, (uint)window.Height);
                         _logger.Information($"(Window-{window.windowID}): Complete! (im praying thatit works)");
                         break;
                     }
@@ -351,21 +358,20 @@ void main()
         /// </summary>
         private void CreateResources()
         {
-            _logger.Information($"(Window-{_window.windowID}): Creating resources");
-
-            
+            _logger.Information($"(Window-{_window.windowID}): Creating resources...");
 
             _vertices = [];
             _indices = [];
 
-            _logger.Information($"(Window-{_window.windowID}): Creating buffers...");
+            _batches = [];
+
+            _logger.Information($"(Window-{_window.windowID}): > Creating buffers...");
             _vertexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(_vertexBufferSize, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
             _indexBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(_indexBufferSize, BufferUsage.IndexBuffer | BufferUsage.Dynamic));
 
-            _logger.Information($"(Window-{_window.windowID}): Buffers created");
-            _logger.Information($"(Window-{_window.windowID}): > Vertex Buffer Size: {_vertexBufferSize} bytes ({_vertexBufferSize / 1024} KB, {_vertexBufferSize / (1024 * 1024)} MB)");
-            _logger.Information($"(Window-{_window.windowID}): > Index Buffer Size: {_indexBufferSize} bytes ({_indexBufferSize / 1024} KB, {_indexBufferSize / (1024 * 1024)} MB)");
-            _logger.Information($"(Window-{_window.windowID}): > Uniform Buffer Size: {ResolutionData.SizeInBytes} bytes ({ResolutionData.SizeInBytes / 1024} KB, {ResolutionData.SizeInBytes / (1024 * 1024)} MB)");
+            _logger.Information($"(Window-{_window.windowID}): > Buffers created");
+            _logger.Information($"(Window-{_window.windowID}):   > Vertex Buffer Size: {_vertexBufferSize} bytes ({_vertexBufferSize / 1024} KB, {_vertexBufferSize / (1024 * 1024)} MB)");
+            _logger.Information($"(Window-{_window.windowID}):   > Index Buffer Size: {_indexBufferSize} bytes ({_indexBufferSize / 1024} KB, {_indexBufferSize / (1024 * 1024)} MB)");
 
             ResourceLayout resourceLayoutF = _graphicsDevice.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(
@@ -374,7 +380,7 @@ void main()
                 )
             );
 
-            _logger.Information($"(Window-{_window.windowID}): Creating shaders...");
+            _logger.Information($"(Window-{_window.windowID}): > Creating shaders...");
             VertexLayoutDescription vertexLayout = new VertexLayoutDescription(
             new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
             new VertexElementDescription("UV", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
@@ -389,10 +395,10 @@ void main()
                 Encoding.UTF8.GetBytes(FragmentCode),
                 "main");
 
-            _logger.Information($"(Window-{_window.windowID}): > Compiling shaders...");
+            _logger.Information($"(Window-{_window.windowID}):   > Compiling shaders...");
             _shaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(vertexShaderDesc, fragmentShaderDesc);
 
-            _logger.Information($"(Window-{_window.windowID}): Creating pipeline...");
+            _logger.Information($"(Window-{_window.windowID}): > Creating pipeline...");
             GraphicsPipelineDescription pipelineDescription = new GraphicsPipelineDescription
             {
                 BlendState = BlendStateDescription.SINGLE_OVERRIDE_BLEND,
@@ -417,12 +423,14 @@ void main()
             };
             _pipeline = _graphicsDevice.ResourceFactory.CreateGraphicsPipeline(pipelineDescription);
 
+            _logger.Information($"(Window-{_window.windowID}): > Creating command list...");
+            _commandList = _graphicsDevice.ResourceFactory.CreateCommandList();
+
+            _logger.Information($"(Window-{_window.windowID}): > Creating default texture...");
             byte[] whitePixelData = [255, 255, 255, 255];
             _defaultTexture = new VelvetTexture(_graphicsDevice, whitePixelData, 1, 1);
             _currentTexture = _defaultTexture;
 
-            _logger.Information($"(Window-{_window.windowID}): Creating command list...");
-            _commandList = _graphicsDevice.ResourceFactory.CreateCommandList();
             _logger.Information($"(Window-{_window.windowID}): Finished creating resources");
         }
     }

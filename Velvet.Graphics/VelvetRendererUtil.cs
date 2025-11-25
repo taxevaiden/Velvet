@@ -26,32 +26,16 @@ namespace Velvet.Graphics
         public const uint SizeInBytes = 20;
     }
 
-    struct ResolutionData
+    struct Batch
     {
-        public uint w;
-        public uint h;
-        private uint p0;
-        private uint p1;
-
-        public ResolutionData(uint width, uint height)
+        public Vertex[] Vertices;
+        public uint[] Indices;
+        public VelvetTexture Texture;
+        public Batch(Vertex[] vertices, uint[] indices, VelvetTexture texture)
         {
-            w = width;
-            h = height;
-            p0 = 0;
-            p1 = 0;
-        }
-
-        public const uint SizeInBytes = 16;
-    }
-
-    struct DrawResult
-    {
-        public List<Vertex> vertices;
-        public List<uint> indices;
-        public DrawResult(List<Vertex> vertices, List<uint> indices)
-        {
-            this.vertices = vertices;
-            this.indices = indices;
+            Vertices = vertices;
+            Indices = indices;
+            Texture = texture;
         }
     }
 

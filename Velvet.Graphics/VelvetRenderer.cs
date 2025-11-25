@@ -55,6 +55,8 @@ namespace Velvet.Graphics
         /// </summary>
         public void Dispose()
         {
+            _logger.Information($"(Window-{_window.windowID}): Disposing default texture...");
+            _defaultTexture.Dispose();
             _logger.Information($"(Window-{_window.windowID}): Disposing pipeline...");
             _pipeline.Dispose();
             _logger.Information($"(Window-{_window.windowID}): Disposing shaders...");
