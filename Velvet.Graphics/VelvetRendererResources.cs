@@ -373,55 +373,58 @@ void main()
             _logger.Information($"(Window-{_window.windowID}):   > Vertex Buffer Size: {_vertexBufferSize} bytes ({_vertexBufferSize / 1024} KB, {_vertexBufferSize / (1024 * 1024)} MB)");
             _logger.Information($"(Window-{_window.windowID}):   > Index Buffer Size: {_indexBufferSize} bytes ({_indexBufferSize / 1024} KB, {_indexBufferSize / (1024 * 1024)} MB)");
 
-            ResourceLayout resourceLayoutF = _graphicsDevice.ResourceFactory.CreateResourceLayout(
-                new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("Texture2D", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("Sampler", ResourceKind.Sampler, ShaderStages.Fragment)
-                )
-            );
+            // ResourceLayout resourceLayoutF = _graphicsDevice.ResourceFactory.CreateResourceLayout(
+            //     new ResourceLayoutDescription(
+            //         new ResourceLayoutElementDescription("Texture2D", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+            //         new ResourceLayoutElementDescription("Sampler", ResourceKind.Sampler, ShaderStages.Fragment)
+            //     )
+            // );
 
-            _logger.Information($"(Window-{_window.windowID}): > Creating shaders...");
-            VertexLayoutDescription vertexLayout = new VertexLayoutDescription(
-            new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-            new VertexElementDescription("UV", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-            new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.UInt1));
+            // _logger.Information($"(Window-{_window.windowID}): > Creating shaders...");
+            // VertexLayoutDescription vertexLayout = new VertexLayoutDescription(
+            // new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
+            // new VertexElementDescription("UV", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
+            // new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.UInt1));
 
-            ShaderDescription vertexShaderDesc = new(
-                ShaderStages.Vertex,
-                Encoding.UTF8.GetBytes(VertexCode),
-                "main");
-            ShaderDescription fragmentShaderDesc = new(
-                ShaderStages.Fragment,
-                Encoding.UTF8.GetBytes(FragmentCode),
-                "main");
+            // ShaderDescription vertexShaderDesc = new(
+            //     ShaderStages.Vertex,
+            //     Encoding.UTF8.GetBytes(VertexCode),
+            //     "main");
+            // ShaderDescription fragmentShaderDesc = new(
+            //     ShaderStages.Fragment,
+            //     Encoding.UTF8.GetBytes(FragmentCode),
+            //     "main");
 
-            _logger.Information($"(Window-{_window.windowID}):   > Compiling shaders...");
-            _shaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(vertexShaderDesc, fragmentShaderDesc);
+            // _logger.Information($"(Window-{_window.windowID}):   > Compiling shaders...");
+            // _shaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(vertexShaderDesc, fragmentShaderDesc);
 
-            _logger.Information($"(Window-{_window.windowID}): > Creating pipeline...");
-            GraphicsPipelineDescription pipelineDescription = new GraphicsPipelineDescription
-            {
-                BlendState = BlendStateDescription.SINGLE_OVERRIDE_BLEND,
+            // _logger.Information($"(Window-{_window.windowID}): > Creating pipeline...");
+            // GraphicsPipelineDescription pipelineDescription = new GraphicsPipelineDescription
+            // {
+            //     BlendState = BlendStateDescription.SINGLE_OVERRIDE_BLEND,
 
-                DepthStencilState = DepthStencilStateDescription.DISABLED,
+            //     DepthStencilState = DepthStencilStateDescription.DISABLED,
 
-                RasterizerState = new RasterizerStateDescription(
-                    cullMode: FaceCullMode.Back,
-                    fillMode: PolygonFillMode.Solid,
-                    frontFace: FrontFace.CounterClockwise,
-                    depthClipEnabled: true,
-                    scissorTestEnabled: false),
+            //     RasterizerState = new RasterizerStateDescription(
+            //         cullMode: FaceCullMode.Back,
+            //         fillMode: PolygonFillMode.Solid,
+            //         frontFace: FrontFace.CounterClockwise,
+            //         depthClipEnabled: true,
+            //         scissorTestEnabled: false),
 
-                PrimitiveTopology = PrimitiveTopology.TriangleList,
-                ResourceLayouts = [resourceLayoutF],
+            //     PrimitiveTopology = PrimitiveTopology.TriangleList,
+            //     ResourceLayouts = [resourceLayoutF],
 
-                ShaderSet = new ShaderSetDescription(
-                    vertexLayouts: [vertexLayout],
-                    shaders: _shaders),
+            //     ShaderSet = new ShaderSetDescription(
+            //         vertexLayouts: [vertexLayout],
+            //         shaders: _shaders),
 
-                Outputs = _graphicsDevice.SwapchainFramebuffer.OutputDescription
-            };
-            _pipeline = _graphicsDevice.ResourceFactory.CreateGraphicsPipeline(pipelineDescription);
+            //     Outputs = _graphicsDevice.SwapchainFramebuffer.OutputDescription
+            // };
+            // _pipeline = _graphicsDevice.ResourceFactory.CreateGraphicsPipeline(pipelineDescription);
+
+            _defaultShader = new VelvetShader(_graphicsDevice, null, null);
+            _currentShader = _defaultShader;
 
             _logger.Information($"(Window-{_window.windowID}): > Creating command list...");
             _commandList = _graphicsDevice.ResourceFactory.CreateCommandList();

@@ -8,6 +8,8 @@ namespace Velvet.Graphics
     {
         private VelvetTexture _defaultTexture = null!;
         private VelvetTexture _currentTexture = null!;
+        private VelvetShader _defaultShader = null!;
+        private VelvetShader _currentShader = null!;
         private uint _vertexOff = 0;
         private uint _indexOff = 0;
         private List<Batch> _batches;
@@ -186,7 +188,7 @@ namespace Velvet.Graphics
 
                 _commandList.SetVertexBuffer(0, _vertexBuffer);
                 _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
-                _commandList.SetPipeline(_pipeline);
+                _commandList.SetPipeline(batch.Shader.Pipeline);
                 _commandList.SetGraphicsResourceSet(0, batch.Texture.ResourceSet);
                 // _logger.Debug(batch.Vertices.Length.ToString());
                 // _logger.Debug(batch.Indices.Length.ToString());
@@ -218,7 +220,7 @@ namespace Velvet.Graphics
         {
             if (!(_vertices.Count > 0)) return;
 
-            Batch batch = new([.. _vertices], [.. _indices], _currentTexture);
+            Batch batch = new([.. _vertices], [.. _indices], _currentTexture, _currentShader);
 
             _batches.Add(batch);
 
@@ -263,23 +265,41 @@ namespace Velvet.Graphics
         /// <param name="texture"></param>
         public void ApplyTexture(VelvetTexture? texture = null)
         {
-            if (texture != null)
-            {
-                if (_currentTexture != texture)
-                    if (_vertices.Count > 0 && _indices.Count > 0)
-                        Flush();
+            texture ??= _defaultTexture;
 
-                _currentTexture = texture;
-            }
-            else
-            {
-                if (_currentTexture != _defaultTexture)
-                    if (_vertices.Count > 0 && _indices.Count > 0)
-                        Flush();
+            if (_currentTexture != texture)
+                if (_vertices.Count > 0 && _indices.Count > 0)
+                    Flush();
 
-                _currentTexture = _defaultTexture;
-            }
+            _currentTexture = texture;
 
+            // if (texture != null)
+            // {
+            //     if (_currentTexture != texture)
+            //         if (_vertices.Count > 0 && _indices.Count > 0)
+            //             Flush();
+
+            //     _currentTexture = texture;
+            // }
+            // else
+            // {
+            //     if (_currentTexture != _defaultTexture)
+            //         if (_vertices.Count > 0 && _indices.Count > 0)
+            //             Flush();
+
+            //     _currentTexture = _defaultTexture;
+            // }
+        }
+
+        public void ApplyShader(VelvetShader? shader = null)
+        {
+            shader ??= _defaultShader;
+
+            if (_currentShader != shader)
+                if (_vertices.Count > 0 && _indices.Count > 0)
+                    Flush();
+
+            _currentShader = shader;
         }
 
         /// <summary>

@@ -57,13 +57,8 @@ namespace Velvet.Graphics
         {
             _logger.Information($"(Window-{_window.windowID}): Disposing default texture...");
             _defaultTexture.Dispose();
-            _logger.Information($"(Window-{_window.windowID}): Disposing pipeline...");
-            _pipeline.Dispose();
             _logger.Information($"(Window-{_window.windowID}): Disposing shaders...");
-            foreach (Shader shader in _shaders)
-            {
-                shader.Dispose();
-            }
+            _defaultShader.Dispose();
             _logger.Information($"(Window-{_window.windowID}): Disposing command list...");
             _commandList.Dispose();
             _logger.Information($"(Window-{_window.windowID}): Disposing buffers...");

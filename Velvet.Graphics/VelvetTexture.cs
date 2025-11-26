@@ -86,7 +86,8 @@ namespace Velvet.Graphics
             _logger.Information($"(Window-{renderer._window.windowID}): Texture Loaded:");
             _logger.Information($"(Window-{renderer._window.windowID}): > Width: {image.Width}");
             _logger.Information($"(Window-{renderer._window.windowID}): > Height: {image.Height}");
-            _logger.Information($"(Window-{renderer._window.windowID}): > SizeInBytes: {pixelBytes.Length} bytes ({pixelBytes.Length / 1024} KB, {pixelBytes.Length / (1024 * 1024)} MB)");
+            _logger.Information($"(Window-{renderer._window.windowID}): > File Path: {imageFilePath}");
+            _logger.Information($"(Window-{renderer._window.windowID}): > Size In Bytes: {pixelBytes.Length} bytes ({pixelBytes.Length / 1024} KB, {pixelBytes.Length / (1024 * 1024)} MB)");
         }
 
         /// <summary>
@@ -155,7 +156,7 @@ namespace Velvet.Graphics
             _logger.Information($"(Window-{renderer._window.windowID}): Texture Loaded:");
             _logger.Information($"(Window-{renderer._window.windowID}): > Width: {width}");
             _logger.Information($"(Window-{renderer._window.windowID}): > Height: {height}");
-            _logger.Information($"(Window-{renderer._window.windowID}): > SizeInBytes: {imageData.Length} bytes ({imageData.Length / 1024} KB, {imageData.Length / (1024 * 1024)} MB)");
+            _logger.Information($"(Window-{renderer._window.windowID}): > Size In Bytes: {imageData.Length} bytes ({imageData.Length / 1024} KB, {imageData.Length / (1024 * 1024)} MB)");
         }
 
         // Use in Renderer class
@@ -223,7 +224,8 @@ namespace Velvet.Graphics
             _logger.Information("(Within Renderer): Texture Loaded:");
             _logger.Information($"(Within Renderer): > Width: {image.Width}");
             _logger.Information($"(Within Renderer): > Height: {image.Height}");
-            _logger.Information($"(Within Renderer): > SizeInBytes: {pixelBytes.Length} bytes ({pixelBytes.Length / 1024} KB, {pixelBytes.Length / (1024 * 1024)} MB)");
+            _logger.Information($"(Within Renderer): > File Path: {imageFilePath}");
+            _logger.Information($"(Within Renderer): > Size In Bytes: {pixelBytes.Length} bytes ({pixelBytes.Length / 1024} KB, {pixelBytes.Length / (1024 * 1024)} MB)");
         }
 
         internal VelvetTexture(GraphicsDevice gd, byte[] imageData, uint width, uint height)

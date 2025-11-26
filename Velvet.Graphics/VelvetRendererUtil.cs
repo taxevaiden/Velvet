@@ -31,11 +31,13 @@ namespace Velvet.Graphics
         public Vertex[] Vertices;
         public uint[] Indices;
         public VelvetTexture Texture;
-        public Batch(Vertex[] vertices, uint[] indices, VelvetTexture texture)
+        public VelvetShader Shader;
+        public Batch(Vertex[] vertices, uint[] indices, VelvetTexture texture, VelvetShader shader)
         {
             Vertices = vertices;
             Indices = indices;
             Texture = texture;
+            Shader = shader;
         }
     }
 
