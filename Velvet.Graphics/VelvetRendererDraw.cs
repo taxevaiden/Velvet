@@ -12,7 +12,7 @@ namespace Velvet.Graphics
         private VelvetShader _currentShader = null!;
         private uint _vertexOff = 0;
         private uint _indexOff = 0;
-        private List<Batch> _batches;
+        private List<Batch> _batches = null!;
 
         /// <summary>
         /// Draws a rectangle.
@@ -167,6 +167,7 @@ namespace Velvet.Graphics
         public void Begin()
         {
             _currentTexture = _defaultTexture;
+            _currentShader = _defaultShader;
 
             _commandList.Begin();
 

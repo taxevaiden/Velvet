@@ -23,9 +23,9 @@ namespace Velvet.Tests
                 renderer.Begin();
                 renderer.ClearColor(Color.White);
 
-                renderer.ApplyShader(testShader);
                 renderer.ApplyTexture(usagi);
                 renderer.DrawRectangle(new Vector2(50.0f, 50.0f), new Vector2(725.0f, 800.0f), Color.White);
+                renderer.ApplyShader(testShader);
                 renderer.DrawRectangle(new Vector2(825.0f, 50.0f), new Vector2(725.0f, 800.0f), Color.White);
             
                 renderer.ApplyTexture();

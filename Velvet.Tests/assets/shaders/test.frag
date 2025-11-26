@@ -11,5 +11,5 @@ void main()
 {
     vec4 color = texture(sampler2D(Texture2D, Sampler), fsin_UV);
     vec4 final = color * fsin_Color;
-    fsout_Color = vec4(vec3(final.r + final.g + final.b) / 3.0, final.a);
+    fsout_Color = vec4(1.0 - vec3(final.r, final.g, final.b), final.a);
 }

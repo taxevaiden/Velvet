@@ -22,8 +22,6 @@ namespace Velvet.Graphics
         private DeviceBuffer _indexBuffer = null!;
         private uint _vertexBufferSize = 1024 * 1024 * 32; // 32 MB
         private uint _indexBufferSize = 1024 * 1024 * 48; // 48 MB
-        private Shader[] _shaders = null!;
-        private Pipeline _pipeline = null!;
         private List<Vertex> _vertices = null!;
         private List<uint> _indices = null!;
 
@@ -347,7 +345,7 @@ void main()
                         break;
                     }
                 case RendererAPI.OpenGL:
-                    throw new PlatformNotSupportedException("OpenGL is not supported on OSX. Please use Metal. (OpenGL was deprecated in macOS 10.14)");
+                    throw new PlatformNotSupportedException("OpenGL is not supported on OSX. Please use Metal. (OpenGL was deprecated in macOS 10.14 in favor of Metal. While it could work if OpenGL suppoprt was implemented for macOS, it remains unsupported by Apple.)");
             }
 
             CreateResources();
@@ -373,56 +371,6 @@ void main()
             _logger.Information($"(Window-{_window.windowID}):   > Vertex Buffer Size: {_vertexBufferSize} bytes ({_vertexBufferSize / 1024} KB, {_vertexBufferSize / (1024 * 1024)} MB)");
             _logger.Information($"(Window-{_window.windowID}):   > Index Buffer Size: {_indexBufferSize} bytes ({_indexBufferSize / 1024} KB, {_indexBufferSize / (1024 * 1024)} MB)");
 
-            // ResourceLayout resourceLayoutF = _graphicsDevice.ResourceFactory.CreateResourceLayout(
-            //     new ResourceLayoutDescription(
-            //         new ResourceLayoutElementDescription("Texture2D", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-            //         new ResourceLayoutElementDescription("Sampler", ResourceKind.Sampler, ShaderStages.Fragment)
-            //     )
-            // );
-
-            // _logger.Information($"(Window-{_window.windowID}): > Creating shaders...");
-            // VertexLayoutDescription vertexLayout = new VertexLayoutDescription(
-            // new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-            // new VertexElementDescription("UV", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-            // new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.UInt1));
-
-            // ShaderDescription vertexShaderDesc = new(
-            //     ShaderStages.Vertex,
-            //     Encoding.UTF8.GetBytes(VertexCode),
-            //     "main");
-            // ShaderDescription fragmentShaderDesc = new(
-            //     ShaderStages.Fragment,
-            //     Encoding.UTF8.GetBytes(FragmentCode),
-            //     "main");
-
-            // _logger.Information($"(Window-{_window.windowID}):   > Compiling shaders...");
-            // _shaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(vertexShaderDesc, fragmentShaderDesc);
-
-            // _logger.Information($"(Window-{_window.windowID}): > Creating pipeline...");
-            // GraphicsPipelineDescription pipelineDescription = new GraphicsPipelineDescription
-            // {
-            //     BlendState = BlendStateDescription.SINGLE_OVERRIDE_BLEND,
-
-            //     DepthStencilState = DepthStencilStateDescription.DISABLED,
-
-            //     RasterizerState = new RasterizerStateDescription(
-            //         cullMode: FaceCullMode.Back,
-            //         fillMode: PolygonFillMode.Solid,
-            //         frontFace: FrontFace.CounterClockwise,
-            //         depthClipEnabled: true,
-            //         scissorTestEnabled: false),
-
-            //     PrimitiveTopology = PrimitiveTopology.TriangleList,
-            //     ResourceLayouts = [resourceLayoutF],
-
-            //     ShaderSet = new ShaderSetDescription(
-            //         vertexLayouts: [vertexLayout],
-            //         shaders: _shaders),
-
-            //     Outputs = _graphicsDevice.SwapchainFramebuffer.OutputDescription
-            // };
-            // _pipeline = _graphicsDevice.ResourceFactory.CreateGraphicsPipeline(pipelineDescription);
-
             _defaultShader = new VelvetShader(_graphicsDevice, null, null);
             _currentShader = _defaultShader;
 
@@ -431,7 +379,7 @@ void main()
 
             _logger.Information($"(Window-{_window.windowID}): > Creating default texture...");
             byte[] whitePixelData = [255, 255, 255, 255];
-            _defaultTexture = new VelvetTexture(_graphicsDevice, whitePixelData, 1, 1);
+            _defaultTexture = new VelvetTexture(_graphicsDevice, whitePixelData, 1, 1, _window.windowID);
             _currentTexture = _defaultTexture;
 
             _logger.Information($"(Window-{_window.windowID}): Finished creating resources");
