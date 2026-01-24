@@ -23,9 +23,6 @@ namespace Velvet.Tests
             random = new Random();
         }
 
-        /// <summary>
-        /// Called once after the window and renderer are initialized.
-        /// </summary>
         protected override void OnInit()
         {
             base.OnInit();
@@ -36,9 +33,6 @@ namespace Velvet.Tests
             }
         }
 
-        /// <summary>
-        /// Called once per frame to update game logic.
-        /// </summary>
         protected override void Update(float deltaTime)
         {
             // Add new particles
@@ -58,9 +52,6 @@ namespace Velvet.Tests
             Console.WriteLine($"{1 / deltaTime:F1} FPS : {particles.Count}");
         }
 
-        /// <summary>
-        /// Called once per frame to draw everything.
-        /// </summary>
         protected override void Draw()
         {
             Renderer.Begin();
@@ -79,9 +70,6 @@ namespace Velvet.Tests
             Renderer.End();
         }
 
-        /// <summary>
-        /// Called when the application is shutting down.
-        /// </summary>
         protected override void OnShutdown()
         {
             base.OnShutdown();
@@ -94,20 +82,6 @@ namespace Velvet.Tests
             particles.Add(new Vector2(random.Next(0, Window.Width), random.Next(0, Window.Height)));
             velocities.Add(new Vector2((float)(random.NextDouble() * 20.0 - 10.0), 
                                        (float)(random.NextDouble() * 20.0 - 10.0)));
-        }
-
-        private void ClampParticle(int i)
-        {
-            Vector2 pos = particles[i];
-            Vector2 vel = velocities[i];
-
-            if (pos.X < 0) { pos.X = 0; vel.X = -vel.X; }
-            if (pos.X > Window.Width) { pos.X = Window.Width; vel.X = -vel.X; }
-            if (pos.Y < 0) { pos.Y = 0; vel.Y = -vel.Y; }
-            if (pos.Y > Window.Height) { pos.Y = Window.Height; vel.Y = -vel.Y; }
-
-            particles[i] = pos;
-            velocities[i] = vel;
         }
     }
 }

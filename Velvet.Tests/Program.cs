@@ -9,7 +9,7 @@ namespace Velvet.Tests
         {
             GraphicsAPI resolvedAPI;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                resolvedAPI = GraphicsAPI.D3D11;  // You can change this to either D3D11, Vulkan, or OpenGL
+                resolvedAPI = GraphicsAPI.Vulkan;  // You can change this to either D3D11, Vulkan, or OpenGL
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 resolvedAPI = GraphicsAPI.Metal;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
