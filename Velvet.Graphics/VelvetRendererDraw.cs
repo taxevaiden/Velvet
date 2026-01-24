@@ -4,12 +4,12 @@ using System.Drawing;
 
 namespace Velvet.Graphics
 {
-    public partial class Renderer : IDisposable
+    public partial class VelvetRenderer : IDisposable
     {
-        private VelvetTexture _defaultTexture = null!;
-        private VelvetTexture _currentTexture = null!;
-        private VelvetShader _defaultShader = null!;
-        private VelvetShader _currentShader = null!;
+        public VelvetTexture DefaultTexture { get; internal set; } = null!;
+        internal VelvetTexture CurrentTexture = null!;
+        public VelvetShader DefaultShader { get; internal set; } = null!;
+        private VelvetShader CurrentShader = null!;
         private uint _vertexOff = 0;
         private uint _indexOff = 0;
         private List<Batch> _batches = null!;
@@ -22,10 +22,10 @@ namespace Velvet.Graphics
         /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, System.Drawing.Color color)
         {
-            _vertices.Add(new Vertex(TranslateVertex(pos), new Vector2(0.0f, 0.0f), PackColor(color)));
-            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitY), new Vector2(0.0f, 1.0f), PackColor(color)));
-            _vertices.Add(new Vertex(TranslateVertex(pos + size), new Vector2(1.0f, 1.0f), PackColor(color)));
-            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitX), new Vector2(1.0f, 0.0f), PackColor(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos), new Vector2(0.0f, 0.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitY), new Vector2(0.0f, 1.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size), new Vector2(1.0f, 1.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitX), new Vector2(1.0f, 0.0f), ToRgbaFloat(color)));
 
             int baseIndex = _vertices.Count - 4;
 
@@ -46,10 +46,10 @@ namespace Velvet.Graphics
         /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, System.Drawing.Color color)
         {
-            _vertices.Add(new Vertex(TranslateVertex(pos, pos + size / 2, rotation), new Vector2(0.0f, 0.0f), PackColor(color)));
-            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitY, pos + size / 2, rotation), new Vector2(0.0f, 1.0f), PackColor(color)));
-            _vertices.Add(new Vertex(TranslateVertex(pos + size, pos + size / 2, rotation), new Vector2(1.0f, 1.0f), PackColor(color)));
-            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitX, pos + size / 2, rotation), new Vector2(1.0f, 0.0f), PackColor(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos, pos + size / 2, rotation), new Vector2(0.0f, 0.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitY, pos + size / 2, rotation), new Vector2(0.0f, 1.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size, pos + size / 2, rotation), new Vector2(1.0f, 1.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitX, pos + size / 2, rotation), new Vector2(1.0f, 0.0f), ToRgbaFloat(color)));
             int baseIndex = _vertices.Count - 4;
 
             _indices.Add((uint)(baseIndex + 0));
@@ -73,7 +73,7 @@ namespace Velvet.Graphics
             for (int i = 0; i < segments; i++)
             {
                 Vector2 dir = new Vector2(MathF.Sin(360.0f / segments * i * DEG2RAD), MathF.Cos(360.0f / segments * i * DEG2RAD));
-                _vertices.Add(new Vertex(TranslateVertex(pos + dir * radius), Vector2.One * 0.5f + dir / 2, PackColor(color)));
+                _vertices.Add(new Vertex(TranslateVertex(pos + dir * radius), Vector2.One * 0.5f + dir / 2, ToRgbaFloat(color)));
                 _indices.Add((uint)(baseIndex + 0));
                 _indices.Add((uint)(baseIndex + i));
                 _indices.Add((uint)(baseIndex + (i + 1) % segments));
@@ -93,7 +93,7 @@ namespace Velvet.Graphics
             for (int i = 0; i < segments; i++)
             {
                 Vector2 dir = new Vector2(MathF.Sin(360.0f / segments * i * DEG2RAD), MathF.Cos(360.0f / segments * i * DEG2RAD));
-                _vertices.Add(new Vertex(TranslateVertex(pos + dir * radius), Vector2.One * 0.5f + dir / 2, PackColor(color)));
+                _vertices.Add(new Vertex(TranslateVertex(pos + dir * radius), Vector2.One * 0.5f + dir / 2, ToRgbaFloat(color)));
                 _indices.Add((uint)(baseIndex + 0));
                 _indices.Add((uint)(baseIndex + i));
                 _indices.Add((uint)(baseIndex + (i + 1) % segments));
@@ -113,7 +113,7 @@ namespace Velvet.Graphics
             for (int i = 0; i < vertices.Length; i++)
             {
                 // TODO: Implement UVs for Polygons so textures can be added onto them
-                _vertices.Add(new Vertex(TranslateVertex(pos + vertices[i]), Vector2.Zero, PackColor(color)));
+                _vertices.Add(new Vertex(TranslateVertex(pos + vertices[i]), Vector2.Zero, ToRgbaFloat(color)));
             }
 
             for (int i = 0; i < indices.Length; i++)
@@ -148,7 +148,7 @@ namespace Velvet.Graphics
                 0f,
                 0f
             );
-            
+
             pos = Vector2.Transform(pos, rot);
             pos += anchor;
 
@@ -166,8 +166,8 @@ namespace Velvet.Graphics
         /// </summary>
         public void Begin()
         {
-            _currentTexture = _defaultTexture;
-            _currentShader = _defaultShader;
+            CurrentTexture = DefaultTexture;
+            CurrentShader = DefaultShader;
 
             _commandList.Begin();
 
@@ -184,15 +184,14 @@ namespace Velvet.Graphics
 
             foreach (Batch batch in _batches)
             {
+                
                 _graphicsDevice.UpdateBuffer(_vertexBuffer, _vertexOff * Vertex.SizeInBytes, batch.Vertices);
                 _graphicsDevice.UpdateBuffer(_indexBuffer, _indexOff * 4, batch.Indices);
 
                 _commandList.SetVertexBuffer(0, _vertexBuffer);
                 _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
                 _commandList.SetPipeline(batch.Shader.Pipeline);
-                _commandList.SetGraphicsResourceSet(0, batch.Texture.ResourceSet);
-                // _logger.Debug(batch.Vertices.Length.ToString());
-                // _logger.Debug(batch.Indices.Length.ToString());
+                _commandList.SetGraphicsResourceSet(0, batch.Shader.ResourceSet);
                 _commandList.DrawIndexed(
                 indexCount: (uint)batch.Indices.Length,
                 instanceCount: 1,
@@ -221,42 +220,16 @@ namespace Velvet.Graphics
         {
             if (!(_vertices.Count > 0)) return;
 
-            Batch batch = new([.. _vertices], [.. _indices], _currentTexture, _currentShader);
 
+            Batch batch = new([.. _vertices], [.. _indices], CurrentTexture, CurrentShader);
+
+            batch.Shader.SetTexture(batch.Texture);
+            batch.Shader.Flush();
+            
             _batches.Add(batch);
 
             _vertices.Clear();
             _indices.Clear();
-
-            // _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, _vertices.ToArray());
-            // _graphicsDevice.UpdateBuffer(_indexBuffer, 0, _indices.ToArray());
-
-            // _commandList.SetVertexBuffer(0, _vertexBuffer);
-            // _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
-            // _commandList.SetPipeline(_pipeline);
-            // _commandList.SetGraphicsResourceSet(0, _currentTexture.ResourceSet);
-            // _commandList.DrawIndexed(
-            //     indexCount: (uint)_indices.Count - _indexOff,
-            //     instanceCount: 1,
-            //     indexStart: _indexOff,
-            //     vertexOffset: 0,
-            //     instanceStart: 0);
-
-            // _vertexOff = (uint)_vertices.Count();
-            // _indexOff = (uint)_indices.Count();
-        }
-
-        private bool IsAlmostFull()
-        {
-            uint _verticesSizeInBytes = (uint)(_vertices.Count() * Vertex.SizeInBytes);
-            uint _indicesSizeInBytes = (uint)(_indices.Count() * 4);
-
-            if (_verticesSizeInBytes > _vertexBufferSize - Vertex.SizeInBytes * 128 || _indicesSizeInBytes > _indexBufferSize - 4 * 128)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -266,41 +239,29 @@ namespace Velvet.Graphics
         /// <param name="texture"></param>
         public void ApplyTexture(VelvetTexture? texture = null)
         {
-            texture ??= _defaultTexture;
+            texture ??= DefaultTexture;
 
-            if (_currentTexture != texture)
+            if (CurrentTexture != texture)
                 if (_vertices.Count > 0 && _indices.Count > 0)
+                {
                     Flush();
+                }
 
-            _currentTexture = texture;
+            CurrentTexture = texture;
 
-            // if (texture != null)
-            // {
-            //     if (_currentTexture != texture)
-            //         if (_vertices.Count > 0 && _indices.Count > 0)
-            //             Flush();
-
-            //     _currentTexture = texture;
-            // }
-            // else
-            // {
-            //     if (_currentTexture != _defaultTexture)
-            //         if (_vertices.Count > 0 && _indices.Count > 0)
-            //             Flush();
-
-            //     _currentTexture = _defaultTexture;
-            // }
         }
 
         public void ApplyShader(VelvetShader? shader = null)
         {
-            shader ??= _defaultShader;
+            shader ??= DefaultShader;
 
-            if (_currentShader != shader)
+            if (CurrentShader != shader)
                 if (_vertices.Count > 0 && _indices.Count > 0)
+                {
                     Flush();
+                }
 
-            _currentShader = shader;
+            CurrentShader = shader;
         }
 
         /// <summary>

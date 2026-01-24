@@ -4,8 +4,9 @@ using Veldrid;
 
 namespace Velvet.Graphics
 {
-    public enum RendererAPI
+    public enum GraphicsAPI
     {
+        Default,
         D3D11,
         Vulkan,
         Metal,
@@ -16,14 +17,14 @@ namespace Velvet.Graphics
     {
         public Vector2 Position;
         public Vector2 UV;
-        public uint Color;
-        public Vertex(Vector2 position, Vector2 uv, uint color)
+        public RgbaFloat Color;
+        public Vertex(Vector2 position, Vector2 uv, RgbaFloat color)
         {
             Position = position;
             UV = uv;
             Color = color;
         }
-        public const uint SizeInBytes = 20;
+        public const uint SizeInBytes = 32;
     }
 
     struct Batch
@@ -41,18 +42,8 @@ namespace Velvet.Graphics
         }
     }
 
-    public partial class Renderer
+    public partial class VelvetRenderer
     {
-        /// <summary>
-        /// Packs a System.Drawing.Color into a single uint.
-        /// </summary>
-        /// <param name="color"></param>
-        /// <returns>The color packed into a uint</returns>
-        private static uint PackColor(Color color)
-        {
-            return (uint)(color.R | (color.G << 8) | (color.B << 16) | (color.A << 24));
-        }
-
         /// <summary>
         /// Converts a System.Drawing.Color to an RgbaFloat.
         /// </summary>
@@ -63,6 +54,7 @@ namespace Velvet.Graphics
             return new RgbaFloat(c.R / 255f, c.G / 255f, c.B / 255f, c.A / 255f);
         }
 
-
+        public void Resize(int width, int height)
+        { _graphicsDevice.ResizeMainWindow((uint)width, (uint)height); }
     }
 }

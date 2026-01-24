@@ -5,36 +5,46 @@ using Velvet.Input;
 
 namespace Velvet.Tests
 {
-    class ShaderTest : BaseTest
+    class ShaderTest : VelvetApplication
     {
-        public ShaderTest() {}
-        public override void Run(RendererAPI rendererAPI)
+        private VelvetTexture _usagi;
+        private VelvetShader _testShader;
+
+        public ShaderTest(GraphicsAPI graphicsAPI, int width = 1600, int height = 900, string title = "Hello, world!")
+            : base(width, height, title, graphicsAPI)
+        { }
+
+        protected override void OnInit()
         {
-            var win = new VelvetWindow("Hello, world!", 1600, 900);
-            var renderer = new Renderer(rendererAPI, win);
+            _usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
+            _testShader = new VelvetShader(Renderer, null, "assets/shaders/test.frag");
+        }
 
-            VelvetTexture usagi = new VelvetTexture(renderer, "assets/usagi.jpg");
-            VelvetShader testShader = new VelvetShader(renderer, null, "assets/shaders/test.frag");
+        protected override void Draw()
+        {
+            Renderer.Begin();
+            Renderer.ClearColor(Color.White);
+            Renderer.ApplyTexture(_usagi);
+            Renderer.DrawRectangle(
+                new Vector2(50.0f, 50.0f),
+                new Vector2(725.0f, 800.0f),
+                Color.White
+            );
 
-            while (win.Running)
-            {
-                win.PollEvents();
+            Renderer.ApplyShader(_testShader);
+            Renderer.DrawRectangle(
+                new Vector2(825.0f, 50.0f),
+                new Vector2(725.0f, 800.0f),
+                Color.White
+            );
 
-                renderer.Begin();
-                renderer.ClearColor(Color.White);
+            Renderer.End();
+        }
 
-                renderer.ApplyTexture(usagi);
-                renderer.DrawRectangle(new Vector2(50.0f, 50.0f), new Vector2(725.0f, 800.0f), Color.White);
-                renderer.ApplyShader(testShader);
-                renderer.DrawRectangle(new Vector2(825.0f, 50.0f), new Vector2(725.0f, 800.0f), Color.White);
-            
-                renderer.ApplyTexture();
-
-                renderer.End();
-            }
-
-            renderer.Dispose();
-            win.Dispose();
+        protected override void OnShutdown()
+        {
+            _testShader.Dispose();
+            _usagi.Dispose();
         }
     }
 }

@@ -9,11 +9,14 @@ using Serilog;
 using Veldrid.OpenGL;
 using System.Runtime.InteropServices;
 
+using Velvet.Windowing;
+using Vulkan.Xlib;
+
 namespace Velvet.Graphics
 {
-    public partial class Renderer : IDisposable
+    public partial class VelvetRenderer : IDisposable
     {
-        private readonly ILogger _logger = Log.ForContext<Renderer>();
+        private readonly ILogger _logger = Log.ForContext<VelvetRenderer>();
         public const float DEG2RAD = MathF.PI / 180.0f;
         internal VelvetWindow _window = null!;
         internal GraphicsDevice _graphicsDevice = null!;
@@ -25,64 +28,19 @@ namespace Velvet.Graphics
         private List<Vertex> _vertices = null!;
         private List<uint> _indices = null!;
 
-
-        // TODO: either move this somewhere else or clean it up
-        private const string VertexCode = @"
-#version 450
-
-layout(location = 0) in vec2 Position;
-layout(location = 1) in vec2 UV;
-layout(location = 2) in uint Color;
-
-layout(location = 0) out vec2 fsin_UV;
-layout(location = 1) out vec4 fsin_Color;
-
-vec4 UnpackColor(uint packed)
-{
-    float r = float((packed >>  0) & 0xFF) / 255.0;
-    float g = float((packed >>  8) & 0xFF) / 255.0;
-    float b = float((packed >> 16) & 0xFF) / 255.0;
-    float a = float((packed >> 24) & 0xFF) / 255.0;
-    return vec4(r, g, b, a);
-}
-
-void main()
-{
-    gl_Position = vec4(Position, 0.0, 1.0);
-    gl_PointSize = 5.0;
-    fsin_UV = UV;
-    fsin_Color = UnpackColor(Color);
-}";
-
-        private const string FragmentCode = @"
-#version 450
-
-layout(location = 0) in vec2 fsin_UV;
-layout(location = 1) in vec4 fsin_Color;
-layout(location = 0) out vec4 fsout_Color;
-
-layout(set = 0, binding = 0) uniform texture2D Texture2D;
-layout(set = 0, binding = 1) uniform sampler Sampler;
-
-void main()
-{
-    vec4 color = texture(sampler2D(Texture2D, Sampler), fsin_UV);
-    fsout_Color = color * fsin_Color;
-}";
-
         /// <summary>
         /// Initializes Veldrid, with the specifed RendererAPI and VelvetWindow on Windows.
         /// </summary>
         /// <param name="rendererAPI"></param>
         /// <param name="window"></param>
         /// <exception cref="PlatformNotSupportedException"></exception>
-        private void InitVeldrid_WIN(RendererAPI rendererAPI, VelvetWindow window, bool vsync)
+        private void InitVeldrid_WIN(GraphicsAPI rendererAPI, VelvetWindow window, bool vsync)
         {
             _logger.Information($"(Window-{window.windowID}): Initializing Veldrid...");
             _logger.Information($"(Window-{window.windowID}): > Platform: Windows");
             switch (rendererAPI)
             {
-                case RendererAPI.D3D11:
+                case GraphicsAPI.D3D11:
                     {
 
                         _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: D3D11");
@@ -104,7 +62,7 @@ void main()
                     }
 
 
-                case RendererAPI.Vulkan:
+                case GraphicsAPI.Vulkan:
                     {
                         _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: Vulkan");
                         _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
@@ -129,9 +87,9 @@ void main()
                         break;
                     }
 
-                case RendererAPI.Metal:
+                case GraphicsAPI.Metal:
                     throw new PlatformNotSupportedException("Metal is not supported on Windows. Please use either D3D11 or Vulkan.");
-                case RendererAPI.OpenGL:
+                case GraphicsAPI.OpenGL:
                     {
                         _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: OpenGL");
                         _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
@@ -167,7 +125,7 @@ void main()
                         );
 
                         _graphicsDevice = GraphicsDevice.CreateOpenGL(options, glPlatformInfo, (uint)window.Width, (uint)window.Height);
-                        _logger.Information($"(Window-{window.windowID}): Complete! (im praying thatit works)");
+                        _logger.Information($"(Window-{window.windowID}): Complete!");
                         break;
                     }
 
@@ -177,17 +135,17 @@ void main()
             CreateResources();
         }
 
-        private void InitVeldrid_LINUX(RendererAPI rendererAPI, VelvetWindow window, bool vsync)
+        private void InitVeldrid_LINUX(GraphicsAPI rendererAPI, VelvetWindow window, bool vsync)
         {
             _logger.Information($"(Window-{window.windowID}): Initializing Veldrid...");
             _logger.Information($"(Window-{window.windowID}): > Platform: Linux");
             switch (rendererAPI)
             {
-                case RendererAPI.D3D11:
+                case GraphicsAPI.D3D11:
                     throw new PlatformNotSupportedException("D3D11 is not supported on Linux. Please use Vulkan.");
 
 
-                case RendererAPI.Vulkan:
+                case GraphicsAPI.Vulkan:
                     {
                         _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: Vulkan");
                         _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
@@ -232,9 +190,9 @@ void main()
                         break;
                     }
 
-                case RendererAPI.Metal:
+                case GraphicsAPI.Metal:
                     throw new PlatformNotSupportedException("Metal is not supported on Linux. Please use Vulkan.");
-                case RendererAPI.OpenGL:
+                case GraphicsAPI.OpenGL:
                     {
                         _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: OpenGL (This has not been confirmed to run and work correctly yet!)");
                         _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
@@ -303,7 +261,7 @@ void main()
                         );
 
                         _graphicsDevice = GraphicsDevice.CreateOpenGL(options, glPlatformInfo, (uint)window.Width, (uint)window.Height);
-                        _logger.Information($"(Window-{window.windowID}): Complete! (im praying thatit works)");
+                        _logger.Information($"(Window-{window.windowID}): Complete!");
                         break;
                     }
             }
@@ -312,18 +270,18 @@ void main()
         }
 
 
-        private void InitVeldrid_OSX(RendererAPI rendererAPI, VelvetWindow window, bool vsync)
+        private void InitVeldrid_OSX(GraphicsAPI rendererAPI, VelvetWindow window, bool vsync)
         {
             _logger.Information($"(Window-{window.windowID}): Initializing Veldrid...");
             _logger.Information($"(Window-{window.windowID}): > Platform: OSX");
             switch (rendererAPI)
             {
-                case RendererAPI.D3D11:
+                case GraphicsAPI.D3D11:
                     throw new PlatformNotSupportedException("D3D11 is not supported on OSX. Please use Metal.");
-                case RendererAPI.Vulkan:
+                case GraphicsAPI.Vulkan:
                     throw new PlatformNotSupportedException("Vulkan is not supported on OSX. Please use Metal.");
 
-                case RendererAPI.Metal:
+                case GraphicsAPI.Metal:
                     {
                         _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: Metal");
                         _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
@@ -344,8 +302,8 @@ void main()
                         _logger.Information($"(Window-{window.windowID}): Complete!");
                         break;
                     }
-                case RendererAPI.OpenGL:
-                    throw new PlatformNotSupportedException("OpenGL is not supported on OSX. Please use Metal. (OpenGL was deprecated in macOS 10.14 in favor of Metal. While it could work if OpenGL suppoprt was implemented for macOS, it remains unsupported by Apple.)");
+                case GraphicsAPI.OpenGL:
+                    throw new PlatformNotSupportedException("OpenGL is not supported on OSX. Please use Metal. (OpenGL was deprecated in macOS 10.14 in favor of Metal. While it could work if OpenGL support was implemented for macOS, it remains unsupported by Apple.)");
             }
 
             CreateResources();
@@ -371,16 +329,18 @@ void main()
             _logger.Information($"(Window-{_window.windowID}):   > Vertex Buffer Size: {_vertexBufferSize} bytes ({_vertexBufferSize / 1024} KB, {_vertexBufferSize / (1024 * 1024)} MB)");
             _logger.Information($"(Window-{_window.windowID}):   > Index Buffer Size: {_indexBufferSize} bytes ({_indexBufferSize / 1024} KB, {_indexBufferSize / (1024 * 1024)} MB)");
 
-            _defaultShader = new VelvetShader(_graphicsDevice, null, null);
-            _currentShader = _defaultShader;
 
             _logger.Information($"(Window-{_window.windowID}): > Creating command list...");
             _commandList = _graphicsDevice.ResourceFactory.CreateCommandList();
 
             _logger.Information($"(Window-{_window.windowID}): > Creating default texture...");
             byte[] whitePixelData = [255, 255, 255, 255];
-            _defaultTexture = new VelvetTexture(_graphicsDevice, whitePixelData, 1, 1, _window.windowID);
-            _currentTexture = _defaultTexture;
+            DefaultTexture = new VelvetTexture(_graphicsDevice, whitePixelData, 1, 1, _window.windowID);
+            CurrentTexture = DefaultTexture;
+
+            DefaultShader = new VelvetShader(this, null, null);
+            DefaultShader.SetTexture(DefaultTexture);
+            CurrentShader = DefaultShader;
 
             _logger.Information($"(Window-{_window.windowID}): Finished creating resources");
         }

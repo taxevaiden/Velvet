@@ -12,8 +12,8 @@ namespace Velvet.Graphics
         private readonly ILogger _logger = Log.ForContext<VelvetTexture>();
         internal ResourceSet ResourceSet = null!;
         private Texture DeviceTexture = null!;
-        private TextureView View = null!;
-        private Sampler Sampler = null!;
+        internal TextureView View = null!;
+        internal Sampler Sampler = null!;
 
         public uint Width { get; private set;}
         public uint Height { get; private set;}
@@ -23,7 +23,7 @@ namespace Velvet.Graphics
         /// </summary>
         /// <param name="renderer"></param>
         /// <param name="imageFilePath"></param>
-        public VelvetTexture(Renderer renderer, string imageFilePath)
+        public VelvetTexture(VelvetRenderer renderer, string imageFilePath)
         {
             Image<Rgba32> image = Image.Load<Rgba32>(imageFilePath);
             Width = (uint)image.Width;
@@ -42,12 +42,12 @@ namespace Velvet.Graphics
         /// <param name="imageData"></param>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public VelvetTexture(Renderer renderer, byte[] imageData, uint width, uint height)
+        public VelvetTexture(VelvetRenderer renderer, byte[] imageData, uint width, uint height)
         {
             InitTexture(renderer._graphicsDevice, imageData, width, height, renderer._window.windowID);
         }
 
-        // Use in Renderer class
+        // Use in Renderer class vvv
 
         internal VelvetTexture(GraphicsDevice gd, string imageFilePath, uint windowID)
         {

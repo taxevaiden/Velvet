@@ -8,64 +8,133 @@ namespace Velvet.Input
     public enum KeyCode
     {
         // Letters
-        A = 'a', B = 'b', C = 'c', D = 'd', E = 'e', F = 'f', G = 'g', H = 'h', I = 'i', J = 'j',
-        K = 'k', L = 'l', M = 'm', N = 'n', O = 'o', P = 'p', Q = 'q', R = 'r', S = 's', T = 't',
-        U = 'u', V = 'v', W = 'w', X = 'x', Y = 'y', Z = 'z',
+        A = SDL.Scancode.A,
+        B = SDL.Scancode.B,
+        C = SDL.Scancode.C,
+        D = SDL.Scancode.D,
+        E = SDL.Scancode.E,
+        F = SDL.Scancode.F,
+        G = SDL.Scancode.G,
+        H = SDL.Scancode.H,
+        I = SDL.Scancode.I,
+        J = SDL.Scancode.J,
+        K = SDL.Scancode.K,
+        L = SDL.Scancode.L,
+        M = SDL.Scancode.M,
+        N = SDL.Scancode.N,
+        O = SDL.Scancode.O,
+        P = SDL.Scancode.P,
+        Q = SDL.Scancode.Q,
+        R = SDL.Scancode.R,
+        S = SDL.Scancode.S,
+        T = SDL.Scancode.T,
+        U = SDL.Scancode.U,
+        V = SDL.Scancode.V,
+        W = SDL.Scancode.W,
+        X = SDL.Scancode.X,
+        Y = SDL.Scancode.Y,
+        Z = SDL.Scancode.Z,
 
-        // Numbers (Top Row)
-        D0 = '0', D1 = '1', D2 = '2', D3 = '3', D4 = '4',
-        D5 = '5', D6 = '6', D7 = '7', D8 = '8', D9 = '9',
+        // Numbers (top row)
+        D0 = SDL.Scancode.Alpha0,
+        D1 = SDL.Scancode.Alpha1,
+        D2 = SDL.Scancode.Alpha2,
+        D3 = SDL.Scancode.Alpha3,
+        D4 = SDL.Scancode.Alpha4,
+        D5 = SDL.Scancode.Alpha5,
+        D6 = SDL.Scancode.Alpha6,
+        D7 = SDL.Scancode.Alpha7,
+        D8 = SDL.Scancode.Alpha8,
+        D9 = SDL.Scancode.Alpha9,
+
+        // Whitespace / control
+        Return = SDL.Scancode.Return,
+        Escape = SDL.Scancode.Escape,
+        Backspace = SDL.Scancode.Backspace,
+        Tab = SDL.Scancode.Tab,
+        Space = SDL.Scancode.Space,
 
         // Punctuation
-        Return = '\r',
-        Escape = 27,
-        Backspace = '\b',
-        Tab = '\t',
-        Space = ' ',
-
-        Minus = '-',
-        Equals = '=',
-        LeftBracket = '[',
-        RightBracket = ']',
-        Backslash = '\\',
-        Semicolon = ';',
-        Quote = '\'',
-        Grave = '`',
-        Comma = ',',
-        Period = '.',
-        Slash = '/',
+        Minus = SDL.Scancode.Minus,
+        Equals = SDL.Scancode.Equals,
+        LeftBracket = SDL.Scancode.Leftbracket,
+        RightBracket = SDL.Scancode.Rightbracket,
+        Backslash = SDL.Scancode.Backslash,
+        Semicolon = SDL.Scancode.Semicolon,
+        Quote = SDL.Scancode.Apostrophe,
+        Grave = SDL.Scancode.Grave,
+        Comma = SDL.Scancode.Comma,
+        Period = SDL.Scancode.Period,
+        Slash = SDL.Scancode.Slash,
 
         // Function keys
-        F1 = 1073741882,
-        F2, F3, F4, F5, F6,
-        F7, F8, F9, F10, F11, F12,
+        F1 = SDL.Scancode.F1,
+        F2 = SDL.Scancode.F2,
+        F3 = SDL.Scancode.F3,
+        F4 = SDL.Scancode.F4,
+        F5 = SDL.Scancode.F5,
+        F6 = SDL.Scancode.F6,
+        F7 = SDL.Scancode.F7,
+        F8 = SDL.Scancode.F8,
+        F9 = SDL.Scancode.F9,
+        F10 = SDL.Scancode.F10,
+        F11 = SDL.Scancode.F11,
+        F12 = SDL.Scancode.F12,
 
-        // Control keys
-        Insert = 1073741897,
-        Home, PageUp, Delete, End, PageDown,
-        Right = 1073741903, Left, Down, Up,
+        // Navigation
+        Insert = SDL.Scancode.Insert,
+        Home = SDL.Scancode.Home,
+        PageUp = SDL.Scancode.Pageup,
+        Delete = SDL.Scancode.Delete,
+        End = SDL.Scancode.End,
+        PageDown = SDL.Scancode.Pagedown,
 
-        // Modifier keys
-        LeftCtrl = 1073742048,
-        LeftShift, LeftAlt, LeftGui,
-        RightCtrl, RightShift, RightAlt, RightGui,
+        Right = SDL.Scancode.Right,
+        Left = SDL.Scancode.Left,
+        Down = SDL.Scancode.Down,
+        Up = SDL.Scancode.Up,
+
+        // Modifiers
+        LeftCtrl = SDL.Scancode.LCtrl,
+        LeftShift = SDL.Scancode.LShift,
+        LeftAlt = SDL.Scancode.LAlt,
+        LeftGui = SDL.Scancode.LGUI,
+
+        RightCtrl = SDL.Scancode.RCtrl,
+        RightShift = SDL.Scancode.RShift,
+        RightAlt = SDL.Scancode.RAlt,
+        RightGui = SDL.Scancode.RGUI,
 
         // Numpad
-        NumLockClear = 1073741907,
-        NumpadDivide, NumpadMultiply, NumpadMinus, NumpadPlus,
-        NumpadEnter, Numpad1, Numpad2, Numpad3, Numpad4,
-        Numpad5, Numpad6, Numpad7, Numpad8, Numpad9, Numpad0,
-        NumpadPeriod,
+        NumLockClear = SDL.Scancode.NumLockClear,
+        NumpadDivide = SDL.Scancode.KpDivide,
+        NumpadMultiply = SDL.Scancode.KpMultiply,
+        NumpadMinus = SDL.Scancode.KpMinus,
+        NumpadPlus = SDL.Scancode.KpPlus,
+        NumpadEnter = SDL.Scancode.KpEnter,
 
-        // Other
-        CapsLock = 1073741881,
-        PrintScreen = 1073741894,
-        ScrollLock = 1073741895,
-        Pause = 1073741896,
-        Menu = 1073741942,
+        Numpad1 = SDL.Scancode.Kp1,
+        Numpad2 = SDL.Scancode.Kp2,
+        Numpad3 = SDL.Scancode.Kp3,
+        Numpad4 = SDL.Scancode.Kp4,
+        Numpad5 = SDL.Scancode.Kp5,
+        Numpad6 = SDL.Scancode.Kp6,
+        Numpad7 = SDL.Scancode.Kp7,
+        Numpad8 = SDL.Scancode.Kp8,
+        Numpad9 = SDL.Scancode.Kp9,
+        Numpad0 = SDL.Scancode.Kp0,
+        NumpadPeriod = SDL.Scancode.KpPeriod,
 
-        Unknown = 0
+        // Locks / system
+        CapsLock = SDL.Scancode.Capslock,
+        PrintScreen = SDL.Scancode.Printscreen,
+        ScrollLock = SDL.Scancode.Scrolllock,
+        Pause = SDL.Scancode.Pause,
+        Menu = SDL.Scancode.Menu,
+
+        Unknown = SDL.Scancode.Unknown
     }
+
 
     public enum MouseButton
     {
@@ -78,98 +147,57 @@ namespace Velvet.Input
 
     public static class InputManager
     {
-        private static List<Event> _events = [];
-        private static HashSet<uint> _heldKeys = [];
-        private static HashSet<byte> _heldButtons = [];
+        private static bool[] _keyboardState = new bool[((uint)SDL.Scancode.Count)];
 
-        /// <summary>
-        /// Clears the event list in the InputManager.
-        /// </summary>
-        public static void ClearEvents() { _events.Clear(); }
+        private static HashSet<byte> _heldButtons = new();
+        private static HashSet<byte> _pressedButtons = new();
+        private static HashSet<byte> _releasedButtons = new();
 
-        /// <summary>
-        /// Polls for currently pending events and processes them. Necessary for receiving input from the keyboard and mouse.
-        /// </summary>
-        /// <param name="e"></param>
-        public static void PollEvent(Event e)
+        // Called from SDL EventCallback
+        public static void ProcessEvent(Event e)
         {
-            _events.Add(e);
-
-            if (e.Type == (uint)EventType.KeyDown && !_heldKeys.Contains((uint)e.Key.Key))
-                _heldKeys.Add((uint)e.Key.Key);
-            else if (e.Type == (uint)EventType.KeyUp && _heldKeys.Contains((uint)e.Key.Key))
-                _heldKeys.Remove((uint)e.Key.Key);
-
-            if (e.Type == (uint)EventType.MouseButtonDown && !_heldButtons.Contains(e.Button.Button))
-                _heldButtons.Add(e.Button.Button);
-            else if (e.Type == (uint)EventType.MouseButtonUp && _heldButtons.Contains(e.Button.Button))
-                _heldButtons.Remove(e.Button.Button);
-        }
-
-        /// <summary>
-        /// Returns if a key has been pressed during the current frame.
-        /// </summary>
-        /// <param name="key">The key to check.</param>
-        /// <returns>Returns true if the key was pressed; otherwise, false.</returns>
-        public static bool IsKeyPressed(KeyCode key)
-        {
-            foreach (Event e in _events)
+            switch ((EventType)e.Type)
             {
-                if (e.Type == (uint)EventType.KeyDown && ((uint)e.Key.Key) == ((uint)key)) { return true; }
+                case EventType.MouseButtonDown:
+                    if (_heldButtons.Add(e.Button.Button))
+                        _pressedButtons.Add(e.Button.Button);
+                    break;
+
+                case EventType.MouseButtonUp:
+                    if (_heldButtons.Remove(e.Button.Button))
+                        _releasedButtons.Add(e.Button.Button);
+                    break;
             }
-            return false;
         }
 
-        /// <summary>
-        /// Returns if a mouse button has been pressed during the current frame.
-        /// </summary>
-        /// <param name="mouseButton">The mouse button to check.</param>
-        /// <returns>Returns true if the mouse button was pressed; otherwise, false.</returns>
-        public static bool IsMouseButtonPressed(MouseButton mouseButton)
+        public static void Update()
         {
-            foreach (Event e in _events)
-            {
-                if (e.Type == (uint)EventType.MouseButtonDown && e.Button.Button == (byte)mouseButton) { return true; }
-            }
-            return false;
+            ReadOnlySpan<bool> keys = SDL.GetKeyboardState(out _);
+            for (int i = 0; i < _keyboardState.Length; i++)
+                _keyboardState[i] = keys[i];
         }
 
-        /// <summary>
-        /// Returns if a key is being pressed down.
-        /// </summary>
-        /// <param name="key">The key to check.</param>
-        /// <returns>Returns true if the key is being pressed down; otherwise, false.</returns>
-        public static bool IsKeyDown(KeyCode key) => _heldKeys.Contains((uint)key);
-        /// <summary>
-        /// Returns if a key is not being pressed down.
-        /// </summary>
-        /// <param name="key">The key to check.</param>
-        /// <returns>Returns true if the key is not being pressed down; otherwise, false.</returns>
-        public static bool IsKeyUp(KeyCode key) => !_heldKeys.Contains((uint)key);
+        // Called ONCE per frame
+        public static void EndFrame()
+        {
+            _pressedButtons.Clear();
+            _releasedButtons.Clear();
+        }
 
-        /// <summary>
-        /// Returns if a mouse button is being pressed down.
-        /// </summary>
-        /// <param name="mouseButton">The mouse button to check.</param>
-        /// <returns>Returns true if the mouse button is being pressed down; otherwise, false.</returns>
-        public static bool IsMouseButtonDown(MouseButton mouseButton) => _heldButtons.Contains((byte)mouseButton);
-        /// <summary>
-        /// Returns if a mouse button is not being pressed down.
-        /// </summary>
-        /// <param name="mouseButton">The mouse button to check.</param>
-        /// <returns>Returns true if the mouse button is not being pressed down; otherwise, false.</returns>
-        public static bool IsMouseButtonUp(MouseButton mouseButton) => !_heldButtons.Contains((byte)mouseButton);
+        // Queries
+        public static bool IsKeyDown(KeyCode key) => _keyboardState[(uint)key];
+        public static bool IsKeyReleased(KeyCode key) => !_keyboardState[(uint)key];
 
-        /// <summary>
-        /// Returns the current mouse position.
-        /// </summary>
-        /// <returns>The mouse position as a Vector2.</returns>
+        public static bool IsMouseButtonDown(MouseButton b) => _heldButtons.Contains((byte)b);
+        public static bool IsMouseButtonPressed(MouseButton b) => _pressedButtons.Contains((byte)b);
+        public static bool IsMouseButtonReleased(MouseButton b) => _releasedButtons.Contains((byte)b);
+
         public static Vector2 GetMousePosition()
         {
             float x, y;
-            GetMouseState(out x, out y);
+            SDL.GetMouseState(out x, out y);
             return new Vector2(x, y);
         }
-
     }
+
 }

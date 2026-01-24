@@ -7,13 +7,18 @@ namespace Velvet.Tests
     {
         static void Main(string[] args)
         {
-            var test = new ShaderTest();
+            GraphicsAPI resolvedAPI;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                test.Run(RendererAPI.D3D11); // You can change this to either D3D11, Vulkan, or OpenGL
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                test.Run(RendererAPI.Metal);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                test.Run(RendererAPI.OpenGL); // You can change this to either Vulkan or OpenGL (Vulkan was verified to work on Linux, however OpenGL hasn't been tested yet.)
+                resolvedAPI = GraphicsAPI.D3D11;  // You can change this to either D3D11, Vulkan, or OpenGL
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                resolvedAPI = GraphicsAPI.Metal;
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                resolvedAPI = GraphicsAPI.Vulkan;  // You can change this to either Vulkan or OpenGL (Vulkan was verified to work on Linux, however OpenGL hasn't been tested yet.)
+            else
+                throw new PlatformNotSupportedException();
+
+            var test = new ShaderTest2(resolvedAPI);
+            test.Run(args.Length, args);
         }
     }
 }

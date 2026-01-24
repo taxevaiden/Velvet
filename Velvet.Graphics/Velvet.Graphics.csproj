@@ -6,10 +6,11 @@
     <Nullable>enable</Nullable>
     <RuntimeIdentifiers>win-x64;osx-arm64;linux-x64</RuntimeIdentifiers>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Velvet/Velvet.csproj" />
+    <ProjectReference Include="../Velvet.Windowing/Velvet.Windowing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

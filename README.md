@@ -1,6 +1,6 @@
 # Velvet
 
-heavily unfinished library
+heavily unfinished framework
 
 you can make games, tools, whatever
 
@@ -8,17 +8,95 @@ tbh idk if i'll finish this i'll just put this here for progress, if anyone want
 
 there are better frameworks/libraries out there that can do a lot more than this library can,, like [Bliss](https://github.com/MrScautHD/Bliss). this was only made for fun and to learn more about how graphics and rendering work.
 
+getting a window open is as easy as doing:
+
+```csharp
+// Game.cs
+
+namespace MyGame
+{
+    class Game : VelvetApplication
+    {
+        public Game(int width = 1600, int height = 900, string title = "Hello, world!")
+            : base(width, height, title)
+        {}
+    }
+}
+```
+
+```csharp
+// Program.cs
+
+namespace MyGame
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var game = new Game();
+            test.Run(args.Length, args);
+        }
+    }
+}
+```
+
+and you have a window!
+
+`Window` and `Renderer` will be exposed to the `Game` class you create, so you can do anything you want!
+
+```csharp
+// Game.cs
+
+protected override void OnInit()
+{
+    base.OnInit();
+    stopwatch = new();
+    usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
+    testShader = new VelvetShader(Renderer, "assets/shaders/shader.vert", null, [ new UniformDescription("time", UniformType.Float, UniformStage.Vertex) ]);
+    testShader.Set("time", 0.0f);
+    testShader.Flush();
+    stopwatch.Start();
+}
+
+protected override void Update(float deltaTime)
+{
+    testShader.Set("time", stopwatch.ElapsedMilliseconds / 100.0f);
+    testShader.Flush();
+}
+
+protected override void Draw()
+{
+    Renderer.Begin();
+    Renderer.ClearColor(Color.White);
+    Renderer.ApplyTexture(usagi);
+    Renderer.ApplyShader(testShader);
+    Renderer.DrawRectangle(new Vector2(50.0f, 50.0f), new Vector2(Window.Width - 100.0f, Window.Height - 100.0f), Color.White);
+    Renderer.End();
+}
+
+protected override void OnShutdown()
+{
+    base.OnShutdown();
+
+    stopwatch.Stop();
+    usagi.Dispose();
+    testShader.Dispose();
+}
+```
+
 ## things i'm done with
 
 - basic window
 - drawing rectangles, circles, any polygon you could think of, with color!
+- shaders
+  - uniforms supported
 - textures
 - input from keyboard and mouse
 - support for all four major graphics APIs (if OpenGL counts)
-    - D3D11
-    - Vulkan
-    - Metal
-    - OpenGL
+  - D3D11
+  - Vulkan
+  - Metal
+  - OpenGL
 
 ![Stress Test](assets/image.png)
 
@@ -62,7 +140,7 @@ if you installed sdl3 through homebrew, you can do
 
 so that the sdl3 library file is detected. after that you can do
 
-    dotnet run  
+    dotnet run
 
 and it works just fine!
 
@@ -73,4 +151,3 @@ just put it in `Velvet.Tests/bin/Debug/net8.0 then do
     dotnet run
 
 it'll work
-

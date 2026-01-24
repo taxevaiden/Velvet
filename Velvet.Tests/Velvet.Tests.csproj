@@ -13,8 +13,9 @@
     <None Include="assets\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-
+    
     <ProjectReference Include="..\Velvet\Velvet.csproj" />
+    <ProjectReference Include="..\Velvet.Windowing\Velvet.Windowing.csproj" />
     <ProjectReference Include="..\Velvet.Input\Velvet.Input.csproj" />
     <ProjectReference Include="..\Velvet.Graphics\Velvet.Graphics.csproj" />
   </ItemGroup>
