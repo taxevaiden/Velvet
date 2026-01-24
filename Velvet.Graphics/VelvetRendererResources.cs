@@ -335,7 +335,7 @@ namespace Velvet.Graphics
 
             _logger.Information($"(Window-{_window.windowID}): > Creating default texture...");
             byte[] whitePixelData = [255, 255, 255, 255];
-            DefaultTexture = new VelvetTexture(_graphicsDevice, whitePixelData, 1, 1, _window.windowID);
+            DefaultTexture = new VelvetTexture(this, whitePixelData, 1, 1);
             CurrentTexture = DefaultTexture;
 
             DefaultShader = new VelvetShader(this, null, null);

@@ -10,7 +10,6 @@ namespace Velvet.Graphics
     public class VelvetTexture : IDisposable
     {
         private readonly ILogger _logger = Log.ForContext<VelvetTexture>();
-        internal ResourceSet ResourceSet = null!;
         private Texture DeviceTexture = null!;
         internal TextureView View = null!;
         internal Sampler Sampler = null!;
@@ -32,7 +31,7 @@ namespace Velvet.Graphics
             byte[] pixelBytes = new byte[image.Width * image.Height * 4];
             image.CopyPixelDataTo(pixelBytes);
 
-            InitTexture(renderer._graphicsDevice, pixelBytes, (uint)image.Width, (uint)image.Height, renderer._window.windowID);
+            InitTexture(renderer, pixelBytes, (uint)image.Width, (uint)image.Height);
         }
 
         /// <summary>
@@ -44,29 +43,10 @@ namespace Velvet.Graphics
         /// <param name="height"></param>
         public VelvetTexture(VelvetRenderer renderer, byte[] imageData, uint width, uint height)
         {
-            InitTexture(renderer._graphicsDevice, imageData, width, height, renderer._window.windowID);
+            InitTexture(renderer, imageData, width, height);
         }
 
-        // Use in Renderer class vvv
-
-        internal VelvetTexture(GraphicsDevice gd, string imageFilePath, uint windowID)
-        {
-            Image<Rgba32> image = Image.Load<Rgba32>(imageFilePath);
-            Width = (uint)image.Width;
-            Height = (uint)image.Height;
-
-            byte[] pixelBytes = new byte[image.Width * image.Height * 4];
-            image.CopyPixelDataTo(pixelBytes);
-
-            InitTexture(gd, pixelBytes, (uint)image.Width, (uint)image.Height, windowID);
-        }
-
-        internal VelvetTexture(GraphicsDevice gd, byte[] imageData, uint width, uint height, uint windowID)
-        {
-            InitTexture(gd, imageData, width, height, windowID);
-        }
-
-        private void InitTexture(GraphicsDevice gd, byte[] imageData, uint width, uint height, uint windowID)
+        private void InitTexture(VelvetRenderer renderer, byte[] imageData, uint width, uint height)
         {
             Width = width;
             Height = height;
@@ -80,9 +60,9 @@ namespace Velvet.Graphics
                 usage: TextureUsage.Sampled
             );
 
-            DeviceTexture = gd.ResourceFactory.CreateTexture(ref desc);
+            DeviceTexture = renderer._graphicsDevice.ResourceFactory.CreateTexture(ref desc);
 
-            gd.UpdateTexture<byte>(
+            renderer._graphicsDevice.UpdateTexture<byte>(
                 DeviceTexture,
                 imageData,
                 0, 0, 0,
@@ -91,8 +71,8 @@ namespace Velvet.Graphics
                 0
             );
 
-            View = gd.ResourceFactory.CreateTextureView(DeviceTexture);
-            Sampler = gd.ResourceFactory.CreateSampler(
+            View = renderer._graphicsDevice.ResourceFactory.CreateTextureView(DeviceTexture);
+            Sampler = renderer._graphicsDevice.ResourceFactory.CreateSampler(
                 new SamplerDescription(
                     SamplerAddressMode.Clamp,
                     SamplerAddressMode.Clamp,
@@ -107,30 +87,14 @@ namespace Velvet.Graphics
                 )
             );
 
-            ResourceLayout resourceLayout = gd.ResourceFactory.CreateResourceLayout(
-                new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("Texture0", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("Sampler0", ResourceKind.Sampler, ShaderStages.Fragment)
-                )
-            );
-
-            ResourceSet = gd.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
-                resourceLayout,
-                [
-                    View,
-                    Sampler
-                ]
-            ));
-
-            _logger.Information($"(Window-{windowID}): Texture loaded:");
-            _logger.Information($"(Window-{windowID}): > Width: {width}");
-            _logger.Information($"(Window-{windowID}): > Height: {height}");
-            _logger.Information($"(Window-{windowID}): > Size In Bytes: {imageData.Length} bytes ({imageData.Length / 1024} KB, {imageData.Length / (1024 * 1024)} MB)");
+            _logger.Information($"(Window-{renderer._window.windowID}): Texture loaded:");
+            _logger.Information($"(Window-{renderer._window.windowID}): > Width: {width}");
+            _logger.Information($"(Window-{renderer._window.windowID}): > Height: {height}");
+            _logger.Information($"(Window-{renderer._window.windowID}): > Size In Bytes: {imageData.Length} bytes ({imageData.Length / 1024} KB, {imageData.Length / (1024 * 1024)} MB)");
         }
 
         public void Dispose()
         {
-            ResourceSet.Dispose();
             View.Dispose();
             Sampler.Dispose();
             DeviceTexture.Dispose();

@@ -100,7 +100,6 @@ void main()
         private ResourceLayout _resourceLayout = null!;
 
         private GraphicsDevice _gd = null!;
-        private VelvetRenderer _renderer = null!;
 
         public VelvetShader(
             VelvetRenderer renderer,
@@ -108,14 +107,11 @@ void main()
             string? fragPath,
             UniformDescription[]? uniforms = null)
         {
-            _renderer = renderer;
             _gd = renderer._graphicsDevice;
             _texture = renderer.CurrentTexture;
 
             Init(vertPath, fragPath, uniforms);
         }
-
-        /* ================= UNIFORM PACKING ================= */
 
         private static uint Align(uint value, uint alignment)
             => (value + alignment - 1) & ~(alignment - 1);
@@ -131,8 +127,6 @@ void main()
             UniformType.Matrix4x4 => 64,
             _ => throw new ArgumentOutOfRangeException()
         };
-
-        /* ================= INIT ================= */
 
         private void Init(
             string? vertPath,
@@ -225,7 +219,7 @@ void main()
                     ShaderSet = new ShaderSetDescription(
                         new[] { vertexLayout },
                         Shaders),
-                    Outputs = _renderer._graphicsDevice.SwapchainFramebuffer.OutputDescription
+                    Outputs = _gd.SwapchainFramebuffer.OutputDescription
                 }
             );
         }
@@ -258,8 +252,6 @@ void main()
 
             _resourceSetDirty = false;
         }
-
-        /* ================= SET API ================= */
 
         public void Set(string name, float value) => Write(name, value);
         public void Set(string name, int value) => Write(name, value);

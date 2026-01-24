@@ -8,7 +8,7 @@ namespace Velvet
 {
     public abstract class VelvetApplication
     {
-        private readonly ILogger _logger;
+        private readonly ILogger _logger = Log.ForContext<VelvetApplication>();
         protected VelvetWindow Window { get; private set; }
         protected VelvetRenderer Renderer { get; private set; }
 
@@ -28,19 +28,16 @@ namespace Velvet
 
         protected VelvetApplication(int width, int height, string title)
         {
-            _logger = Log.ForContext<VelvetApplication>();
             InitApp(width, height, title, GraphicsAPI.Default, true);
         }
 
         protected VelvetApplication(int width, int height, string title, GraphicsAPI graphicsAPI)
         {
-            _logger = Log.ForContext<VelvetApplication>();
             InitApp(width, height, title, graphicsAPI, true);
         }
 
         protected VelvetApplication(int width, int height, string title, GraphicsAPI graphicsAPI, bool vsync)
         {
-            _logger = Log.ForContext<VelvetApplication>();
             InitApp(width, height, title, graphicsAPI, vsync);
         }
 
