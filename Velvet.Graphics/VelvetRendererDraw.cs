@@ -4,6 +4,18 @@ using System.Drawing;
 
 namespace Velvet.Graphics
 {
+    public enum AnchorPosition
+    {
+        TopLeft,
+        Top,
+        TopRight,
+        Left,
+        Center,
+        Right,
+        BottomLeft,
+        Bottom,
+        BottomRight
+    }
     public partial class VelvetRenderer : IDisposable
     {
         public VelvetTexture DefaultTexture { get; internal set; } = null!;
@@ -14,6 +26,25 @@ namespace Velvet.Graphics
         private uint _indexOff = 0;
         private List<Batch> _batches = null!;
 
+        private static Vector2 GetAnchor(AnchorPosition anchor)
+        {
+            return anchor switch
+            {
+                AnchorPosition.TopLeft => new Vector2(0f, 0f),
+                AnchorPosition.Top => new Vector2(0.5f, 0f),
+                AnchorPosition.TopRight => new Vector2(1f, 0f),
+
+                AnchorPosition.Left => new Vector2(0f, 0.5f),
+                AnchorPosition.Center => new Vector2(0.5f, 0.5f),
+                AnchorPosition.Right => new Vector2(1f, 0.5f),
+
+                AnchorPosition.BottomLeft => new Vector2(0f, 1f),
+                AnchorPosition.Bottom => new Vector2(0.5f, 1f),
+                AnchorPosition.BottomRight => new Vector2(1f, 1f),
+
+                _ => Vector2.Zero
+            };
+        }
         /// <summary>
         /// Draws a rectangle.
         /// </summary>
@@ -38,7 +69,7 @@ namespace Velvet.Graphics
         }
 
         /// <summary>
-        /// Draws a rectangle, rotated around the center.
+        /// Draws a rectangle, rotated around the top-left of the rectangle.
         /// </summary>
         /// <param name="pos">The position of the rectangle.</param>
         /// <param name="size">The size of the rectangle.</param>
@@ -46,10 +77,33 @@ namespace Velvet.Graphics
         /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, System.Drawing.Color color)
         {
-            _vertices.Add(new Vertex(TranslateVertex(pos, pos + size / 2, rotation), new Vector2(0.0f, 0.0f), ToRgbaFloat(color)));
-            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitY, pos + size / 2, rotation), new Vector2(0.0f, 1.0f), ToRgbaFloat(color)));
-            _vertices.Add(new Vertex(TranslateVertex(pos + size, pos + size / 2, rotation), new Vector2(1.0f, 1.0f), ToRgbaFloat(color)));
-            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitX, pos + size / 2, rotation), new Vector2(1.0f, 0.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos, pos, rotation), new Vector2(0.0f, 0.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitY, pos, rotation), new Vector2(0.0f, 1.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size, pos, rotation), new Vector2(1.0f, 1.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitX, pos, rotation), new Vector2(1.0f, 0.0f), ToRgbaFloat(color)));
+            int baseIndex = _vertices.Count - 4;
+
+            _indices.Add((uint)(baseIndex + 0));
+            _indices.Add((uint)(baseIndex + 1));
+            _indices.Add((uint)(baseIndex + 2));
+            _indices.Add((uint)(baseIndex + 2));
+            _indices.Add((uint)(baseIndex + 3));
+            _indices.Add((uint)(baseIndex + 0));
+        }
+
+        /// <summary>
+        /// Draws a rectangle, rotated around the specified anchor.
+        /// </summary>
+        /// <param name="pos">The position of the rectangle.</param>
+        /// <param name="size">The size of the rectangle.</param>
+        /// <param name="rotation">The rotation of the rectangle, in radians.</param>
+        /// <param name="color">The color of the rectangle.</param>
+        public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, AnchorPosition anchor, System.Drawing.Color color)
+        {
+            _vertices.Add(new Vertex(TranslateVertex(pos, pos + GetAnchor(anchor) * size, rotation), new Vector2(0.0f, 0.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitY, pos + GetAnchor(anchor) * size, rotation), new Vector2(0.0f, 1.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size, pos + GetAnchor(anchor) * size, rotation), new Vector2(1.0f, 1.0f), ToRgbaFloat(color)));
+            _vertices.Add(new Vertex(TranslateVertex(pos + size * Vector2.UnitX, pos + GetAnchor(anchor) * size, rotation), new Vector2(1.0f, 0.0f), ToRgbaFloat(color)));
             int baseIndex = _vertices.Count - 4;
 
             _indices.Add((uint)(baseIndex + 0));
@@ -122,6 +176,28 @@ namespace Velvet.Graphics
             }
         }
 
+        /// <summary>
+        /// Draws a line.
+        /// </summary>
+        /// <param name="a">The starting position of the line.</param>
+        /// <param name="b">The ending position of the line.</param>
+        /// <param name="thickness">The thickness of the line.</param>
+        /// <param name="color">The color of the line.</param>
+        public void DrawLine(Vector2 a, Vector2 b, float thickness, Color color)
+        {
+            Vector2 dir = b - a;
+            float length = dir.Length();
+            float rot = MathF.Atan2(dir.Y, dir.X) - MathF.PI * 0.5f;
+
+            DrawRectangle(
+                a,
+                new Vector2(thickness, length),
+                rot,
+                AnchorPosition.Top,
+                color
+            );
+        }
+
         private Vector2 TranslateVertex(Vector2 pos)
         {
             Matrix3x2 projection = Matrix3x2.CreateScale(2f / _window.Width, 2f / _window.Height);
@@ -141,12 +217,9 @@ namespace Velvet.Graphics
             float s = MathF.Sin(rotation);
 
             Matrix3x2 rot = new Matrix3x2(
-                c,
-                s,
-                -s,
-                c,
-                0f,
-                0f
+                c,  s,
+                -s, c,
+                0f, 0f
             );
 
             pos = Vector2.Transform(pos, rot);
@@ -184,7 +257,9 @@ namespace Velvet.Graphics
 
             foreach (Batch batch in _batches)
             {
-                
+                batch.Shader.SetTexture(batch.Texture);
+                batch.Shader.Flush();
+
                 _graphicsDevice.UpdateBuffer(_vertexBuffer, _vertexOff * Vertex.SizeInBytes, batch.Vertices);
                 _graphicsDevice.UpdateBuffer(_indexBuffer, _indexOff * 4, batch.Indices);
 
@@ -220,12 +295,8 @@ namespace Velvet.Graphics
         {
             if (!(_vertices.Count > 0)) return;
 
-
             Batch batch = new([.. _vertices], [.. _indices], CurrentTexture, CurrentShader);
 
-            batch.Shader.SetTexture(batch.Texture);
-            batch.Shader.Flush();
-            
             _batches.Add(batch);
 
             _vertices.Clear();

@@ -42,7 +42,6 @@ namespace Velvet.Graphics
             {
                 case GraphicsAPI.D3D11:
                     {
-
                         _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: D3D11");
                         _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
                         _window = window;
@@ -88,7 +87,7 @@ namespace Velvet.Graphics
                     }
 
                 case GraphicsAPI.Metal:
-                    throw new PlatformNotSupportedException("Metal is not supported on Windows. Please use either D3D11 or Vulkan.");
+                    throw new PlatformNotSupportedException("Metal is not supported on Windows. Please use either D3D11, Vulkan, or OpenGL.");
                 case GraphicsAPI.OpenGL:
                     {
                         _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: OpenGL");
@@ -142,7 +141,7 @@ namespace Velvet.Graphics
             switch (rendererAPI)
             {
                 case GraphicsAPI.D3D11:
-                    throw new PlatformNotSupportedException("D3D11 is not supported on Linux. Please use Vulkan.");
+                    throw new PlatformNotSupportedException("D3D11 is not supported on Linux. Please use Vulkan, or OpenGL.");
 
 
                 case GraphicsAPI.Vulkan:
@@ -191,7 +190,7 @@ namespace Velvet.Graphics
                     }
 
                 case GraphicsAPI.Metal:
-                    throw new PlatformNotSupportedException("Metal is not supported on Linux. Please use Vulkan.");
+                    throw new PlatformNotSupportedException("Metal is not supported on Linux. Please use Vulkan, or OpenGL.");
                 case GraphicsAPI.OpenGL:
                     {
                         _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: OpenGL (This has not been confirmed to run and work correctly yet!)");

@@ -10,6 +10,7 @@ namespace Velvet.Tests
             GraphicsAPI resolvedAPI;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 resolvedAPI = GraphicsAPI.Vulkan;  // You can change this to either D3D11, Vulkan, or OpenGL
+                // For some reason Vulkan/OpenGL is much smoother than D3D11. I have no idea why but if you want smoothness use Vulkan
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 resolvedAPI = GraphicsAPI.Metal;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -17,7 +18,7 @@ namespace Velvet.Tests
             else
                 throw new PlatformNotSupportedException();
 
-            var test = new ShaderTest2(resolvedAPI);
+            var test = new PhysicsTest(resolvedAPI);
             test.Run(args.Length, args);
         }
     }

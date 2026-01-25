@@ -42,7 +42,7 @@ namespace Velvet.Windowing
             }
 
             _logger.Information("Creating window...");
-            windowPtr = SDL.CreateWindow(title, width, height, SDL.WindowFlags.MouseFocus | SDL.WindowFlags.Resizable |SDL.WindowFlags.OpenGL);
+            windowPtr = SDL.CreateWindow(title, width, height, SDL.WindowFlags.MouseFocus | SDL.WindowFlags.Resizable | SDL.WindowFlags.OpenGL);
             windowID = SDL.GetWindowID(windowPtr);
             _logger.Information($"> Window Pointer: {windowPtr}");
             _logger.Information($"> Window ID: {windowID}");

@@ -141,8 +141,8 @@ namespace Velvet.Input
         Left = 1,
         Middle = 2,
         Right = 3,
-        X1 = 4,
-        X2 = 5,
+        Side1 = 4,
+        Side2 = 5,
     }
 
     public static class InputManager
@@ -152,12 +152,29 @@ namespace Velvet.Input
         private static HashSet<byte> _heldButtons = new();
         private static HashSet<byte> _pressedButtons = new();
         private static HashSet<byte> _releasedButtons = new();
+        private static float _mouseX;
+        private static float _mouseY;
+        private static float _scrollX;
+        private static float _scrollY;
 
-        // Called from SDL EventCallback
         public static void ProcessEvent(Event e)
         {
             switch ((EventType)e.Type)
             {
+                case EventType.MouseMotion:
+                    {
+                        _mouseX = e.Motion.X;
+                        _mouseY = e.Motion.Y;
+                        break;
+                    }
+                case EventType.MouseWheel:
+                    {
+                        _scrollX = e.Wheel.X;
+                        _scrollY = e.Wheel.Y;
+                        if (e.Wheel.Direction == MouseWheelDirection.Flipped) { _scrollX *= -1; _scrollY *= -1; }
+                        
+                        break;
+                    }
                 case EventType.MouseButtonDown:
                     if (_heldButtons.Add(e.Button.Button))
                         _pressedButtons.Add(e.Button.Button);
@@ -177,14 +194,14 @@ namespace Velvet.Input
                 _keyboardState[i] = keys[i];
         }
 
-        // Called ONCE per frame
         public static void EndFrame()
         {
+            _scrollX = 0.0f;
+            _scrollY = 0.0f;
             _pressedButtons.Clear();
             _releasedButtons.Clear();
         }
 
-        // Queries
         public static bool IsKeyDown(KeyCode key) => _keyboardState[(uint)key];
         public static bool IsKeyReleased(KeyCode key) => !_keyboardState[(uint)key];
 
@@ -192,12 +209,8 @@ namespace Velvet.Input
         public static bool IsMouseButtonPressed(MouseButton b) => _pressedButtons.Contains((byte)b);
         public static bool IsMouseButtonReleased(MouseButton b) => _releasedButtons.Contains((byte)b);
 
-        public static Vector2 GetMousePosition()
-        {
-            float x, y;
-            SDL.GetMouseState(out x, out y);
-            return new Vector2(x, y);
-        }
+        public static void GetMousePosition(out float x, out float y) { x = _mouseX; y = _mouseY; }
+        public static void GetMouseScroll(out float x, out float y) { x = _scrollX; y = _scrollY; }
     }
 
 }
