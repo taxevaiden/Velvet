@@ -118,10 +118,8 @@ namespace Velvet
                 case SDL.EventType.WindowResized:
                     {
                         if (@event.Window.WindowID == Window.windowID)
-                        {
-                            Window.SetSize(@event.Window.Data1, @event.Window.Data2);
                             Renderer.Resize(Window.Width, Window.Height);
-                        }
+                        
                         break;
                     }
 

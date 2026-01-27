@@ -16,37 +16,37 @@ layout(set = 0, binding = 2) uniform Globals
 void main()
 {
     const int range = 1;
-    const float y_interval = 0.001;
-    const float cbcr_interval = 0.0025;
+    const float y_interval = 0.05;
+    const float cbcr_interval = 0.0125;
     const float pixel_size = 8.0;
     vec2 block_size = pixel_size / Resolution.xy;
 
     vec2 pixelated_coords = floor(fsin_UV / block_size) * block_size;
-    vec4 sum = vec4(0.0);
-    float count = 0.0;
+    // vec4 sum = vec4(0.0);
+    // float count = 0.0;
 
-    for (int y = -range; y <= range; y++)
-    {
-        for (int x = -range; x <= range; x++)
-        {
-            vec2 offset = vec2(x, y) / Resolution.xy;
-            vec2 sampleUV = fsin_UV + offset;
+    // for (int y = -range; y <= range; y++)
+    // {
+    //     for (int x = -range; x <= range; x++)
+    //     {
+    //         vec2 offset = vec2(x, y) / Resolution.xy;
+    //         vec2 sampleUV = fsin_UV + offset;
+    // 
+    //         // Clamp to this 8x8 block
+    //         sampleUV = clamp(
+    //             sampleUV,
+    //            pixelated_coords,
+    //             pixelated_coords + block_size
+    //         ); 
+    // 
+    //         sum += texture(sampler2D(Texture2D, Sampler), sampleUV);
+    //         count += 1.0;
+    //     }
+    // }
 
-            // Clamp to this 8x8 block
-            sampleUV = clamp(
-                sampleUV,
-                pixelated_coords,
-                pixelated_coords + block_size
-            );
-
-            sum += texture(sampler2D(Texture2D, Sampler), sampleUV);
-            count += 1.0;
-        }
-    }
-
-    vec4 yTex = sum / count;
-    // vec4 yTex = texture(sampler2D(Texture2D, Sampler), fsin_UV);
-    vec4 cbcrTex = texture(sampler2D(Texture2D, Sampler), fsin_UV, 2.0);
+    // vec4 yTex = sum / count;
+    vec4 yTex = texture(sampler2D(Texture2D, Sampler), fsin_UV + (pixelated_coords - fsin_UV) * 0.06125);
+    vec4 cbcrTex = texture(sampler2D(Texture2D, Sampler), fsin_UV + (pixelated_coords - fsin_UV) * 0.25, 3.0);
 
     float y = dot(yTex.rgb, vec3(0.299, 0.587, 0.114));
     y = round(y / y_interval) * y_interval;

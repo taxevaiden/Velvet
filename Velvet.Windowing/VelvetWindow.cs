@@ -15,8 +15,8 @@ namespace Velvet.Windowing
         public uint windowID { get; private set; } = uint.MinValue;
         public IntPtr windowPtr { get; private set; } = IntPtr.Zero;
         public bool Running { get; private set; } = false;
-        public int Width { get; private set; }
-        public int Height { get; private set; }
+        public int Width { get => GetWidth(); set => SetWidth(value); }
+        public int Height { get => GetHeight(); set => SetHeight(value); }
 
         private SDL.EventFilter? _eventWatch;
         private GCHandle _eventWatchHandle;
@@ -56,17 +56,17 @@ namespace Velvet.Windowing
             Running = true;
         }
 
-        public void SetWidth(int width)
+        private void SetWidth(int width)
         {
             SetSize(width, Height);
         }
 
-        public void SetHeight(int height)
+        private void SetHeight(int height)
         {
             SetSize(Width, height);
         }
 
-        public void SetSize(int width, int height)
+        private void SetSize(int width, int height)
         {
             if (windowPtr == IntPtr.Zero)
                 return;
@@ -82,19 +82,19 @@ namespace Velvet.Windowing
             _logger.Debug("Requested window resize: {W}x{H}", width, height);
         }
 
-        public int GetWidth()
+        private int GetWidth()
         {
             SDL.GetWindowSize(windowPtr, out int w, out _);
             return w;
         }
 
-        public int GetHeight()
+        private int GetHeight()
         {
             SDL.GetWindowSize(windowPtr, out _, out int h);
             return h;
         }
 
-        public void GetSize(out int width, out int height)
+        private void GetSize(out int width, out int height)
         {
             SDL.GetWindowSize(windowPtr, out width, out height);
         }

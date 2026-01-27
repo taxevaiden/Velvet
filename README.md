@@ -1,6 +1,6 @@
 # Velvet
 
-heavily unfinished framework
+heavily unfinished framework for .net 10
 
 you can make games, tools, whatever
 

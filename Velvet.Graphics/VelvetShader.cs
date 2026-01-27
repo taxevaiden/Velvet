@@ -49,8 +49,28 @@ namespace Velvet.Graphics
         public uint Size;
     }
 
+
+
     public sealed class VelvetShader : IDisposable
     {
+        private readonly struct PipelineKey : IEquatable<PipelineKey>
+        {
+            public readonly OutputDescription Outputs;
+
+            public PipelineKey(OutputDescription outputs)
+            {
+                Outputs = outputs;
+            }
+
+            public bool Equals(PipelineKey other)
+                => Outputs.Equals(other.Outputs);
+
+            public override int GetHashCode()
+                => Outputs.GetHashCode();
+        }
+
+        private readonly Dictionary<PipelineKey, Pipeline> _pipelineCache = new();
+
         private const string DefaultVertexCode = @"
 #version 450
 
@@ -235,7 +255,14 @@ void main()
 
         private void RebuildPipeline()
         {
-            Pipeline?.Dispose();
+            var key = new PipelineKey(_currentOutputs);
+
+            if (_pipelineCache.TryGetValue(key, out var cached))
+            {
+                Pipeline = cached;
+                _piplineDirty = false;
+                return;
+            }
 
             var vertexLayout = new VertexLayoutDescription(
                 new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
@@ -243,7 +270,7 @@ void main()
                 new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float4)
             );
 
-            Pipeline = _gd.ResourceFactory.CreateGraphicsPipeline(
+            var pipeline = _gd.ResourceFactory.CreateGraphicsPipeline(
                 new GraphicsPipelineDescription
                 {
                     BlendState = BlendStateDescription.SINGLE_ALPHA_BLEND,
@@ -264,8 +291,11 @@ void main()
                 }
             );
 
+            _pipelineCache[key] = pipeline;
+            Pipeline = pipeline;
             _piplineDirty = false;
         }
+
 
         public void Set(string name, float value) => Write(name, value);
         public void Set(string name, int value) => Write(name, value);
@@ -331,7 +361,11 @@ void main()
         {
             UniformBuffer?.Dispose();
             ResourceSet?.Dispose();
-            Pipeline?.Dispose();
+
+            foreach (var p in _pipelineCache.Values)
+                p.Dispose();
+
+            _pipelineCache.Clear();
 
             if (Shaders != null)
             {
@@ -339,5 +373,6 @@ void main()
                     s.Dispose();
             }
         }
+
     }
 }

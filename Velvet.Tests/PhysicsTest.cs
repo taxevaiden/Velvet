@@ -145,34 +145,34 @@ namespace Velvet.Tests
         {
             base.OnInit();
 
-            // // Simple rope
-            // Vector2 start = new(Window.GetWidth() * 0.5f, 50);
-            // float spacing = Radius * 2 + 1.0f;
+            // Simple rope
+            Vector2 start = new(Window.Width * 0.5f, 50);
+            float spacing = Radius * 2 + 1.0f;
 
-            // for (int i = 0; i < 128; i++)
-            // {
-            //     bool pinned = i == 0;
-            //     points[pointCount++] = new VerletPoint(
-            //         start + Vector2.UnitY * spacing * i + Vector2.UnitX * Random.Shared.Next(-1, 1),
-            //         pinned
-            //     );
-
-            //     if (i > 0)
-            //         sticks[stickCount++] = new VerletStick(i - 1, i, spacing);
-            // }
-
-            int startingPoints = 1000;
-            int sideLength = (int)MathF.Floor(MathF.Sqrt(startingPoints));
-
-            for (int i = 0; i < startingPoints; i++)
+            for (int i = 0; i < 128; i++)
             {
-                Vector2 start = new Vector2(i % sideLength, MathF.Floor(i / (float)sideLength)) * ((Radius + 2) * 2) + Vector2.UnitX * ((Window.GetWidth() - sideLength * (Radius + 2) * 2) * 0.5f) + Vector2.UnitY * ((Window.GetWidth() - sideLength * (Radius + 2) * 2) * 0.5f);
-                start += Vector2.UnitX * Random.Shared.Next(-1, 1) + Vector2.UnitY * Random.Shared.Next(-1, 1);
+                bool pinned = i == 0;
                 points[pointCount++] = new VerletPoint(
-                    start,
-                    false
+                    start + Vector2.UnitY * spacing * i + Vector2.UnitX * Random.Shared.Next(-1, 1),
+                    pinned
                 );
+
+                if (i > 0)
+                    sticks[stickCount++] = new VerletStick(i - 1, i, spacing);
             }
+
+            // int startingPoints = 1000;
+            // int sideLength = (int)MathF.Floor(MathF.Sqrt(startingPoints));
+
+            // for (int i = 0; i < startingPoints; i++)
+            // {
+            //     Vector2 start = new Vector2(i % sideLength, MathF.Floor(i / (float)sideLength)) * ((Radius + 2) * 2) + Vector2.UnitX * ((Window.GetWidth() - sideLength * (Radius + 2) * 2) * 0.5f) + Vector2.UnitY * ((Window.GetWidth() - sideLength * (Radius + 2) * 2) * 0.5f);
+            //     start += Vector2.UnitX * Random.Shared.Next(-1, 1) + Vector2.UnitY * Random.Shared.Next(-1, 1);
+            //     points[pointCount++] = new VerletPoint(
+            //         start,
+            //         false
+            //     );
+            // }
         }
 
         protected override void Update(float dt)
@@ -300,8 +300,8 @@ namespace Velvet.Tests
                 }
 
                 // Clamp bounds
-                p.Position.X = Math.Clamp(p.Position.X, 10, Window.GetWidth() - 10);
-                p.Position.Y = Math.Clamp(p.Position.Y, 10, Window.GetHeight() - 10);
+                p.Position.X = Math.Clamp(p.Position.X, 10, Window.Width - 10);
+                p.Position.Y = Math.Clamp(p.Position.Y, 10, Window.Height - 10);
             }
         }
 

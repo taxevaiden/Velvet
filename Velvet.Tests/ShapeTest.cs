@@ -25,7 +25,7 @@ namespace Velvet.Tests
             base.OnInit();
             usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
             renderTexture = new(Renderer, 1600, 900);
-            testShader = new VelvetShader(Renderer, null, "assets/shaders/jpeg.frag", [ new UniformDescription("hehe", UniformType.Vector2, UniformStage.Fragment) ]);
+            testShader = new VelvetShader(Renderer, null, "assets/shaders/jpeg.frag", [ new UniformDescription("Resolution", UniformType.Vector2, UniformStage.Fragment) ]);
             testShader.Set("Resolution", new Vector2(1600, 900));
             testShader.Flush();
 
@@ -97,6 +97,7 @@ namespace Velvet.Tests
         {
             base.OnShutdown();
             stopwatch.Stop();
+            testShader.Dispose();
             renderTexture.Dispose();
             usagi.Dispose();
         }
