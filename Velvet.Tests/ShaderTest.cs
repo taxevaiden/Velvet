@@ -20,6 +20,7 @@ namespace Velvet.Tests
             _testShader = new VelvetShader(Renderer, null, "assets/shaders/test.frag");
         }
 
+
         protected override void Draw()
         {
             Renderer.Begin();

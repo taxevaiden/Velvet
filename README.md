@@ -84,12 +84,39 @@ protected override void OnShutdown()
 }
 ```
 
+```glsl
+// shader.vert
+#version 450
+
+layout(location = 0) in vec2 Position;
+layout(location = 1) in vec2 UV;
+layout(location = 2) in vec4 Color;
+
+layout(location = 0) out vec2 fsin_UV;
+layout(location = 1) out vec4 fsin_Color;
+layout(set = 0, binding = 2) uniform Globals
+{
+    float time;
+};
+
+void main()
+{   
+    vec2 new = vec2(Position.x, Position.y + sin(Position.x * 100.0f + hehe) * 0.1f);
+    gl_Position = vec4(new, 0.0, 1.0);
+    fsin_UV = UV;
+    fsin_Color = Color;
+}
+```
+
 ## things i'm done with
 
 - basic window
 - drawing rectangles, circles, any polygon you could think of, with color!
 - shaders
   - uniforms supported
+- render textures
+  - multisampling supported (however, drawing a VelvetTexture to a multisampled VelvetRenderTexture does not do anything on the OpenGL backend. the Vulkan backend also doesn't render the multisampled VelvetRenderTexture smoothly for some reason. D3D11 has both of these working)
+  - OpenGL behaves differently from all the other GraphicsAPIs when drawing to a VelvetRenderTexture. all texture samples are flipped across the x-axis. VelvetTextures will still work fine on OpenGL and behave like all the other GraphicsAPIs, however VelvetRenderTextures don't. **in order to compensate, Velvet flips the UVs of anything drawn across the x-axis when using OpenGL to render a VelvetRenderTexture. keep this in mind when writing shader code!**
 - textures
 - input from keyboard and mouse
 - support for all four major graphics APIs (if OpenGL counts)

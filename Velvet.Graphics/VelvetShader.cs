@@ -95,6 +95,10 @@ void main()
         private byte[] _cpuUniformBuffer = Array.Empty<byte>();
         private bool _uniformsDirty;
         private bool _resourceSetDirty;
+        private bool _piplineDirty;
+
+        private OutputDescription _currentOutputs;
+        private VelvetRenderTexture? _currentRenderTarget;
 
         private VelvetTexture _texture = null!;
         private ResourceLayout _resourceLayout = null!;
@@ -196,32 +200,8 @@ void main()
 
             Shaders = _gd.ResourceFactory.CreateFromSpirv(vsDesc, fsDesc);
 
-            var vertexLayout = new VertexLayoutDescription(
-                new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-                new VertexElementDescription("UV", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-                new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float4)
-            );
-
-            Pipeline = _gd.ResourceFactory.CreateGraphicsPipeline(
-                new GraphicsPipelineDescription
-                {
-                    BlendState = BlendStateDescription.SINGLE_OVERRIDE_BLEND,
-                    DepthStencilState = DepthStencilStateDescription.DISABLED,
-                    RasterizerState = new RasterizerStateDescription(
-                        FaceCullMode.Back,
-                        PolygonFillMode.Solid,
-                        FrontFace.CounterClockwise,
-                        true,
-                        false
-                    ),
-                    PrimitiveTopology = PrimitiveTopology.TriangleList,
-                    ResourceLayouts = new[] { _resourceLayout },
-                    ShaderSet = new ShaderSetDescription(
-                        new[] { vertexLayout },
-                        Shaders),
-                    Outputs = _gd.SwapchainFramebuffer.OutputDescription
-                }
-            );
+            _currentOutputs = _gd.SwapchainFramebuffer.OutputDescription;
+            RebuildPipeline();
         }
 
         private void RebuildResourceSet()
@@ -253,6 +233,40 @@ void main()
             _resourceSetDirty = false;
         }
 
+        private void RebuildPipeline()
+        {
+            Pipeline?.Dispose();
+
+            var vertexLayout = new VertexLayoutDescription(
+                new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
+                new VertexElementDescription("UV", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
+                new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float4)
+            );
+
+            Pipeline = _gd.ResourceFactory.CreateGraphicsPipeline(
+                new GraphicsPipelineDescription
+                {
+                    BlendState = BlendStateDescription.SINGLE_ALPHA_BLEND,
+                    DepthStencilState = DepthStencilStateDescription.DISABLED,
+                    RasterizerState = new RasterizerStateDescription(
+                        FaceCullMode.Back,
+                        PolygonFillMode.Solid,
+                        FrontFace.CounterClockwise,
+                        true,
+                        false
+                    ),
+                    PrimitiveTopology = PrimitiveTopology.TriangleList,
+                    ResourceLayouts = new[] { _resourceLayout },
+                    ShaderSet = new ShaderSetDescription(
+                        new[] { vertexLayout },
+                        Shaders),
+                    Outputs = _currentOutputs
+                }
+            );
+
+            _piplineDirty = false;
+        }
+
         public void Set(string name, float value) => Write(name, value);
         public void Set(string name, int value) => Write(name, value);
         public void Set(string name, uint value) => Write(name, value);
@@ -270,6 +284,21 @@ void main()
             _resourceSetDirty = true;
         }
 
+        internal void SetRenderTexture(VelvetRenderTexture? rt)
+        {
+            OutputDescription newOutputs =
+                rt == null
+                    ? _gd.SwapchainFramebuffer.OutputDescription
+                    : rt.Framebuffer.OutputDescription;
+
+            if (_currentRenderTarget == rt && _currentOutputs.Equals(newOutputs))
+                return;
+
+            _currentRenderTarget = rt;
+            _currentOutputs = newOutputs;
+            _piplineDirty = true;
+        }
+
         private unsafe void Write<T>(string name, T value) where T : unmanaged
         {
             if (!_uniforms.TryGetValue(name, out var u))
@@ -285,6 +314,9 @@ void main()
 
         public void Flush()
         {
+            if (_piplineDirty)
+                RebuildPipeline();
+
             if (_uniformsDirty)
             {
                 _gd.UpdateBuffer(UniformBuffer, 0, _cpuUniformBuffer);

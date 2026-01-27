@@ -32,12 +32,14 @@ namespace Velvet.Graphics
         public Vertex[] Vertices;
         public uint[] Indices;
         public VelvetTexture Texture;
+        public VelvetRenderTexture? RenderTarget;
         public VelvetShader Shader;
-        public Batch(Vertex[] vertices, uint[] indices, VelvetTexture texture, VelvetShader shader)
+        public Batch(Vertex[] vertices, uint[] indices, VelvetTexture texture, VelvetShader shader, VelvetRenderTexture? renderTarget = null)
         {
             Vertices = vertices;
             Indices = indices;
             Texture = texture;
+            RenderTarget = renderTarget;
             Shader = shader;
         }
     }
@@ -52,6 +54,14 @@ namespace Velvet.Graphics
         private static RgbaFloat ToRgbaFloat(Color c)
         {
             return new RgbaFloat(c.R / 255f, c.G / 255f, c.B / 255f, c.A / 255f);
+        }
+
+        private Vector2 GetRenderSize()
+        {
+            if (CurrentRenderTarget != null)
+                return new Vector2(CurrentRenderTarget.Width, CurrentRenderTarget.Height);
+
+            return new Vector2(_window.Width, _window.Height);
         }
 
         public void Resize(int width, int height)

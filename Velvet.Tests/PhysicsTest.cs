@@ -84,7 +84,7 @@ namespace Velvet.Tests
             new(-1,  1), new(0,  1), new(1,  1),
         };
 
-        Vector2 gravity = new(0, 0);
+        Vector2 gravity = new(0, 981);
         const int ConstraintIterations = 10;
         const float Radius = 8f;
 
@@ -145,34 +145,34 @@ namespace Velvet.Tests
         {
             base.OnInit();
 
-            // Simple rope
-            Vector2 start = new(Window.GetWidth() * 0.5f, 50);
-            float spacing = Radius * 2;
+            // // Simple rope
+            // Vector2 start = new(Window.GetWidth() * 0.5f, 50);
+            // float spacing = Radius * 2 + 1.0f;
 
-            for (int i = 0; i < 512; i++)
-            {
-                bool pinned = i == 0;
-                points[pointCount++] = new VerletPoint(
-                    start + Vector2.UnitY * spacing * i + Vector2.UnitX * Random.Shared.Next(-1, 1),
-                    pinned
-                );
-
-                if (i > 0)
-                    sticks[stickCount++] = new VerletStick(i - 1, i, spacing);
-            }
-
-            // int startingPoints = 1000;
-            // int sideLength = (int)MathF.Floor(MathF.Sqrt(startingPoints));
-
-            // for (int i = 0; i < startingPoints; i++)
+            // for (int i = 0; i < 128; i++)
             // {
-            //     Vector2 start = new Vector2(i % sideLength, MathF.Floor(i / (float)sideLength)) * ((Radius + 2) * 2) + Vector2.UnitX * ((Window.GetWidth() - sideLength * (Radius + 2) * 2) * 0.5f) + Vector2.UnitY * ((Window.GetWidth() - sideLength * (Radius + 2) * 2) * 0.5f);
-            //     start += Vector2.UnitX * Random.Shared.Next(-1, 1) + Vector2.UnitY * Random.Shared.Next(-1, 1);
+            //     bool pinned = i == 0;
             //     points[pointCount++] = new VerletPoint(
-            //         start,
-            //         false
+            //         start + Vector2.UnitY * spacing * i + Vector2.UnitX * Random.Shared.Next(-1, 1),
+            //         pinned
             //     );
+
+            //     if (i > 0)
+            //         sticks[stickCount++] = new VerletStick(i - 1, i, spacing);
             // }
+
+            int startingPoints = 1000;
+            int sideLength = (int)MathF.Floor(MathF.Sqrt(startingPoints));
+
+            for (int i = 0; i < startingPoints; i++)
+            {
+                Vector2 start = new Vector2(i % sideLength, MathF.Floor(i / (float)sideLength)) * ((Radius + 2) * 2) + Vector2.UnitX * ((Window.GetWidth() - sideLength * (Radius + 2) * 2) * 0.5f) + Vector2.UnitY * ((Window.GetWidth() - sideLength * (Radius + 2) * 2) * 0.5f);
+                start += Vector2.UnitX * Random.Shared.Next(-1, 1) + Vector2.UnitY * Random.Shared.Next(-1, 1);
+                points[pointCount++] = new VerletPoint(
+                    start,
+                    false
+                );
+            }
         }
 
         protected override void Update(float dt)
@@ -186,14 +186,14 @@ namespace Velvet.Tests
 
                     if (InputManager.IsMouseButtonDown(MouseButton.Left) && pointHeldIndex == -1)
                     {
-                        if ((new Vector2(mx, my) - p.Position).Length() < Radius)
-                            pointHeldIndex = j;
-                        // Vector2 m = new Vector2(mx, my);
-                        // float dist = MathF.Max(0, 500 - (m - p.Previous).Length()) / 500;
-                        // p.Previous -= Vector2.Normalize(m - p.Previous) * dist * 250.0f * dt * dt;
+                        // if ((new Vector2(mx, my) - p.Position).Length() < Radius)
+                        //     pointHeldIndex = j;
+                        Vector2 m = new Vector2(mx, my);
+                        float dist = MathF.Max(0, 500 - (m - p.Previous).Length()) / 500;
+                        p.Previous -= Vector2.Normalize(m - p.Previous) * dist * 1000.0f * dt * dt;
                     }
-                    else if (InputManager.IsMouseButtonReleased(MouseButton.Left))
-                        pointHeldIndex = -1;
+                    // else if (InputManager.IsMouseButtonReleased(MouseButton.Left))
+                    //     pointHeldIndex = -1;
 
                     if (InputManager.IsMouseButtonPressed(MouseButton.Side1) && pointHeldIndex == j)
                         p.Pinned = !p.Pinned;
@@ -206,7 +206,6 @@ namespace Velvet.Tests
 
 
                     p.Update(dt, prevDT, gravity);
-
                 });
 
 

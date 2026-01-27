@@ -10,12 +10,14 @@ namespace Velvet.Graphics
     public class VelvetTexture : IDisposable
     {
         private readonly ILogger _logger = Log.ForContext<VelvetTexture>();
-        private Texture DeviceTexture = null!;
+        internal Texture DeviceTexture = null!;
         internal TextureView View = null!;
         internal Sampler Sampler = null!;
 
         public uint Width { get; private set;}
         public uint Height { get; private set;}
+        public bool IsMultiSampled { get; private set; }
+        public bool FromRenderTexture { get; private set; }
 
         /// <summary>
         /// Creates a new VelvetTexture with the provided image path.
@@ -46,18 +48,28 @@ namespace Velvet.Graphics
             InitTexture(renderer, imageData, width, height);
         }
 
+        internal VelvetTexture(VelvetRenderer renderer, uint width, uint height, SampleCount sampleCount)
+        {
+            InitTexture(renderer, width, height, sampleCount);
+        }
+
         private void InitTexture(VelvetRenderer renderer, byte[] imageData, uint width, uint height)
         {
             Width = width;
             Height = height;
 
+            IsMultiSampled = false;
+            FromRenderTexture = false;
+
+            uint mipLevels = (uint)(MathF.Floor(MathF.Log2(Math.Max(width, height))) + 1);
+
             var desc = TextureDescription.Texture2D(
                 width,
                 height,
-                mipLevels: 1,
+                mipLevels: mipLevels,
                 arrayLayers: 1,
                 format: PixelFormat.R8G8B8A8UNorm,
-                usage: TextureUsage.Sampled
+                usage: TextureUsage.RenderTarget | TextureUsage.Sampled | TextureUsage.GenerateMipmaps
             );
 
             DeviceTexture = renderer._graphicsDevice.ResourceFactory.CreateTexture(ref desc);
@@ -81,7 +93,7 @@ namespace Velvet.Graphics
                     null,
                     1,
                     0,
-                    0,
+                    mipLevels,
                     0,
                     SamplerBorderColor.TransparentBlack
                 )
@@ -90,7 +102,58 @@ namespace Velvet.Graphics
             _logger.Information($"(Window-{renderer._window.windowID}): Texture loaded:");
             _logger.Information($"(Window-{renderer._window.windowID}): > Width: {width}");
             _logger.Information($"(Window-{renderer._window.windowID}): > Height: {height}");
+            _logger.Information($"(Window-{renderer._window.windowID}): > MipLevels: {mipLevels}");
             _logger.Information($"(Window-{renderer._window.windowID}): > Size In Bytes: {imageData.Length} bytes ({imageData.Length / 1024} KB, {imageData.Length / (1024 * 1024)} MB)");
+        }
+
+        // This method is used for Render Textures
+        private void InitTexture(VelvetRenderer renderer, uint width, uint height, SampleCount sampleCount)
+        {
+            Width = width;
+            Height = height;
+
+            FromRenderTexture = true;
+
+            switch (sampleCount) 
+            {
+                case SampleCount.Count1: IsMultiSampled = false; break; 
+                default: IsMultiSampled = true; break; 
+            }
+
+            uint mipLevels = (uint)(MathF.Floor(MathF.Log2(Math.Max(width, height))) + 1);
+
+            var desc = TextureDescription.Texture2D(
+                width,
+                height,
+                mipLevels: mipLevels,
+                arrayLayers: 1,
+                format: PixelFormat.R8G8B8A8UNorm,
+                usage: TextureUsage.RenderTarget | TextureUsage.Sampled | TextureUsage.GenerateMipmaps,
+                (TextureSampleCount)sampleCount
+            );
+
+            DeviceTexture = renderer._graphicsDevice.ResourceFactory.CreateTexture(ref desc);
+
+            View = renderer._graphicsDevice.ResourceFactory.CreateTextureView(DeviceTexture);
+            Sampler = renderer._graphicsDevice.ResourceFactory.CreateSampler(
+                new SamplerDescription(
+                    SamplerAddressMode.Clamp,
+                    SamplerAddressMode.Clamp,
+                    SamplerAddressMode.Clamp,
+                    SamplerFilter.MinLinearMagLinearMipLinear,
+                    null,
+                    1,
+                    0,
+                    mipLevels,
+                    0,
+                    SamplerBorderColor.TransparentBlack
+                )
+            );
+
+            _logger.Information($"(Window-{renderer._window.windowID}): Render Texture loaded:");
+            _logger.Information($"(Window-{renderer._window.windowID}): > Width: {width}");
+            _logger.Information($"(Window-{renderer._window.windowID}): > Height: {height}");
+            _logger.Information($"(Window-{renderer._window.windowID}): > MipLevels: {mipLevels}");
         }
 
         public void Dispose()

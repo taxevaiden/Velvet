@@ -23,25 +23,19 @@ namespace Velvet.Tests
 
             stopwatch = new();
 
-            usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
-            testShader = new VelvetShader(Renderer, "assets/shaders/test.vert", null, [ new UniformDescription("hehe", UniformType.Float, UniformStage.Vertex) ]);
-            testShader.Set("hehe", 0.0f);
+            usagi = new VelvetTexture(Renderer, "assets/tyler.png");
+            testShader = new VelvetShader(Renderer, null, "assets/shaders/jpeg.frag", [ new UniformDescription("Resolution", UniformType.Vector2, UniformStage.Fragment) ]);
+            testShader.Set("Resolution", new Vector2(usagi.Width, usagi.Height));
             testShader.Flush();
 
             stopwatch.Start();
-        }
-
-        protected override void Update(float deltaTime)
-        {
-            testShader.Set("hehe", stopwatch.ElapsedMilliseconds / 100.0f);
-            testShader.Flush();
         }
 
 
         protected override void Draw()
         {
             Renderer.Begin();
-            Renderer.ClearColor(Color.White);
+            Renderer.ClearColor(Color.AntiqueWhite);
 
             Renderer.ApplyTexture(usagi);
             Renderer.ApplyShader(testShader);
