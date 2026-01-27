@@ -4,48 +4,6 @@ using System.Drawing;
 
 namespace Velvet.Graphics
 {
-    /// <summary>
-    /// Where a shape (e.g. rectangles) will be rotated around.
-    /// </summary>
-    public enum AnchorPosition
-    {   
-        /// <summary>
-        /// Rotated around the top-left.
-        /// </summary>
-        TopLeft,
-        /// <summary>
-        /// Rotated around the top.
-        /// </summary>
-        Top,
-        /// <summary>
-        /// Rotated around the top right.
-        /// </summary>
-        TopRight,
-        /// <summary>
-        /// Rotated around the left.
-        /// </summary>
-        Left,
-        /// <summary>
-        /// Rotated around the center.
-        /// </summary>
-        Center,
-        /// <summary>
-        /// Rotated around the right.
-        /// </summary>
-        Right,
-        /// <summary>
-        /// Rotated around the bottom-left.
-        /// </summary>
-        BottomLeft,
-        /// <summary>
-        /// ROtated around the bottom.
-        /// </summary>
-        Bottom,
-        /// <summary>
-        /// Rotated around the botton-right.
-        /// </summary>
-        BottomRight
-    }
     public partial class VelvetRenderer : IDisposable
     {
         public VelvetTexture DefaultTexture { get; internal set; } = null!;
@@ -171,7 +129,7 @@ namespace Velvet.Graphics
         /// </summary>
         /// <param name="pos">The position of the polygon.</param>
         /// <param name="vertices">An array of vertices to render.</param>
-        /// <param name="indices">An array of indices that determine the drawing order of the vertices.</param>
+        /// <param name="indices">An array of indices that determine how the vertices connect.</param>
         /// <param name="color">The color of the polygon.</param>
         public void DrawPolygon(Vector2 pos, Vector2[] vertices, uint[] indices, System.Drawing.Color color)
         {
@@ -426,7 +384,8 @@ namespace Velvet.Graphics
         /// <summary>
         /// Applies a VelvetShader.
         /// </summary>
-        /// <param name="shader">When this is called, anything drawn has the provided VelvetShader applied to it. This does not apply the VelvetShader to the entire screen. If you want do to that, you should create a VelverRenderTexture and apply a VelvetShader to that. To make anything drawn use the default shader again, call <code>ApplyShader()</code></param>
+        /// <remarks>When this is called, anything drawn has the provided VelvetShader applied to it. **This does not apply the VelvetShader to the entire screen.** To make anything drawn use the default shader again, call <code>ApplyShader()</code></remarks>
+        /// <param name="shader">The VelvetShader to apply. Can be null.</param>
         public void ApplyShader(VelvetShader? shader = null)
         {
             shader ??= DefaultShader;

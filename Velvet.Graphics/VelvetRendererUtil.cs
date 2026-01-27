@@ -3,7 +3,7 @@ using System.Numerics;
 using Veldrid;
 
 namespace Velvet.Graphics
-{   
+{
     public enum GraphicsAPI
     {
         /// <summary>
@@ -26,6 +26,49 @@ namespace Velvet.Graphics
         /// OpenGL (Supports Windows and Linux)
         /// </summary>
         OpenGL
+    }
+
+    /// <summary>
+    /// Where a shape (e.g. rectangles) will be rotated around.
+    /// </summary>
+    public enum AnchorPosition
+    {
+        /// <summary>
+        /// Rotated around the top-left.
+        /// </summary>
+        TopLeft,
+        /// <summary>
+        /// Rotated around the top.
+        /// </summary>
+        Top,
+        /// <summary>
+        /// Rotated around the top right.
+        /// </summary>
+        TopRight,
+        /// <summary>
+        /// Rotated around the left.
+        /// </summary>
+        Left,
+        /// <summary>
+        /// Rotated around the center.
+        /// </summary>
+        Center,
+        /// <summary>
+        /// Rotated around the right.
+        /// </summary>
+        Right,
+        /// <summary>
+        /// Rotated around the bottom-left.
+        /// </summary>
+        BottomLeft,
+        /// <summary>
+        /// Rotated around the bottom.
+        /// </summary>
+        Bottom,
+        /// <summary>
+        /// Rotated around the botton-right.
+        /// </summary>
+        BottomRight
     }
 
     struct Vertex

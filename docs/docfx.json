@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../",
+          "files": [
+            "Velvet/*.csproj",
+            "Velvet.Graphics/*.csproj",
+            "Velvet.Input/*.csproj",
+            "Velvet.Windowing/*.csproj"
+          ]
+        }
+      ],
+      "dest": "api",
+      "enumSortOrder": "declaringOrder"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": [
+          "_site/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "Velvet Framework",
+      "_appTitle": "Velvet Framework",
+      "_enableSearch": true,
+      "pdf": true
+    }
+  }
+}

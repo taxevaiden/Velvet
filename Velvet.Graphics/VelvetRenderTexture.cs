@@ -18,8 +18,8 @@ namespace Velvet.Graphics
     }
     public class VelvetRenderTexture : IDisposable
     {
-        public VelvetTexture MainTexture;
-        public VelvetTexture Texture;
+        private VelvetTexture MainTexture;
+        public VelvetTexture Texture { get; internal set; }
         internal Framebuffer Framebuffer;
 
         public uint Width { get; private set; }

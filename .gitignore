@@ -2,4 +2,7 @@
 **/obj/
 .vs/
 
+docs/_site/
+docs/api/
+
 .DS_Store
