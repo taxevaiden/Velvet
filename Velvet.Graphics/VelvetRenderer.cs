@@ -7,10 +7,10 @@ namespace Velvet.Graphics
     public partial class VelvetRenderer : IDisposable
     {
         /// <summary>
-        /// Initializes a Renderer with a VelvetWindow.
+        /// Initializes a VelvetRenderer with a VelvetWindow.
         /// </summary>
         /// <remarks>This chooses the GraphicsAPI depending on the platform you're on. If you're on Windows, the GraphicsAPI is D3D11. If you're on OSX, the GraphicsAPI is Metal. If you're on Linux, the GraphicsAPI is Vulkan.</remarks>
-        /// <param name="window"></param>
+        /// <param name="window">The VelvetWindow the VelvetRenderer will draw to.</param>
         public VelvetRenderer(VelvetWindow window)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -22,10 +22,10 @@ namespace Velvet.Graphics
         }
 
         /// <summary>
-        /// Initializes a Renderer with the specified GraphicsAPI with a VelvetWindow.
+        /// Initializes a VelvetRenderer with a VelvetWindow.
         /// </summary>
-        /// <param name="rendererAPI"></param>
-        /// <param name="window"></param>
+        /// <param name="window">The VelvetWindow the VelvetRenderer will draw to.</param>
+        /// <param name="rendererAPI">The GraphicsAPI to use.</param>
         public VelvetRenderer(VelvetWindow window, GraphicsAPI rendererAPI)
         {
             GraphicsAPI resolvedAPI = rendererAPI;
@@ -50,10 +50,11 @@ namespace Velvet.Graphics
         }
 
         /// <summary>
-        /// Initializes a Renderer with the specified GraphicsAPI with a VelvetWindow.
+        /// Initializes a VelvetRenderer with the specified GraphicsAPI with a VelvetWindow.
         /// </summary>
-        /// <param name="rendererAPI"></param>
-        /// <param name="window"></param>
+        /// <param name="window">The VelvetWindow the VelvetRenderer will draw to.</param>
+        /// <param name="rendererAPI">The GraphicsAPI to use.</param>
+        /// <param name="vsync">Whether VSync will be enabled or not.</param>
         public VelvetRenderer(VelvetWindow window, GraphicsAPI rendererAPI, bool vsync)
         {
             GraphicsAPI resolvedAPI = rendererAPI;
@@ -78,7 +79,7 @@ namespace Velvet.Graphics
         }
 
         /// <summary>
-        /// Clears up the resources used for the Renderer.
+        /// Clears up the resources used for the VelvetRenderer.
         /// </summary>
         public void Dispose()
         {

@@ -4,16 +4,46 @@ using System.Drawing;
 
 namespace Velvet.Graphics
 {
+    /// <summary>
+    /// Where a shape (e.g. rectangles) will be rotated around.
+    /// </summary>
     public enum AnchorPosition
-    {
+    {   
+        /// <summary>
+        /// Rotated around the top-left.
+        /// </summary>
         TopLeft,
+        /// <summary>
+        /// Rotated around the top.
+        /// </summary>
         Top,
+        /// <summary>
+        /// Rotated around the top right.
+        /// </summary>
         TopRight,
+        /// <summary>
+        /// Rotated around the left.
+        /// </summary>
         Left,
+        /// <summary>
+        /// Rotated around the center.
+        /// </summary>
         Center,
+        /// <summary>
+        /// Rotated around the right.
+        /// </summary>
         Right,
+        /// <summary>
+        /// Rotated around the bottom-left.
+        /// </summary>
         BottomLeft,
+        /// <summary>
+        /// ROtated around the bottom.
+        /// </summary>
         Bottom,
+        /// <summary>
+        /// Rotated around the botton-right.
+        /// </summary>
         BottomRight
     }
     public partial class VelvetRenderer : IDisposable
@@ -75,6 +105,7 @@ namespace Velvet.Graphics
         /// <param name="pos">The position of the rectangle.</param>
         /// <param name="size">The size of the rectangle.</param>
         /// <param name="rotation">The rotation of the rectangle, in radians.</param>
+        /// <param name="anchor">Where the rectangle is rotated around.</param>
         /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, AnchorPosition anchor, System.Drawing.Color color)
         {
@@ -184,7 +215,6 @@ namespace Velvet.Graphics
             Vector2 viewport = GetRenderSize();
             Matrix3x2 projection = Matrix3x2.CreateScale(2f / viewport.X, 2f / viewport.Y);
             projection *= Matrix3x2.CreateTranslation(-1f, -1f);
-            projection *= Matrix3x2.CreateScale(1.0f, -1.0f);
 
             pos = Vector2.Transform(pos, projection);
 
@@ -210,7 +240,6 @@ namespace Velvet.Graphics
             Vector2 viewport = GetRenderSize();
             Matrix3x2 projection = Matrix3x2.CreateScale(2f / viewport.X, 2f / viewport.Y);
             projection *= Matrix3x2.CreateTranslation(-1f, -1f);
-            projection *= Matrix3x2.CreateScale(1.0f, -1.0f);
 
             pos = Vector2.Transform(pos, projection);
 
@@ -218,7 +247,7 @@ namespace Velvet.Graphics
         }
 
         /// <summary>
-        /// Begins the command list and clears the current texture and shader applied. Call this before drawing anything.
+        /// Begins the command list. Call this before drawing anything.
         /// </summary>
         public void Begin()
         {
@@ -379,30 +408,34 @@ namespace Velvet.Graphics
         /// Applies a VelvetTexture.
         /// </summary>
         /// <remarks>When this is called, anything drawn has the provided VelvetTexture applied. To make anything drawn have a solid color again, call <code>ApplyTexture()</code></remarks>
-        /// <param name="texture"></param>
+        /// <param name="texture">The VelvetTexture to apply. Can be null.</param>
         public void ApplyTexture(VelvetTexture? texture = null)
         {
             texture ??= DefaultTexture;
 
+            if (texture == CurrentTexture) return;
+
             if (CurrentTexture != texture)
                 if (_vertices.Count > 0 && _indices.Count > 0)
-                {
                     Flush(CurrentRenderTarget);
-                }
 
             CurrentTexture = texture;
 
         }
 
+        /// <summary>
+        /// Applies a VelvetShader.
+        /// </summary>
+        /// <param name="shader">When this is called, anything drawn has the provided VelvetShader applied to it. This does not apply the VelvetShader to the entire screen. If you want do to that, you should create a VelverRenderTexture and apply a VelvetShader to that. To make anything drawn use the default shader again, call <code>ApplyShader()</code></param>
         public void ApplyShader(VelvetShader? shader = null)
         {
             shader ??= DefaultShader;
 
+            if (shader == CurrentShader) return;
+
             if (CurrentShader != shader)
                 if (_vertices.Count > 0 && _indices.Count > 0)
-                {
                     Flush(CurrentRenderTarget);
-                }
 
             CurrentShader = shader;
         }
@@ -410,7 +443,7 @@ namespace Velvet.Graphics
         /// <summary>
         /// Clears the screen to a color.
         /// </summary>
-        /// <param name="color"></param>
+        /// <param name="color">The color to clear the screen to.</param>
         public void ClearColor(System.Drawing.Color color)
         {
             if (CurrentRenderTarget != null) _commandList.SetFramebuffer(CurrentRenderTarget.Framebuffer); else _commandList.SetFramebuffer(_graphicsDevice.SwapchainFramebuffer);

@@ -18,15 +18,13 @@ namespace Velvet.Windowing
         public int Width { get => GetWidth(); set => SetWidth(value); }
         public int Height { get => GetHeight(); set => SetHeight(value); }
 
-        private SDL.EventFilter? _eventWatch;
-        private GCHandle _eventWatchHandle;
 
         /// <summary>
         /// Initializes a new VelvetWindow.
         /// </summary>
-        /// <param name="title"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
+        /// <param name="title">The title of the VelvetWindow.</param>
+        /// <param name="width">The width of the VelvetWindow.</param>
+        /// <param name="height">The height of the VelvetWindow.</param>
         /// <exception cref="Exception"></exception>
         public VelvetWindow(string title, int width, int height)
         {
@@ -84,13 +82,13 @@ namespace Velvet.Windowing
 
         private int GetWidth()
         {
-            SDL.GetWindowSize(windowPtr, out int w, out _);
+            GetSize(out int w, out _);
             return w;
         }
 
         private int GetHeight()
         {
-            SDL.GetWindowSize(windowPtr, out _, out int h);
+            GetSize(out _, out int h);
             return h;
         }
 
@@ -99,9 +97,6 @@ namespace Velvet.Windowing
             SDL.GetWindowSize(windowPtr, out width, out height);
         }
 
-        /// <summary>
-        /// Destroys the window and quits SDL.
-        /// </summary>
         public void Dispose()
         {
             Running = false;

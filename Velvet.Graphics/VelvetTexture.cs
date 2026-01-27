@@ -20,10 +20,10 @@ namespace Velvet.Graphics
         public bool FromRenderTexture { get; private set; }
 
         /// <summary>
-        /// Creates a new VelvetTexture with the provided image path.
+        /// Creates a new VelvetTexture.
         /// </summary>
-        /// <param name="renderer"></param>
-        /// <param name="imageFilePath"></param>
+        /// <param name="renderer">The VelvetRenderer to use.</param>
+        /// <param name="imageFilePath">The file path to your image that will be used for the VelvetTexture.</param>
         public VelvetTexture(VelvetRenderer renderer, string imageFilePath)
         {
             Image<Rgba32> image = Image.Load<Rgba32>(imageFilePath);
@@ -37,12 +37,12 @@ namespace Velvet.Graphics
         }
 
         /// <summary>
-        /// Creates a new VelvetTexture with the provided image data. 
+        /// Creates a new VelvetTexture. 
         /// </summary>
-        /// <param name="renderer"></param>
-        /// <param name="imageData"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
+        /// <param name="renderer">The VelvetRenderer to use.</param>
+        /// <param name="imageData">The image data.</param>
+        /// <param name="width">The width of the texture.</param>
+        /// <param name="height">The height of the texture.</param>
         public VelvetTexture(VelvetRenderer renderer, byte[] imageData, uint width, uint height)
         {
             InitTexture(renderer, imageData, width, height);

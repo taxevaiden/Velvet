@@ -125,6 +125,13 @@ void main()
 
         private GraphicsDevice _gd = null!;
 
+        /// <summary>
+        /// Creates a new VelvetShader.
+        /// </summary>
+        /// <param name="renderer">The VelvetRenderer to use.</param>
+        /// <param name="vertPath">The file path to your vertex shader. Can be left null to use the default shader.</param>
+        /// <param name="fragPath">The file path to your fragment shader. Can be left null to use the default shader.</param>
+        /// <param name="uniforms">An array of UniformDescriptions that will be used to give information to the VelvetShader. Can be left null.</param>
         public VelvetShader(
             VelvetRenderer renderer,
             string? vertPath,
@@ -278,7 +285,7 @@ void main()
                     RasterizerState = new RasterizerStateDescription(
                         FaceCullMode.Back,
                         PolygonFillMode.Solid,
-                        FrontFace.CounterClockwise,
+                        FrontFace.Clockwise,
                         true,
                         false
                     ),
@@ -296,13 +303,29 @@ void main()
             _piplineDirty = false;
         }
 
-
+        /// <summary>
+        /// Sets the value of a uniform.
+        /// </summary>
+        /// <param name="name">The name of the uniform.</param>
+        /// <param name="value">The value of the uniform.</param>
         public void Set(string name, float value) => Write(name, value);
+
+        /// <inheritdoc cref="Set(string, float)" />
         public void Set(string name, int value) => Write(name, value);
+
+        /// <inheritdoc cref="Set(string, float)" />
         public void Set(string name, uint value) => Write(name, value);
+
+        /// <inheritdoc cref="Set(string, float)" />
         public void Set(string name, Vector2 value) => Write(name, value);
+
+        /// <inheritdoc cref="Set(string, float)" />
         public void Set(string name, Vector3 value) => Write(name, value);
+
+        /// <inheritdoc cref="Set(string, float)" />
         public void Set(string name, Vector4 value) => Write(name, value);
+
+        /// <inheritdoc cref="Set(string, float)" />
         public void Set(string name, Matrix4x4 value) => Write(name, value);
 
         internal void SetTexture(VelvetTexture texture)

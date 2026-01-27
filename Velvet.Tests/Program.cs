@@ -14,7 +14,7 @@ namespace Velvet.Tests
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 resolvedAPI = GraphicsAPI.Metal;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                resolvedAPI = GraphicsAPI.Vulkan;  // You can change this to either Vulkan or OpenGL (Vulkan was verified to work on Linux, however OpenGL hasn't been tested yet.)
+                resolvedAPI = GraphicsAPI.OpenGL;  // You can change this to either Vulkan or OpenGL (Vulkan was verified to work on Linux, however OpenGL hasn't been tested yet.)
             else
                 throw new PlatformNotSupportedException();
 

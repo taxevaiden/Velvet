@@ -63,7 +63,6 @@ namespace Velvet.Tests
         {
             Renderer.Begin();
             Renderer.SetRenderTarget(renderTexture);
-            Renderer.ApplyShader();
             Renderer.ClearColor(Color.White);
 
             Renderer.DrawRectangle(new Vector2(50.0f, 50.0f), new Vector2(200.0f, 200.0f), rot * (MathF.PI / 180.0f), AnchorPosition.Center, Color.Red);

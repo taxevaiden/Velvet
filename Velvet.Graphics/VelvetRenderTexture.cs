@@ -29,6 +29,13 @@ namespace Velvet.Graphics
 
         private readonly GraphicsDevice _gd;
 
+        /// <summary>
+        /// Creates a new VelvetRenderTexture
+        /// </summary>
+        /// <param name="renderer">The VelvetRenderer to use.</param>
+        /// <param name="width">The width of the VelvetRenderTexture.</param>
+        /// <param name="height">The height of the VelvetRenderTexture.</param>
+        /// <param name="sampleCount">The amount of samples for the VelvetRenderTexture.</param>
         public VelvetRenderTexture(VelvetRenderer renderer, uint width, uint height, SampleCount sampleCount = SampleCount.Count1)
         {
             _gd = renderer._graphicsDevice;
@@ -36,14 +43,11 @@ namespace Velvet.Graphics
             Height = height;
             SampleCount = sampleCount;
 
-            // Multisample texture
             MainTexture = new VelvetTexture(renderer, width, height, sampleCount);
 
-            // Framebuffer
             FramebufferDescription fbDesc = new FramebufferDescription(null, MainTexture.DeviceTexture);
             Framebuffer = _gd.ResourceFactory.CreateFramebuffer(ref fbDesc);
 
-            // If multisampled, create a resolve target
             if (IsMultiSampled)
             {
                 Texture = new VelvetTexture(renderer, width, height, SampleCount.Count1);
@@ -63,7 +67,7 @@ namespace Velvet.Graphics
             if (!IsMultiSampled) return;
             cl.ResolveTexture(MainTexture.DeviceTexture, Texture.DeviceTexture);
         }
-
+        
         public void Dispose()
         {
             Framebuffer.Dispose();

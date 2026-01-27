@@ -3,13 +3,28 @@ using System.Numerics;
 using Veldrid;
 
 namespace Velvet.Graphics
-{
+{   
     public enum GraphicsAPI
     {
+        /// <summary>
+        /// The default GraphicsAPI for your operating systen.
+        /// </summary>
         Default,
+        /// <summary>
+        /// Direct3D 11 (Supports Windows only)
+        /// </summary>
         D3D11,
+        /// <summary>
+        /// Vulkan (Supports all operating systems, however for macOS you need MoltenVK)
+        /// </summary>
         Vulkan,
+        /// <summary>
+        /// Metal (Supports macOS only)
+        /// </summary>
         Metal,
+        /// <summary>
+        /// OpenGL (Supports Windows and Linux)
+        /// </summary>
         OpenGL
     }
 
@@ -64,6 +79,11 @@ namespace Velvet.Graphics
             return new Vector2(_window.Width, _window.Height);
         }
 
+        /// <summary>
+        /// Resizes the VelvetRenderer.
+        /// </summary>
+        /// <param name="width">The width that the VelvetRenderer will be resized to.</param>
+        /// <param name="height">The height that the VelvetRenderer will be resized to.</param>
         public void Resize(int width, int height)
         { _graphicsDevice.ResizeMainWindow((uint)width, (uint)height); }
     }

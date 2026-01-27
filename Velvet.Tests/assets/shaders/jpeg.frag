@@ -16,7 +16,7 @@ layout(set = 0, binding = 2) uniform Globals
 void main()
 {
     const int range = 1;
-    const float y_interval = 0.05;
+    const float y_interval = 0.0525;
     const float cbcr_interval = 0.0125;
     const float pixel_size = 8.0;
     vec2 block_size = pixel_size / Resolution.xy;
@@ -45,8 +45,8 @@ void main()
     // }
 
     // vec4 yTex = sum / count;
-    vec4 yTex = texture(sampler2D(Texture2D, Sampler), fsin_UV + (pixelated_coords - fsin_UV) * 0.06125);
-    vec4 cbcrTex = texture(sampler2D(Texture2D, Sampler), fsin_UV + (pixelated_coords - fsin_UV) * 0.25, 3.0);
+    vec4 yTex = texture(sampler2D(Texture2D, Sampler), fsin_UV + (pixelated_coords - fsin_UV) * 0.006125);
+    vec4 cbcrTex = texture(sampler2D(Texture2D, Sampler), fsin_UV + (pixelated_coords - fsin_UV) * 0.0125, 1.0);
 
     float y = dot(yTex.rgb, vec3(0.299, 0.587, 0.114));
     y = round(y / y_interval) * y_interval;

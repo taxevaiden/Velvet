@@ -3,8 +3,18 @@ using System.Numerics;
 using SDL3;
 using static SDL3.SDL;
 
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Velvet")]
+
 namespace Velvet.Input
 {
+    /// <summary>
+    /// Represents keyboard keys.
+    /// </summary>
+    /// <remarks>
+    /// Values correspond to physical key positions rather than character input.
+    /// </remarks>
     public enum KeyCode
     {
         // Letters
@@ -135,7 +145,9 @@ namespace Velvet.Input
         Unknown = SDL.Scancode.Unknown
     }
 
-
+    /// <summary>
+    /// Represents mouse buttons.
+    /// </summary>
     public enum MouseButton
     {
         Left = 1,
@@ -145,6 +157,9 @@ namespace Velvet.Input
         Side2 = 5,
     }
 
+    /// <summary>
+    /// Provides access to keyboard and mouse input state.
+    /// </summary>
     public static class InputManager
     {
         private static bool[] _keyboardState = new bool[((uint)SDL.Scancode.Count)];
@@ -157,7 +172,7 @@ namespace Velvet.Input
         private static float _scrollX;
         private static float _scrollY;
 
-        public static void ProcessEvent(Event e)
+        internal static void ProcessEvent(Event e)
         {
             switch ((EventType)e.Type)
             {
@@ -172,7 +187,7 @@ namespace Velvet.Input
                         _scrollX = e.Wheel.X;
                         _scrollY = e.Wheel.Y;
                         if (e.Wheel.Direction == MouseWheelDirection.Flipped) { _scrollX *= -1; _scrollY *= -1; }
-                        
+
                         break;
                     }
                 case EventType.MouseButtonDown:
@@ -187,30 +202,70 @@ namespace Velvet.Input
             }
         }
 
-        public static void Update()
+        internal static void Update()
         {
             ReadOnlySpan<bool> keys = SDL.GetKeyboardState(out _);
             for (int i = 0; i < _keyboardState.Length; i++)
                 _keyboardState[i] = keys[i];
         }
 
-        public static void EndFrame()
+        internal static void EndFrame()
         {
             _scrollX = 0.0f;
             _scrollY = 0.0f;
             _pressedButtons.Clear();
             _releasedButtons.Clear();
         }
-
+        /// <summary>
+        /// Returns whether the specified key is currently held down.
+        /// </summary>
         public static bool IsKeyDown(KeyCode key) => _keyboardState[(uint)key];
-        public static bool IsKeyReleased(KeyCode key) => !_keyboardState[(uint)key];
 
+        /// <summary>
+        /// Returns whether the specified key is not currently held down.
+        /// </summary>
+        public static bool IsKeyUp(KeyCode key) => !_keyboardState[(uint)key];
+
+        /// <summary>
+        /// Returns whether the specified mouse button is currently held down.
+        /// </summary>
         public static bool IsMouseButtonDown(MouseButton b) => _heldButtons.Contains((byte)b);
+
+        /// <summary>
+        /// Returns whether the specified mouse button is not currently held down.
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static bool IsMouseButtonUp(MouseButton b) => !_heldButtons.Contains((byte)b);
+
+
+        /// <summary>
+        /// Returns whether the specified mouse button was pressed this frame.
+        /// </summary>
         public static bool IsMouseButtonPressed(MouseButton b) => _pressedButtons.Contains((byte)b);
+
+        /// <summary>
+        /// Returns whether the specified mouse button was released this frame.
+        /// </summary>
         public static bool IsMouseButtonReleased(MouseButton b) => _releasedButtons.Contains((byte)b);
 
-        public static void GetMousePosition(out float x, out float y) { x = _mouseX; y = _mouseY; }
-        public static void GetMouseScroll(out float x, out float y) { x = _scrollX; y = _scrollY; }
+        /// <summary>
+        /// Gets the current mouse position in window coordinates.
+        /// </summary>
+        public static void GetMousePosition(out float x, out float y)
+        {
+            x = _mouseX;
+            y = _mouseY;
+        }
+
+        /// <summary>
+        /// Gets the mouse scroll delta for the current frame.
+        /// </summary>
+        public static void GetMouseScroll(out float x, out float y)
+        {
+            x = _scrollX;
+            y = _scrollY;
+        }
     }
 
 }
