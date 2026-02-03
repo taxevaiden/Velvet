@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Text;
+
 using Serilog;
+
 using Veldrid;
 using Veldrid.SPIRV;
 
-namespace Velvet.Graphics
+using Velvet.Graphics.Textures;
+
+namespace Velvet.Graphics.Shaders
 {
     public enum UniformType
     {

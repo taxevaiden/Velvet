@@ -1,9 +1,12 @@
+using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
+
 using Velvet.Graphics;
-using Velvet.Windowing;
+using Velvet.Graphics.Shaders;
+using Velvet.Graphics.Textures;
 using Velvet.Input;
-using System.Diagnostics;
+using Velvet.Windowing;
 
 namespace Velvet.Tests
 {
@@ -25,7 +28,7 @@ namespace Velvet.Tests
             base.OnInit();
             usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
             renderTexture = new(Renderer, 1600, 900);
-            testShader = new VelvetShader(Renderer, null, "assets/shaders/jpeg.frag", [ new UniformDescription("Resolution", UniformType.Vector2, UniformStage.Fragment) ]);
+            testShader = new VelvetShader(Renderer, null, "assets/shaders/jpeg.frag", [new UniformDescription("Resolution", UniformType.Vector2, UniformStage.Fragment)]);
             testShader.Set("Resolution", new Vector2(1600, 900));
             testShader.Flush();
 
@@ -52,7 +55,7 @@ namespace Velvet.Tests
 
             InputManager.GetMouseScroll(out float x, out float y);
             vel += new Vector2(-x, -y);
-            vel *= MathF.Max(0, 1-deltaTime*5);
+            vel *= MathF.Max(0, 1 - deltaTime * 5);
             pos2 += vel;
 
             // testShader.Set("hehe", stopwatch.ElapsedMilliseconds / 100.0f);
@@ -77,7 +80,7 @@ namespace Velvet.Tests
             Renderer.ApplyTexture();
             Renderer.DrawRectangle(new Vector2(350.0f, 350.0f), new Vector2(200.0f, 200.0f), Color.Lavender);
 
-            InputManager.GetMousePosition(out float x, out float y);  
+            InputManager.GetMousePosition(out float x, out float y);
             Renderer.DrawCircle(new Vector2(x, y), 10.0f, Color.Blue);
             Renderer.DrawCircle(pos, 20.0f, Color.Blue);
             Renderer.DrawRectangle(pos2, new Vector2(20.0f, 20.0f), Color.Blue);

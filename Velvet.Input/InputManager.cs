@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics.Tracing;
 using System.Numerics;
-using SDL3;
-using static SDL3.SDL;
-
 using System.Runtime.CompilerServices;
+
+using SDL3;
 
 [assembly: InternalsVisibleTo("Velvet")]
 
@@ -172,30 +171,30 @@ namespace Velvet.Input
         private static float _scrollX;
         private static float _scrollY;
 
-        internal static void ProcessEvent(Event e)
+        internal static void ProcessEvent(SDL.Event e)
         {
-            switch ((EventType)e.Type)
+            switch ((SDL.EventType)e.Type)
             {
-                case EventType.MouseMotion:
+                case SDL.EventType.MouseMotion:
                     {
                         _mouseX = e.Motion.X;
                         _mouseY = e.Motion.Y;
                         break;
                     }
-                case EventType.MouseWheel:
+                case SDL.EventType.MouseWheel:
                     {
                         _scrollX = e.Wheel.X;
                         _scrollY = e.Wheel.Y;
-                        if (e.Wheel.Direction == MouseWheelDirection.Flipped) { _scrollX *= -1; _scrollY *= -1; }
+                        if (e.Wheel.Direction == SDL.MouseWheelDirection.Flipped) { _scrollX *= -1; _scrollY *= -1; }
 
                         break;
                     }
-                case EventType.MouseButtonDown:
+                case SDL.EventType.MouseButtonDown:
                     if (_heldButtons.Add(e.Button.Button))
                         _pressedButtons.Add(e.Button.Button);
                     break;
 
-                case EventType.MouseButtonUp:
+                case SDL.EventType.MouseButtonUp:
                     if (_heldButtons.Remove(e.Button.Button))
                         _releasedButtons.Add(e.Button.Button);
                     break;

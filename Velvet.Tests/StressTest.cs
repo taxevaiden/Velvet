@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Drawing;
+using System.Numerics;
 using System.Threading.Tasks;
+
 using Velvet.Graphics;
-using Velvet.Windowing;
 using Velvet.Input;
+using Velvet.Windowing;
 
 namespace Velvet.Tests
 {
@@ -80,7 +81,7 @@ namespace Velvet.Tests
         private void AddParticle()
         {
             particles.Add(new Vector2(random.Next(0, Window.Width), random.Next(0, Window.Height)));
-            velocities.Add(new Vector2((float)(random.NextDouble() * 20.0 - 10.0), 
+            velocities.Add(new Vector2((float)(random.NextDouble() * 20.0 - 10.0),
                                        (float)(random.NextDouble() * 20.0 - 10.0)));
         }
     }

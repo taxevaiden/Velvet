@@ -1,11 +1,11 @@
 ﻿using System.Runtime.InteropServices;
 
-using Velvet.Input;
-
 using SDL3;
 
 using Serilog;
 using Serilog.Events;
+
+using Velvet.Input;
 
 namespace Velvet.Windowing
 {

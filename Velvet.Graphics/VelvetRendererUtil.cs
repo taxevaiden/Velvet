@@ -1,6 +1,10 @@
 using System.Drawing;
 using System.Numerics;
+
 using Veldrid;
+
+using Velvet.Graphics.Shaders;
+using Velvet.Graphics.Textures;
 
 namespace Velvet.Graphics
 {
@@ -87,15 +91,20 @@ namespace Velvet.Graphics
 
     struct Batch
     {
-        public Vertex[] Vertices;
-        public uint[] Indices;
+        public int VertexStart;
+        public int VertexCount;
+        public int IndexStart;
+        public int IndexCount;
         public VelvetTexture Texture;
         public VelvetRenderTexture? RenderTarget;
         public VelvetShader Shader;
-        public Batch(Vertex[] vertices, uint[] indices, VelvetTexture texture, VelvetShader shader, VelvetRenderTexture? renderTarget = null)
+
+        public Batch(int vertexStart, int vertexCount, int indexStart, int indexCount, VelvetTexture texture, VelvetShader shader, VelvetRenderTexture? renderTarget = null)
         {
-            Vertices = vertices;
-            Indices = indices;
+            VertexStart = vertexStart;
+            VertexCount = vertexCount;
+            IndexStart = indexStart;
+            IndexCount = indexCount;
             Texture = texture;
             RenderTarget = renderTarget;
             Shader = shader;
@@ -120,6 +129,20 @@ namespace Velvet.Graphics
                 return new Vector2(CurrentRenderTarget.Width, CurrentRenderTarget.Height);
 
             return new Vector2(_window.Width, _window.Height);
+        }
+
+        private static Rectangle Rect(Vector2 pos, Vector2 size)
+        {
+            return new Rectangle(
+                (int)pos.X,
+                (int)pos.Y,
+                (int)size.X,
+                (int)size.Y);
+        }
+
+        private Rectangle GetFullUV()
+        {
+            return new Rectangle(0, 0, (int)CurrentTexture.Width, (int)CurrentTexture.Height);
         }
 
         /// <summary>

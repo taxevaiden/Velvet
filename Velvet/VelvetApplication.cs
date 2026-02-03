@@ -1,17 +1,27 @@
-﻿using Velvet.Windowing;
+﻿using SDL3;
+
+using Serilog;
+
 using Velvet.Graphics;
 using Velvet.Input;
-using SDL3;
-using Serilog;
+using Velvet.Windowing;
 
 namespace Velvet
 {
+    /// <summary>
+    /// The base class for all Velvet-based applications. 
+    /// Handles window creation, rendering setup, input processing, and the main execution loop.
+    /// </summary>
     public abstract class VelvetApplication
     {
         private readonly ILogger _logger = Log.ForContext<VelvetApplication>();
+
+        /// <summary> Access to the VelvetWindow. </summary>
         protected VelvetWindow Window { get; private set; }
+        /// <summary> Access to the VelvetRenderer. </summary>
         protected VelvetRenderer Renderer { get; private set; }
 
+        /// <summary> The time elapsed between the last frame and the current frame in seconds. </summary>
         public float DeltaTime { get; private set; }
         private ulong lastCounter;
 
@@ -26,6 +36,7 @@ namespace Velvet
         private GraphicsAPI _graphicsAPI;
         private bool _vsync;
 
+        #region Constructors
         protected VelvetApplication(int width, int height, string title)
         {
             InitApp(width, height, title, GraphicsAPI.Default, true);
@@ -40,6 +51,7 @@ namespace Velvet
         {
             InitApp(width, height, title, graphicsAPI, vsync);
         }
+        #endregion
 
         private void InitApp(int width, int height, string title, GraphicsAPI graphicsAPI, bool vsync)
         {
@@ -62,6 +74,9 @@ namespace Velvet
             _quitCallback = QuitCallback;
         }
 
+        /// <summary>
+        /// Starts the application.
+        /// </summary>
         public int Run(int argc, string[] argv)
         {
             return SDL.RunApp(argc, argv, _runCallback, (nint)null);
@@ -119,7 +134,7 @@ namespace Velvet
                     {
                         if (@event.Window.WindowID == Window.windowID)
                             Renderer.Resize(Window.Width, Window.Height);
-                        
+
                         break;
                     }
 
@@ -151,15 +166,25 @@ namespace Velvet
             Window.Dispose();
         }
 
+
+        #region Virtual Hooks
+        /// <summary> Override to perform setup logic. </summary>
         protected virtual void OnInit() { }
+
+        /// <summary> Override to handle frame-by-frame logic. </summary>
         protected virtual void Update(float deltaTime) { }
+
+        /// <summary> Override to perform rendering. </summary>
         protected virtual void Draw()
         {
             Renderer.Begin();
             Renderer.ClearColor(System.Drawing.Color.Black);
             Renderer.End();
         }
+
+        /// <summary> Override to handle manual resource cleanup. </summary>
         protected virtual void OnShutdown() { }
+        #endregion
     }
 
 }

@@ -1,11 +1,14 @@
 using System.Runtime.CompilerServices;
+
 using Serilog;
+
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
+
 using Veldrid;
 
-namespace Velvet.Graphics
+namespace Velvet.Graphics.Textures
 {
     public enum SampleCount
     {
@@ -22,8 +25,8 @@ namespace Velvet.Graphics
         public VelvetTexture Texture { get; internal set; }
         internal Framebuffer Framebuffer;
 
-        public uint Width { get; private set; }
-        public uint Height { get; private set; }
+        public uint Width { get => Texture.Width; }
+        public uint Height { get => Texture.Height; }
         public SampleCount SampleCount { get; private set; }
         public bool IsMultiSampled => SampleCount != SampleCount.Count1;
 
@@ -39,8 +42,6 @@ namespace Velvet.Graphics
         public VelvetRenderTexture(VelvetRenderer renderer, uint width, uint height, SampleCount sampleCount = SampleCount.Count1)
         {
             _gd = renderer._graphicsDevice;
-            Width = width;
-            Height = height;
             SampleCount = sampleCount;
 
             MainTexture = new VelvetTexture(renderer, width, height, sampleCount);
@@ -67,7 +68,7 @@ namespace Velvet.Graphics
             if (!IsMultiSampled) return;
             cl.ResolveTexture(MainTexture.DeviceTexture, Texture.DeviceTexture);
         }
-        
+
         public void Dispose()
         {
             Framebuffer.Dispose();

@@ -1,6 +1,9 @@
 using System.Drawing;
 using System.Numerics;
+
 using Velvet.Graphics;
+using Velvet.Graphics.Shaders;
+using Velvet.Graphics.Textures;
 using Velvet.Input;
 
 namespace Velvet.Tests

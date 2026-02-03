@@ -2,8 +2,10 @@ using System;
 using System.Drawing;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Velvet.Graphics;
 using Velvet.Input;
+
 using Vortice.Mathematics;
 
 namespace Velvet.Tests

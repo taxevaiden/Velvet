@@ -1,11 +1,15 @@
+using System.Dynamic;
 using System.Runtime.CompilerServices;
+
 using Serilog;
+
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
+
 using Veldrid;
 
-namespace Velvet.Graphics
+namespace Velvet.Graphics.Textures
 {
     public class VelvetTexture : IDisposable
     {
@@ -14,9 +18,10 @@ namespace Velvet.Graphics
         internal TextureView View = null!;
         internal Sampler Sampler = null!;
 
-        public uint Width { get; private set;}
-        public uint Height { get; private set;}
+        public uint Width { get; private set; }
+        public uint Height { get; private set; }
         public bool IsMultiSampled { get; private set; }
+        public bool MipMapsAvalailable { get; private set; } = false;
         public bool FromRenderTexture { get; private set; }
 
         /// <summary>
@@ -114,10 +119,10 @@ namespace Velvet.Graphics
 
             FromRenderTexture = true;
 
-            switch (sampleCount) 
+            switch (sampleCount)
             {
-                case SampleCount.Count1: IsMultiSampled = false; break; 
-                default: IsMultiSampled = true; break; 
+                case SampleCount.Count1: IsMultiSampled = false; break;
+                default: IsMultiSampled = true; break;
             }
 
             uint mipLevels = (uint)(MathF.Floor(MathF.Log2(Math.Max(width, height))) + 1);
@@ -154,6 +159,15 @@ namespace Velvet.Graphics
             _logger.Information($"(Window-{renderer._window.windowID}): > Width: {width}");
             _logger.Information($"(Window-{renderer._window.windowID}): > Height: {height}");
             _logger.Information($"(Window-{renderer._window.windowID}): > MipLevels: {mipLevels}");
+        }
+
+        internal void CreateMipMaps(CommandList cl)
+        {
+            if (!MipMapsAvalailable)
+            {
+                cl.GenerateMipmaps(DeviceTexture);
+                MipMapsAvalailable = true;
+            }
         }
 
         public void Dispose()

@@ -1,10 +1,14 @@
+using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
-using Velvet.Graphics;
-using Velvet.Windowing;
-using Velvet.Input;
+
 using SixLabors.ImageSharp.Processing;
-using System.Diagnostics;
+
+using Velvet.Graphics;
+using Velvet.Graphics.Shaders;
+using Velvet.Graphics.Textures;
+using Velvet.Input;
+using Velvet.Windowing;
 
 namespace Velvet.Tests
 {
@@ -24,7 +28,7 @@ namespace Velvet.Tests
             stopwatch = new();
 
             usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
-            testShader = new VelvetShader(Renderer, null, "assets/shaders/jpeg.frag", [ new UniformDescription("Resolution", UniformType.Vector2, UniformStage.Fragment) ]);
+            testShader = new VelvetShader(Renderer, null, "assets/shaders/jpeg.frag", [new UniformDescription("Resolution", UniformType.Vector2, UniformStage.Fragment)]);
             testShader.Set("Resolution", new Vector2(usagi.Width, usagi.Height));
             testShader.Flush();
 

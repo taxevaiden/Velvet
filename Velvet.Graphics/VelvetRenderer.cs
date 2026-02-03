@@ -1,11 +1,17 @@
-﻿using Veldrid;
+﻿using System.Runtime.InteropServices;
+
+using Veldrid;
+
 using Velvet.Windowing;
-using System.Runtime.InteropServices;
 
 namespace Velvet.Graphics
 {
+    /// <summary>
+    /// Essential for drawing anything to the screen.
+    /// </summary>
     public partial class VelvetRenderer : IDisposable
     {
+        #region Constructors
         /// <summary>
         /// Initializes a VelvetRenderer with a VelvetWindow.
         /// </summary>
@@ -77,6 +83,7 @@ namespace Velvet.Graphics
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 InitVeldrid_LINUX(resolvedAPI, window, vsync);
         }
+        #endregion
 
         /// <summary>
         /// Clears up the resources used for the VelvetRenderer.
