@@ -35,6 +35,15 @@
         ]
       }
     ],
+    "markdownEngineName": "markdig",
+    "markdownEngineProperties": {
+      "markdigExtensions": [
+        "abbreviations",
+        "definitionlists",
+        "tasklists",
+        "footnotes"
+      ]
+    },
     "output": "_site",
     "template": [
       "default",

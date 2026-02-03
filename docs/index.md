@@ -32,10 +32,13 @@ there are better frameworks/libraries out there that can do a lot more than this
 | Operating System | Direct3D 11 | Vulkan | Metal | OpenGL |
 | -                | -           | -      | -     | -      |
 | Windows | Yes | Yes | No | Yes |
-| macOS | No (Possibly if you use Wine but you would have to build for Windows) | Yes[^1] | Yes | No (OpenGL is depracated on macOS) |
+| macOS | No (Possibly if you use Wine but you would have to build for Windows) | Yes[^1] | Yes | No[^2] |
 | Linux | No (Possibly if you use Wine but you would have to build for Windows) | Yes | No | Yes |
 
 [^1]: Requires MoltenVK
+
+[^2]: OpenGL was deprecated in macOS 10.14 in favor of Metal.
+
 
 # license
 

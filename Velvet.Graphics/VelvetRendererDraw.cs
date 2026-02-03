@@ -163,7 +163,7 @@ namespace Velvet.Graphics
             EnsureSpaceFor(segments, segments * 3, CurrentRenderTarget);
             for (int i = 0; i < segments; i++)
             {
-                Vector2 dir = new Vector2(MathF.Sin(360.0f / segments * i * DEG2RAD), MathF.Cos(360.0f / segments * i * DEG2RAD));
+                Vector2 dir = new Vector2(MathF.Cos(360.0f / segments * i * DEG2RAD), MathF.Sin(360.0f / segments * i * DEG2RAD));
                 _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + dir * radius), Vector2.One * 0.5f + dir / 2, ToRgbaFloat(color));
                 _indices[_indexCount++] = (uint)(baseIndex + 0);
                 _indices[_indexCount++] = (uint)(baseIndex + i);

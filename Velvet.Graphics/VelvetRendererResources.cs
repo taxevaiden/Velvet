@@ -65,8 +65,19 @@ namespace Velvet.Graphics
                             preferStandardClipSpaceYDirection: true,
                             preferDepthRangeZeroToOne: true);
 
-                        IntPtr hwmd = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
-                        _graphicsDevice = GraphicsDevice.CreateD3D11(options, hwmd, (uint)window.Width, (uint)window.Height);
+                        var hinstance = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWin32InstancePointer, IntPtr.Zero);
+                        var hwmd = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
+
+                        SwapchainDescription scDesc = new SwapchainDescription(
+                            SwapchainSource.CreateWin32(hwmd, hinstance),
+                            (uint)window.Width,
+                            (uint)window.Height,
+                            PixelFormat.R32Float,
+                            vsync);
+
+                        _graphicsDevice = GraphicsDevice.CreateD3D11(options, scDesc);
+
+                        _logger.Information($"(Window-{window.windowID}): Complete!");
                         break;
                     }
 
@@ -86,12 +97,18 @@ namespace Velvet.Graphics
                             preferStandardClipSpaceYDirection: true,
                             preferDepthRangeZeroToOne: true);
 
-                        var hinstance = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
+                        var hinstance = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWin32InstancePointer, IntPtr.Zero);
                         var hwmd = SDL.GetPointerProperty(SDL.GetWindowProperties(_window.windowPtr), SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
 
-                        VkSurfaceSource vkSurfaceSource = VkSurfaceSource.CreateWin32(hinstance, hwmd);
+                        SwapchainDescription scDesc = new SwapchainDescription(
+                            SwapchainSource.CreateWin32(hwmd, hinstance),
+                            (uint)window.Width,
+                            (uint)window.Height,
+                            PixelFormat.R32Float,
+                            vsync);
 
-                        _graphicsDevice = GraphicsDevice.CreateVulkan(options, vkSurfaceSource, (uint)window.Width, (uint)window.Height);
+                        _graphicsDevice = GraphicsDevice.CreateVulkan(options, scDesc);
+                        
                         _logger.Information($"(Window-{window.windowID}): Complete!");
                         break;
                     }
@@ -100,73 +117,7 @@ namespace Velvet.Graphics
                     throw new PlatformNotSupportedException("Metal is not supported on Windows. Please use either D3D11, Vulkan, or OpenGL.");
                 case GraphicsAPI.OpenGL:
                     {
-                        _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: OpenGL");
-                        _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
-                        _window = window;
-
-                        _logger.Information($"(Window-{window.windowID}): Creating graphics device...");
-                        var options = new GraphicsDeviceOptions(
-                            debug: false,
-                            swapchainDepthFormat: null,
-                            syncToVerticalBlank: vsync,
-                            resourceBindingModel: ResourceBindingModel.Improved,
-                            preferStandardClipSpaceYDirection: true,
-                            preferDepthRangeZeroToOne: true);
-
-                        IntPtr glContextHandle = SDL.GLCreateContext(window.windowPtr);
-
-                        Func<string, IntPtr> getProc = SDL.GLGetProcAddress;
-
-                        Action<IntPtr> makeCurrent = pointer =>
-                        {
-                            bool err = SDL.GLMakeCurrent(window.windowPtr, pointer);
-                            if (!err)
-                                throw new Exception($"Failed to set up OpenGL context: {SDL.GetError()}");
-                        };
-
-                        Func<IntPtr> getCurrentContext = SDL.GLGetCurrentContext;
-
-                        Action clearCurrentContext = () =>
-                        {
-                            bool err = SDL.GLMakeCurrent(IntPtr.Zero, IntPtr.Zero);
-                            if (!err)
-                                throw new Exception($"Failed to clear OpenGL context: {SDL.GetError()}");
-                        };
-
-                        Action<IntPtr> deleteContext = pointer =>
-                        {
-                            bool err = SDL.GLDestroyContext(window.windowPtr);
-                            if (!err)
-                                throw new Exception($"Failed to destroy OpenGL context: {SDL.GetError()}");
-                        };
-
-                        Action swapBuffers = () =>
-                        {
-                            bool err = SDL.GLSwapWindow(window.windowPtr);
-                            if (!err)
-                                throw new Exception($"Failed to swap buffers: {SDL.GetError()}");
-                        };
-
-                        Action<bool> setSyncToVerticalBlank = vSync =>
-                        {
-                            bool err = SDL.GLSetSwapInterval(vsync ? 1 : 0);
-                            if (!err)
-                                throw new Exception($"Failed to set swap interval for OpenGL context: {SDL.GetError()}");
-                        };
-
-                        var glPlatformInfo = new OpenGLPlatformInfo(
-                            glContextHandle,
-                            getProc,
-                            makeCurrent,
-                            getCurrentContext,
-                            clearCurrentContext,
-                            deleteContext,
-                            swapBuffers,
-                            setSyncToVerticalBlank
-                        );
-
-                        _graphicsDevice = GraphicsDevice.CreateOpenGL(options, glPlatformInfo, (uint)window.Width, (uint)window.Height);
-                        _logger.Information($"(Window-{window.windowID}): Complete!");
+                        InitOpenGL(window, vsync);
                         break;
                     }
 
@@ -224,7 +175,7 @@ namespace Velvet.Graphics
                             (uint)window.Width,
                             (uint)window.Height,
                             PixelFormat.R32Float,
-                            true);
+                            vsync);
 
                         _graphicsDevice = GraphicsDevice.CreateVulkan(options, scDesc);
                         _logger.Information($"(Window-{window.windowID}): Complete!");
@@ -235,73 +186,7 @@ namespace Velvet.Graphics
                     throw new PlatformNotSupportedException("Metal is not supported on Linux. Please use Vulkan, or OpenGL.");
                 case GraphicsAPI.OpenGL:
                     {
-                        _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: OpenGL (This has not been confirmed to run and work correctly yet!)");
-                        _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
-                        _window = window;
-
-                        _logger.Information($"(Window-{window.windowID}): Creating graphics device...");
-                        var options = new GraphicsDeviceOptions(
-                            debug: false,
-                            swapchainDepthFormat: null,
-                            syncToVerticalBlank: vsync,
-                            resourceBindingModel: ResourceBindingModel.Improved,
-                            preferStandardClipSpaceYDirection: true,
-                            preferDepthRangeZeroToOne: true);
-
-                        IntPtr glContextHandle = SDL.GLCreateContext(window.windowPtr);
-
-                        Func<string, IntPtr> getProc = SDL.GLGetProcAddress;
-
-                        Action<IntPtr> makeCurrent = pointer =>
-                        {
-                            bool err = SDL.GLMakeCurrent(window.windowPtr, pointer);
-                            if (!err)
-                                throw new Exception($"Failed to set up OpenGL context: {SDL.GetError()}");
-                        };
-
-                        Func<IntPtr> getCurrentContext = SDL.GLGetCurrentContext;
-
-                        Action clearCurrentContext = () =>
-                        {
-                            bool err = SDL.GLMakeCurrent(IntPtr.Zero, IntPtr.Zero);
-                            if (!err)
-                                throw new Exception($"Failed to clear OpenGL context: {SDL.GetError()}");
-                        };
-
-                        Action<IntPtr> deleteContext = pointer =>
-                        {
-                            bool err = SDL.GLDestroyContext(window.windowPtr);
-                            if (!err)
-                                throw new Exception($"Failed to destroy OpenGL context: {SDL.GetError()}");
-                        };
-
-                        Action swapBuffers = () =>
-                        {
-                            bool err = SDL.GLSwapWindow(window.windowPtr);
-                            if (!err)
-                                throw new Exception($"Failed to swap buffers: {SDL.GetError()}");
-                        };
-
-                        Action<bool> setSyncToVerticalBlank = vSync =>
-                        {
-                            bool err = SDL.GLSetSwapInterval(vsync ? 1 : 0);
-                            if (!err)
-                                throw new Exception($"Failed to set swap interval for OpenGL context: {SDL.GetError()}");
-                        };
-
-                        var glPlatformInfo = new OpenGLPlatformInfo(
-                            glContextHandle,
-                            getProc,
-                            makeCurrent,
-                            getCurrentContext,
-                            clearCurrentContext,
-                            deleteContext,
-                            swapBuffers,
-                            setSyncToVerticalBlank
-                        );
-
-                        _graphicsDevice = GraphicsDevice.CreateOpenGL(options, glPlatformInfo, (uint)window.Width, (uint)window.Height);
-                        _logger.Information($"(Window-{window.windowID}): Complete!");
+                        InitOpenGL(window, vsync);
                         break;
                     }
             }
@@ -317,7 +202,7 @@ namespace Velvet.Graphics
             switch (rendererAPI)
             {
                 case GraphicsAPI.D3D11:
-                    throw new PlatformNotSupportedException("D3D11 is not supported on OSX. Please use Metal.");
+                    throw new PlatformNotSupportedException("D3D11 is not supported on OSX. Please use either Metal, or Vulkan.");
                 case GraphicsAPI.Vulkan:
                     {
                         _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: Vulkan");
@@ -340,7 +225,7 @@ namespace Velvet.Graphics
                             (uint)window.Width,
                             (uint)window.Height,
                             PixelFormat.R32Float,
-                            true);
+                            vsync);
 
                         _graphicsDevice = GraphicsDevice.CreateVulkan(options, scDesc);
 
@@ -370,7 +255,7 @@ namespace Velvet.Graphics
                             (uint)window.Width,
                             (uint)window.Height,
                             PixelFormat.R32Float,
-                            true);
+                            vsync);
 
                         _graphicsDevice = GraphicsDevice.CreateMetal(options, scDesc);
 
@@ -378,10 +263,81 @@ namespace Velvet.Graphics
                         break;
                     }
                 case GraphicsAPI.OpenGL:
-                    throw new PlatformNotSupportedException("OpenGL is not supported on OSX. Please use Metal. (OpenGL was deprecated in macOS 10.14 in favor of Metal. While it could work if OpenGL support was implemented for macOS, it remains unsupported by Apple.)");
+                    throw new PlatformNotSupportedException("OpenGL is not supported on OSX. Please use either Metal, or Vulkan.");
             }
 
             CreateResources();
+        }
+
+        private void InitOpenGL(VelvetWindow window, bool vsync)
+        {
+            _logger.Information($"(Window-{window.windowID}): > GraphicsAPI: OpenGL");
+            _logger.Information($"(Window-{window.windowID}): > VSync: {vsync}");
+            _window = window;
+
+            _logger.Information($"(Window-{window.windowID}): Creating graphics device...");
+            var options = new GraphicsDeviceOptions(
+                debug: false,
+                swapchainDepthFormat: null,
+                syncToVerticalBlank: vsync,
+                resourceBindingModel: ResourceBindingModel.Improved,
+                preferStandardClipSpaceYDirection: true,
+                preferDepthRangeZeroToOne: true);
+
+            IntPtr glContextHandle = SDL.GLCreateContext(window.windowPtr);
+
+            Func<string, IntPtr> getProc = SDL.GLGetProcAddress;
+
+            Action<IntPtr> makeCurrent = pointer =>
+            {
+                bool err = SDL.GLMakeCurrent(window.windowPtr, pointer);
+                if (!err)
+                    throw new Exception($"Failed to set up OpenGL context: {SDL.GetError()}");
+            };
+
+            Func<IntPtr> getCurrentContext = SDL.GLGetCurrentContext;
+
+            Action clearCurrentContext = () =>
+            {
+                bool err = SDL.GLMakeCurrent(IntPtr.Zero, IntPtr.Zero);
+                if (!err)
+                    throw new Exception($"Failed to clear OpenGL context: {SDL.GetError()}");
+            };
+
+            Action<IntPtr> deleteContext = pointer =>
+            {
+                bool err = SDL.GLDestroyContext(window.windowPtr);
+                if (!err)
+                    throw new Exception($"Failed to destroy OpenGL context: {SDL.GetError()}");
+            };
+
+            Action swapBuffers = () =>
+            {
+                bool err = SDL.GLSwapWindow(window.windowPtr);
+                if (!err)
+                    throw new Exception($"Failed to swap buffers: {SDL.GetError()}");
+            };
+
+            Action<bool> setSyncToVerticalBlank = vSync =>
+            {
+                bool err = SDL.GLSetSwapInterval(vsync ? 1 : 0);
+                if (!err)
+                    throw new Exception($"Failed to set swap interval for OpenGL context: {SDL.GetError()}");
+            };
+
+            var glPlatformInfo = new OpenGLPlatformInfo(
+                glContextHandle,
+                getProc,
+                makeCurrent,
+                getCurrentContext,
+                clearCurrentContext,
+                deleteContext,
+                swapBuffers,
+                setSyncToVerticalBlank
+            );
+
+            _graphicsDevice = GraphicsDevice.CreateOpenGL(options, glPlatformInfo, (uint)window.Width, (uint)window.Height);
+            _logger.Information($"(Window-{window.windowID}): Complete!");
         }
 
         /// <summary>
