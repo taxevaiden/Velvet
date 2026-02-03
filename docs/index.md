@@ -34,8 +34,6 @@ there are better frameworks/libraries out there that can do a lot more than this
 | Windows | Yes | Yes | No | Yes |
 | macOS | No (Possibly if you use Wine but you would have to build for Windows) | Yes[^1] | Yes | No (OpenGL is depracated on macOS) |
 | Linux | No (Possibly if you use Wine but you would have to build for Windows) | Yes | No | Yes |
-| iOS (Hasn't been tested) | No | Yes[^1] | Yes | No |
-| Android (Not implemented) |
 
 [^1]: Requires MoltenVK
 
