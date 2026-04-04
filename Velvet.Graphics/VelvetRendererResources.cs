@@ -15,6 +15,9 @@ namespace Velvet.Graphics
     {
         private readonly ILogger _logger = Log.ForContext<VelvetRenderer>();
 
+        /// <summary>
+        /// Helper to convert degrees to radians for rotation parameters. Usage example: `float rotation = 45f * VelvetRenderer.DEG2RAD;`
+        /// </summary>
         public const float DEG2RAD = MathF.PI / 180.0f;
 
         internal VelvetWindow _window = null!;
@@ -116,14 +119,14 @@ namespace Velvet.Graphics
 
         private GraphicsDevice CreateOpenGLDevice(VelvetWindow window, bool vsync)
         {
-            IntPtr glContext = SDL.GLCreateContext(window.windowPtr);
+            IntPtr glContext = SDL.GLCreateContext(window.WindowPtr);
 
             var platformInfo = new OpenGLPlatformInfo(
                 openGLContextHandle:    glContext,
                 getProcAddress:         SDL.GLGetProcAddress,
                 makeCurrent:            ctx =>
                 {
-                    if (!SDL.GLMakeCurrent(window.windowPtr, ctx))
+                    if (!SDL.GLMakeCurrent(window.WindowPtr, ctx))
                         throw new InvalidOperationException($"Failed to make OpenGL context current: {SDL.GetError()}");
                 },
                 getCurrentContext:      SDL.GLGetCurrentContext,
@@ -140,7 +143,7 @@ namespace Velvet.Graphics
                 },
                 swapBuffers:            () =>
                 {
-                    if (!SDL.GLSwapWindow(window.windowPtr))
+                    if (!SDL.GLSwapWindow(window.WindowPtr))
                         throw new InvalidOperationException($"Failed to swap buffers: {SDL.GetError()}");
                 },
                 setSyncToVerticalBlank: enabled =>
@@ -158,7 +161,7 @@ namespace Velvet.Graphics
 
         private SwapchainSource GetWin32Source(VelvetWindow window)
         {
-            var props    = SDL.GetWindowProperties(window.windowPtr);
+            var props    = SDL.GetWindowProperties(window.WindowPtr);
             var hinstance = SDL.GetPointerProperty(props, SDL.Props.WindowWin32InstancePointer, IntPtr.Zero);
             var hwnd      = SDL.GetPointerProperty(props, SDL.Props.WindowWin32HWNDPointer,     IntPtr.Zero);
             return SwapchainSource.CreateWin32(hwnd, hinstance);
@@ -166,17 +169,17 @@ namespace Velvet.Graphics
 
         private SwapchainSource GetLinuxSource(VelvetWindow window)
         {
-            var props      = SDL.GetWindowProperties(window.windowPtr);
+            var props      = SDL.GetWindowProperties(window.WindowPtr);
             var wlDisplay  = SDL.GetPointerProperty(props, SDL.Props.WindowWaylandDisplayPointer, IntPtr.Zero);
             var wlSurface  = SDL.GetPointerProperty(props, SDL.Props.WindowWaylandSurfacePointer, IntPtr.Zero);
 
             if (wlDisplay != IntPtr.Zero && wlSurface != IntPtr.Zero)
             {
-                _logger.Information("(Window-{WindowId}): Display protocol: Wayland", _window.windowID);
+                _logger.Information("(Window-{WindowId}): Display protocol: Wayland", _window.WindowID);
                 return SwapchainSource.CreateWayland(wlDisplay, wlSurface);
             }
 
-            _logger.Information("(Window-{WindowId}): Display protocol: X11", _window.windowID);
+            _logger.Information("(Window-{WindowId}): Display protocol: X11", _window.WindowID);
             var x11Display = SDL.GetPointerProperty(props, SDL.Props.WindowX11DisplayPointer, IntPtr.Zero);
             var x11Window  = (uint)SDL.GetNumberProperty(props, SDL.Props.WindowX11WindowNumber, 0);
             return SwapchainSource.CreateXlib(x11Display, (IntPtr)x11Window);
@@ -185,7 +188,7 @@ namespace Velvet.Graphics
         private SwapchainSource GetCocoaSource(VelvetWindow window)
         {
             var nsWindow = SDL.GetPointerProperty(
-                SDL.GetWindowProperties(window.windowPtr),
+                SDL.GetWindowProperties(window.WindowPtr),
                 SDL.Props.WindowCocoaWindowPointer,
                 IntPtr.Zero);
             return SwapchainSource.CreateNSWindow(nsWindow);
@@ -215,7 +218,7 @@ namespace Velvet.Graphics
 
         private void CreateResources()
         {
-            _logger.Information("(Window-{WindowId}): Creating resources...", _window.windowID);
+            _logger.Information("(Window-{WindowId}): Creating resources...", _window.WindowID);
 
             _vertexCapacity = (int)(VertexBufferSize / Vertex.SizeInBytes);
             _indexCapacity  = (int)(IndexBufferSize  / sizeof(uint));
@@ -227,7 +230,7 @@ namespace Velvet.Graphics
 
             var factory = _graphicsDevice.ResourceFactory;
 
-            _logger.Information("(Window-{WindowId}): Creating buffers...", _window.windowID);
+            _logger.Information("(Window-{WindowId}): Creating buffers...", _window.WindowID);
 
             _vertexBuffer = factory.CreateBuffer(
                 new BufferDescription(VertexBufferSize, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
@@ -236,22 +239,22 @@ namespace Velvet.Graphics
 
             _logger.Information(
                 "(Window-{WindowId}): Vertex buffer: {VBSize} MB  |  Index buffer: {IBSize} MB",
-                _window.windowID,
+                _window.WindowID,
                 VertexBufferSize  / (1024 * 1024),
                 IndexBufferSize   / (1024 * 1024));
 
             _commandList = factory.CreateCommandList();
 
-            _logger.Information("(Window-{WindowId}): Creating default texture and shader...", _window.windowID);
+            _logger.Information("(Window-{WindowId}): Creating default texture and shader...", _window.WindowID);
 
-            DefaultTexture = new VelvetTexture(this, [255, 255, 255, 255, 255, 255, 255, 255], 2, 1);
+            DefaultTexture = new VelvetTexture(this, [255, 255, 255, 255], 1, 1);
             CurrentTexture = DefaultTexture;
 
             DefaultShader = new VelvetShader(this, null, null);
             DefaultShader.SetTexture(DefaultTexture);
             CurrentShader = DefaultShader;
 
-            _logger.Information("(Window-{WindowId}): Resources ready.", _window.windowID);
+            _logger.Information("(Window-{WindowId}): Resources ready.", _window.WindowID);
         }
 
         // Logging / error helpers
@@ -260,7 +263,7 @@ namespace Velvet.Graphics
         {
             _logger.Information(
                 "(Window-{WindowId}): Initialising Veldrid  |  Platform: {Platform}  |  API: {Api}  |  VSync: {VSync}",
-                window.windowID, platform, api, vsync);
+                window.WindowID, platform, api, vsync);
         }
 
         private static PlatformNotSupportedException PlatformUnsupported(

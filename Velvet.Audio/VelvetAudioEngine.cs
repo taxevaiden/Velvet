@@ -1,135 +1,176 @@
 ﻿using MiniAudioEx;
 using MiniAudioEx.Native;
 
+using Serilog;
+
 namespace Velvet.Audio
 {
-    public class VelvetAudioEngine
+    /// <summary>
+    /// Manages the audio device, context, resource manager, and engine.
+    /// Create one instance per application and dispose it on shutdown.
+    /// </summary>
+    public sealed class VelvetAudioEngine : IDisposable
     {
-        private ma_engine_ptr pEngine;
-        private ma_context_ptr pContext;
-        private ma_device_ptr pDevice;
-        private ma_resource_manager_ptr pResourceManager;
-        private ma_device_data_proc deviceDataProc;
+        private readonly ILogger _logger = Log.ForContext<VelvetAudioEngine>();
 
+        private readonly ma_engine_ptr          _engine;
+        private readonly ma_context_ptr         _context;
+        private readonly ma_device_ptr          _device;
+        private readonly ma_resource_manager_ptr _resourceManager;
 
-        // Don't use this yet it's not finished lmao
+        // Kept alive to prevent the delegate from being GC'd while the device is running.
+        private readonly ma_device_data_proc _deviceDataProc;
+
+        private bool _disposed = false;
+
+        internal ma_engine_ptr Engine => _engine;
+
+        // Construction
+
+        /// <summary>
+        /// Initializes the audio engine, creating the audio context, device, and resource manager, and starting the device.
+        /// </summary>
         public VelvetAudioEngine()
         {
-            pEngine = new ma_engine_ptr(true);
-            pContext = new ma_context_ptr(true);
-            pDevice = new ma_device_ptr(true);
-            pResourceManager = new ma_resource_manager_ptr(true);
-            deviceDataProc = OnDeviceData;
+            _engine          = new ma_engine_ptr(true);
+            _context         = new ma_context_ptr(true);
+            _device          = new ma_device_ptr(true);
+            _resourceManager = new ma_resource_manager_ptr(true);
+            _deviceDataProc  = OnDeviceData;
 
-            if (MiniAudioNative.ma_context_init(null, pContext) != ma_result.success)
+            InitContext();
+            InitDevice();
+            InitResourceManager();
+            InitEngine();
+            StartDevice();
+
+            _logger.Information("VelvetAudioEngine ready.");
+        }
+
+        // Init steps
+        // Each throws on failure so the constructor stays clean
+
+        private void InitContext()
+        {
+            if (MiniAudioNative.ma_context_init(null, _context) != ma_result.success)
+                throw new AudioException("Failed to initialize audio context.");
+
+            _logger.Debug("Audio context initialized.");
+        }
+
+        private void InitDevice()
+        {
+            ma_device_config cfg = MiniAudioNative.ma_device_config_init(ma_device_type.playback);
+            cfg.playback.format   = ma_format.f32;
+            cfg.playback.channels = 2;
+            cfg.sampleRate        = 44100;
+            cfg.periodSizeInFrames = 2048;
+            cfg.SetDataCallback(_deviceDataProc);
+
+            // Pick the system default playback device.
+            if (MiniAudioNative.ma_context_get_devices(
+                    _context,
+                    out ma_device_info_ex[] playbackDevices,
+                    out _) == ma_result.success
+                && playbackDevices?.Length > 0)
             {
-                Console.WriteLine("Failed to create context");
-                Dispose();
-                return;
-            }
-
-            ma_device_config deviceConfig = MiniAudioNative.ma_device_config_init(ma_device_type.playback);
-            deviceConfig.playback.format = ma_format.f32;
-            deviceConfig.playback.channels = 2;
-            deviceConfig.sampleRate = 44100;
-            deviceConfig.periodSizeInFrames = 2048;
-            deviceConfig.SetDataCallback(deviceDataProc);
-
-            if (MiniAudioNative.ma_context_get_devices(pContext, out ma_device_info_ex[] ppPlaybackDeviceInfos, out ma_device_info_ex[] ppCaptureDeviceInfos) != ma_result.success)
-            {
-                Console.WriteLine("Failed to get devices");
-                Dispose();
-                return;
-            }
-
-            if (ppPlaybackDeviceInfos?.Length > 0)
-            {
-                for (int i = 0; i < ppPlaybackDeviceInfos.Length; i++)
+                foreach (var dev in playbackDevices)
                 {
-                    if (ppPlaybackDeviceInfos[i].deviceInfo.isDefault > 0)
+                    if (dev.deviceInfo.isDefault > 0)
                     {
-                        deviceConfig.playback.pDeviceID = ppPlaybackDeviceInfos[i].pDeviceId;
-                        Console.WriteLine("Selected default device: " + ppPlaybackDeviceInfos[i].deviceInfo.GetName());
+                        cfg.playback.pDeviceID = dev.pDeviceId;
+                        _logger.Information("Audio device: {Name}", dev.deviceInfo.GetName());
                         break;
                     }
                 }
             }
 
-            if (MiniAudioNative.ma_device_init(pContext, ref deviceConfig, pDevice) != ma_result.success)
-            {
-                Console.WriteLine("Failed to initialize device");
-                Dispose();
-                return;
-            }
+            if (MiniAudioNative.ma_device_init(_context, ref cfg, _device) != ma_result.success)
+                throw new AudioException("Failed to initialize audio device.");
 
-            ma_decoding_backend_vtable_ptr[] vtables = {
+            _logger.Debug("Audio device initialized.");
+        }
+
+        private void InitResourceManager()
+        {
+            ma_decoding_backend_vtable_ptr[] vtables =
+            [
                 MiniAudioNative.ma_libvorbis_get_decoding_backend_ptr()
-            };
+            ];
 
-            ma_resource_manager_config resourceManagerConfig = MiniAudioNative.ma_resource_manager_config_init();
-            resourceManagerConfig.SetCustomDecodingBackendVTables(vtables);
+            ma_resource_manager_config cfg = MiniAudioNative.ma_resource_manager_config_init();
+            cfg.SetCustomDecodingBackendVTables(vtables);
 
-            if (MiniAudioNative.ma_resource_manager_init(ref resourceManagerConfig, pResourceManager) != ma_result.success)
-            {
-                resourceManagerConfig.FreeCustomDecodingBackendVTables();
-                Console.WriteLine("Failed to initialize ma_resource_manager");
-                Dispose();
-                return;
-            }
+            ma_result result = MiniAudioNative.ma_resource_manager_init(ref cfg, _resourceManager);
+            cfg.FreeCustomDecodingBackendVTables();
 
-            resourceManagerConfig.FreeCustomDecodingBackendVTables();
+            if (result != ma_result.success)
+                throw new AudioException("Failed to initialize audio resource manager.");
 
-            ma_engine_config engineConfig = MiniAudioNative.ma_engine_config_init();
-            engineConfig.listenerCount = MiniAudioNative.MA_ENGINE_MAX_LISTENERS;
-            engineConfig.pDevice = pDevice;
-            engineConfig.pResourceManager = pResourceManager;
+            _logger.Debug("Audio resource manager initialized.");
+        }
 
-            if (MiniAudioNative.ma_engine_init(ref engineConfig, pEngine) != ma_result.success)
-            {
-                Console.WriteLine("Failed to initialize ma_engine");
-                Dispose();
-                return;
-            }
+        private void InitEngine()
+        {
+            ma_engine_config cfg = MiniAudioNative.ma_engine_config_init();
+            cfg.listenerCount    = MiniAudioNative.MA_ENGINE_MAX_LISTENERS;
+            cfg.pDevice          = _device;
+            cfg.pResourceManager = _resourceManager;
 
+            if (MiniAudioNative.ma_engine_init(ref cfg, _engine) != ma_result.success)
+                throw new AudioException("Failed to initialize audio engine.");
+
+            // Store engine pointer in device user data so the data callback can reach it.
             unsafe
             {
-                ma_device* device = (ma_device*)pDevice.pointer;
-                device->pUserData = pEngine.pointer;
+                ma_device* dev = (ma_device*)_device.pointer;
+                dev->pUserData = _engine.pointer;
             }
 
-            if (MiniAudioNative.ma_device_start(pDevice) != ma_result.success)
-            {
-                Console.WriteLine("Failed to start ma_device");
-                Dispose();
-                return;
-            }
+            _logger.Debug("Audio engine initialized.");
         }
 
-        private void Dispose()
+        private void StartDevice()
         {
-            MiniAudioNative.ma_engine_uninit(pEngine);
-            MiniAudioNative.ma_device_uninit(pDevice);
-            MiniAudioNative.ma_context_uninit(pContext);
-            MiniAudioNative.ma_resource_manager_uninit(pResourceManager);
+            if (MiniAudioNative.ma_device_start(_device) != ma_result.success)
+                throw new AudioException("Failed to start audio device.");
 
-            pEngine.Free();
-            pContext.Free();
-            pDevice.Free();
-            pResourceManager.Free();
+            _logger.Debug("Audio device started.");
         }
 
-        private unsafe void OnDeviceData(ma_device_ptr pDevice, IntPtr pOutput, IntPtr pInput, UInt32 frameCount)
+        // Device data callback
+
+        private unsafe void OnDeviceData(
+            ma_device_ptr pDevice, IntPtr pOutput, IntPtr pInput, uint frameCount)
         {
-            ma_device* device = pDevice.Get();
+            ma_device* dev = pDevice.Get();
+            if (dev == null) return;
 
-            if (device == null)
-                return;
+            var engine = new ma_engine_ptr(dev->pUserData);
+            MiniAudioNative.ma_engine_read_pcm_frames(engine, pOutput, frameCount);
+        }
 
-            ma_engine_ptr pEngine = new ma_engine_ptr(device->pUserData);
+        // IDisposable
 
-            MiniAudioNative.ma_engine_read_pcm_frames(pEngine, pOutput, frameCount);
+        /// <summary>
+        /// Frees the resources used by the audio engine, including the audio context, device, and resource manager. After calling Dispose, the engine can no longer be used to play audio.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+
+            _logger.Information("Shutting down VelvetAudioEngine...");
+
+            MiniAudioNative.ma_engine_uninit(_engine);
+            MiniAudioNative.ma_device_uninit(_device);
+            MiniAudioNative.ma_resource_manager_uninit(_resourceManager);
+            MiniAudioNative.ma_context_uninit(_context);
+
+            _engine.Free();
+            _device.Free();
+            _resourceManager.Free();
+            _context.Free();
         }
     }
-
 }
-

@@ -17,6 +17,8 @@ namespace Velvet.Tests
         Vector2 vel;
         Vector2 pos2;
         VelvetTexture usagi;
+        VelvetRenderTexture renderTexture;
+        VelvetShader shader;
         VelvetFont font;
         Stopwatch stopwatch;
         float fps = 60;
@@ -27,6 +29,10 @@ namespace Velvet.Tests
         {
             base.OnInit();
             usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
+            renderTexture = new VelvetRenderTexture(Renderer, 1600, 900, SampleCount.Count4);
+            shader = new VelvetShader(Renderer, null, "assets/shaders/jpeg.frag", [new UniformDescription("Resolution", UniformType.Vector2, UniformStage.Fragment)]);
+            shader.Set("Resolution", new Vector2(1600, 900));
+            shader.Flush();
 
             font = new VelvetFont(Renderer, "assets/sans.ttf", 32);
 
@@ -62,6 +68,7 @@ namespace Velvet.Tests
         protected override void Draw()
         {
             Renderer.Begin();
+            Renderer.SetRenderTarget(renderTexture);
             Renderer.ClearColor(Color.White);
             Renderer.ApplyTexture();
             Renderer.DrawRectangle(new Vector2(50.0f, 50.0f), new Vector2(200.0f, 200.0f), rot * (MathF.PI / 180.0f), AnchorPosition.Center, Color.Red);
@@ -83,6 +90,12 @@ namespace Velvet.Tests
             
             Renderer.DrawText(font, $"FPS: {fps:F1}", 32, new Vector2(50, 50), Color.Black);
 
+            Renderer.SetRenderTargetToScreen();
+            Renderer.ClearColor(Color.White);
+            Renderer.ApplyShader(shader);
+            Renderer.ApplyTexture(renderTexture.Texture);
+            Renderer.DrawRectangle(new Vector2(0, 0), new Vector2(1600, 900), Color.White);
+
             Renderer.End();
         }
 
@@ -92,6 +105,8 @@ namespace Velvet.Tests
             stopwatch.Stop();
             font.Dispose();
             usagi.Dispose();
+            renderTexture.Dispose();
+            shader.Dispose();
         }
 
     }

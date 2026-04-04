@@ -23,13 +23,22 @@ namespace Velvet.Graphics
     {
         private FT_FaceRec_* _face;
         private FT_LibraryRec_* _library;
+        /// <summary>
+        /// The texture atlas containing the glyphs for this font. Each glyph is rendered into the texture atlas at initialization.
+        /// </summary>
         public VelvetTexture TextureAtlas {get; private set;} = null!;
+        /// <summary>
+        /// The font size in pixels. This is determined at initialization and cannot be changed. To use a different font size, create a new instance of VelvetFont with the desired size.
+        /// </summary>
         public int FontSize { get; private set; }
         internal glyph_info[] glyphs = new glyph_info[128];
+
+        // Constructors
 
         /// <summary>
         /// Initializes a new instance of the VelvetFont class from a font file.
         /// </summary>
+        /// <param name="renderer">The VelvetRenderer to use for creating the texture atlas.</param>
         /// <param name="fontPath">The path to the font file.</param>
         public VelvetFont(VelvetRenderer renderer, string fontPath)
         {
@@ -60,6 +69,7 @@ namespace Velvet.Graphics
         /// <summary>
         /// Initializes a new instance of the VelvetFont class from a font file.
         /// </summary>
+        /// <param name="renderer">The VelvetRenderer to use for creating the texture atlas.</param>
         /// <param name="fontPath">The path to the font file.</param>
         /// <param name="size">The font size.</param>
         public VelvetFont(VelvetRenderer renderer, string fontPath, int size)
@@ -88,7 +98,9 @@ namespace Velvet.Graphics
             CreateAtlas(renderer, size);
         }
 
-        internal void CreateAtlas(VelvetRenderer renderer, int size = 48)
+        // Helpers
+
+        private void CreateAtlas(VelvetRenderer renderer, int size = 48)
         {
             FontSize = size;
 
@@ -155,6 +167,9 @@ namespace Velvet.Graphics
 
             TextureAtlas = new VelvetTexture(renderer, rgba, (uint)tex_width, (uint)tex_height);
         }
+
+        // IDisposable
+
         /// <summary>
         /// Disposes of the resources used by the VelvetFont.
         /// </summary>

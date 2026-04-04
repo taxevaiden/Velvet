@@ -11,9 +11,15 @@ namespace Velvet.Graphics
 {
     public partial class VelvetRenderer : IDisposable
     {
+        /// <summary>
+        /// The default texture used when no texture is applied. This is a 1x1 white pixel.
+        /// </summary>
         public VelvetTexture  DefaultTexture    { get; internal set; } = null!;
         internal VelvetTexture  CurrentTexture    = null!;
         internal VelvetRenderTexture? CurrentRenderTarget = null;
+        /// <summary>
+        /// The default shader used when no shader is applied. This is a simple shader that supports textured and colored rendering.
+        /// </summary>
         public VelvetShader   DefaultShader     { get; internal set; } = null!;
         private VelvetShader  CurrentShader     = null!;
         private List<Batch>   _batches          = null!;
@@ -91,18 +97,46 @@ namespace Velvet.Graphics
             return (uvPos, uvSize);
         }
 
-        #region Draw Commands
+        // Draw Commands
 
+        /// <summary>
+        /// Draws a rectangle.
+        /// </summary>
+        /// <param name="pos">The position of the rectangle.</param>
+        /// <param name="size">The size of the rectangle.</param>
+        /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, Color color)
             => DrawRectangle(pos, size, GetFullUV(), 0f, AnchorPosition.TopLeft, color);
 
+        /// <summary>
+        /// Draws a rectangle with rotation.
+        /// </summary>
+        /// <param name="pos">The position of the rectangle.</param>
+        /// <param name="size">The size of the rectangle.</param>
+        /// <param name="rotation">The rotation of the rectangle in radians.</param>
+        /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, Color color)
             => DrawRectangle(pos, size, GetFullUV(), rotation, AnchorPosition.TopLeft, color);
 
+
+        /// <summary>
+        /// Draws a rectangle with rotation and an anchor.
+        /// </summary>
+        /// <param name="pos">The position of the rectangle.</param>
+        /// <param name="size">The size of the rectangle.</param>
+        /// <param name="rotation">The rotation of the rectangle in radians.</param>
+        /// <param name="anchor">The anchor position of the rectangle.</param>
+        /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, AnchorPosition anchor, Color color)
             => DrawRectangle(pos, size, GetFullUV(), rotation, anchor, color);
 
-        /// <summary>Core rectangle draw — all overloads funnel here.</summary>
+        /// <summary>Draws a rectangle with a custom UV region.</summary>
+        /// <param name="pos">The position of the rectangle.</param>
+        /// <param name="size">The size of the rectangle.</param>
+        /// <param name="uv">The UV region to use from the current texture.</param>
+        /// <param name="rotation">The rotation of the rectangle in radians.</param>
+        /// <param name="anchor">The anchor position of the rectangle.</param>
+        /// <param name="color">The color of the rectangle.</param>
         public void DrawRectangle(
             Vector2 pos, Vector2 size, Rectangle uv,
             float rotation, AnchorPosition anchor, Color color)
@@ -133,7 +167,7 @@ namespace Velvet.Graphics
             _indices[_indexCount++] = baseIndex;
         }
 
-        /// <summary>Draws a circle with automatic segment count based on radius.</summary>
+        /// <summary>Draws a circle with an automatic segment count based on radius.</summary>
         public void DrawCircle(Vector2 pos, float radius, Color color)
         {
             int segments = Math.Max(12, (int)(MathF.Sqrt(radius) * 4f));
@@ -170,8 +204,8 @@ namespace Velvet.Graphics
             for (int i = 0; i < segments; i++)
             {
                 _indices[_indexCount++] = baseIndex;
-                _indices[_indexCount++] = baseIndex + 1 + (uint)i;
                 _indices[_indexCount++] = baseIndex + 1 + (uint)((i + 1) % segments);
+                _indices[_indexCount++] = baseIndex + 1 + (uint)i;
             }
         }
 
@@ -215,7 +249,7 @@ namespace Velvet.Graphics
             DrawRectangle(a, new Vector2(thickness, length), rot, AnchorPosition.Top, color);
         }
 
-        /// <summary>Draws a string using a bitmap font atlas.</summary>
+        /// <summary>Draws a string using a <see cref="VelvetFont"/>. </summary>
         public void DrawText(VelvetFont font, string text, int pxSize, Vector2 position, Color color)
         {
             if (string.IsNullOrEmpty(text)) return;
@@ -242,10 +276,12 @@ namespace Velvet.Graphics
             ApplyTexture(previousTex);
         }
 
-        #endregion
-
         // State management
 
+        /// <summary>
+        /// Sets the current render target to a <see cref="VelvetRenderTexture"/>.
+        /// </summary>
+        /// <param name="rt">The render target.</param>
         public void SetRenderTarget(VelvetRenderTexture rt)
         {
             if (CurrentRenderTarget == rt) return;
@@ -253,6 +289,9 @@ namespace Velvet.Graphics
             CurrentRenderTarget = rt;
         }
 
+        /// <summary>
+        /// Sets the current render target to the screen.
+        /// </summary>
         public void SetRenderTargetToScreen()
         {
             if (CurrentRenderTarget == null) return;
@@ -260,6 +299,10 @@ namespace Velvet.Graphics
             CurrentRenderTarget = null;
         }
 
+        /// <summary>
+        /// Applies a texture for subsequent draw calls. If null, the default white texture is used.
+        /// </summary>
+        /// <param name="texture">The texture to apply, or null to use the default texture.</param>
         public void ApplyTexture(VelvetTexture? texture = null)
         {
             texture ??= DefaultTexture;
@@ -268,6 +311,10 @@ namespace Velvet.Graphics
             CurrentTexture = texture;
         }
 
+        /// <summary>
+        /// Applies a shader for subsequent draw calls. If null, the default shader is used.
+        /// </summary>
+        /// <param name="shader"></param>
         public void ApplyShader(VelvetShader? shader = null)
         {
             shader ??= DefaultShader;
@@ -310,8 +357,9 @@ namespace Velvet.Graphics
 
         // Frame lifecycle
 
-        #region Rendering
-
+        /// <summary>
+        /// Begins a new frame. Must be called before any draw calls, and must be paired with a call to <see cref="End"/> at the end of the frame.
+        /// </summary>
         public void Begin()
         {
             CurrentTexture      = DefaultTexture;
@@ -322,6 +370,10 @@ namespace Velvet.Graphics
             _commandList.SetFramebuffer(_graphicsDevice.SwapchainFramebuffer);
         }
 
+        /// <summary>
+        /// Clears the current render target to a solid color.
+        /// </summary>
+        /// <param name="color">The color to clear with.</param>
         public void ClearColor(Color color)
         {
             _commandList.SetFramebuffer(
@@ -329,6 +381,9 @@ namespace Velvet.Graphics
             _commandList.ClearColorTarget(0, ToRgbaFloat(color));
         }
 
+        /// <summary>
+        /// Ends the current frame, submitting all draw calls to the GPU. Must be called once per frame, and must be preceded by a call to <see cref="Begin"/> at the start of the frame.
+        /// </summary>
         public void End()
         {
             SubmitBatches();
@@ -345,7 +400,6 @@ namespace Velvet.Graphics
             _batches.Clear();
         }
 
-        #endregion
         // Batch submission
 
         private void SubmitBatches()

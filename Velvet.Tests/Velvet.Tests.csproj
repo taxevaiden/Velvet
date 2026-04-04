@@ -20,6 +20,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     
     <ProjectReference Include="..\Velvet\Velvet.csproj" />
+    <ProjectReference Include="..\Velvet.Audio\Velvet.Audio.csproj" />
     <ProjectReference Include="..\Velvet.Windowing\Velvet.Windowing.csproj" />
     <ProjectReference Include="..\Velvet.Input\Velvet.Input.csproj" />
     <ProjectReference Include="..\Velvet.Graphics\Velvet.Graphics.csproj" />

@@ -8,7 +8,10 @@ using SixLabors.ImageSharp.PixelFormats;
 using Veldrid;
 
 namespace Velvet.Graphics.Textures
-{
+{   
+    /// <summary>
+    /// A texture is an image that can be drawn to the screen. It can be loaded from a file or created from raw pixel data. A texture can also be used as a render target (see <see cref="VelvetRenderTexture"/>).
+    /// </summary>
     public class VelvetTexture : IDisposable
     {
         private readonly ILogger _logger = Log.ForContext<VelvetTexture>();
@@ -17,13 +20,31 @@ namespace Velvet.Graphics.Textures
         internal TextureView View          = null!;
         internal Sampler     Sampler       = null!;
 
+        /// <summary>
+        /// The width of the texture in pixels. This is determined at initialization and cannot be changed. To use a different size, create a new instance of VelvetTexture with the desired dimensions.
+        /// </summary>
         public uint Width  { get; private set; }
+        /// <summary>
+        /// The height of the texture in pixels. This is determined at initialization and cannot be changed. To use a different size, create a new instance of VelvetTexture with the desired dimensions.
+        /// </summary>
         public uint Height { get; private set; }
-
+        /// <summary>
+        /// Whether this texture is multi-sampled (MSAA). This is true for the backing texture of a multi-sampled render texture, and false for non-MSAA render textures and textures loaded from files or created from pixel data.
+        /// </summary>
         public bool IsMultiSampled   { get; private set; }
+        /// <summary>
+        /// Whether this texture was created from a render texture. This is true for the backing texture of a render texture, and false for textures loaded from files or created from pixel data. This can be used to determine whether the texture can be used as a render target (false) or is already a render target (true).
+        /// </summary>
         public bool FromRenderTexture { get; private set; }
 
+        /// <summary>
+        /// Whether mipmaps have been generated for this texture this frame. This is used to prevent redundant mipmap generation calls. Mipmaps are generated on demand when <see cref="GenerateMipMapsIfNeeded"/> is called, and the renderer resets this flag each <c>End()</c> call.
+        /// Mipmaps are only supported for non-multi-sampled textures, so this will always be false for MSAA render texture backing textures.
+        /// </summary>
         public bool MipMapsGenerated { get; set; } = false;
+        /// <summary>
+        /// Whether this texture supports mipmaps. This is true for textures loaded from files or created from pixel data, and false for multi-sampled render texture backing textures (which cannot have mipmaps). This can be used to determine whether mipmaps can be generated for this texture.
+        /// </summary>
         public bool SupportsMipMaps  { get; private set; } = false;
 
         // Constructors
@@ -53,7 +74,7 @@ namespace Velvet.Graphics.Textures
             InitForRenderTexture(renderer, width, height, sampleCount);
         }
 
-        // Initialisation
+        // Initialization
 
         private void InitFromPixels(VelvetRenderer renderer, byte[] pixels, uint width, uint height)
         {
@@ -85,8 +106,8 @@ namespace Velvet.Graphics.Textures
             Sampler = CreateSampler(gd, mipLevels);
 
             _logger.Information(
-                "(Window-{WindowId}): Texture loaded — {W}x{H}, {Mips} mips, {Bytes} bytes",
-                renderer._window.windowID, width, height, mipLevels, pixels.Length);
+                "(Window-{WindowId}): Texture loaded: {W}x{H}, {Mips} mips, {Bytes} bytes",
+                renderer._window.WindowID, width, height, mipLevels, pixels.Length);
         }
 
         private void InitForRenderTexture(VelvetRenderer renderer, uint width, uint height, SampleCount sampleCount)
@@ -96,7 +117,7 @@ namespace Velvet.Graphics.Textures
             FromRenderTexture = true;
             IsMultiSampled    = sampleCount != SampleCount.Count1;
 
-            // MSAA textures cannot have mipmaps — keep mipLevels = 1 for them.
+            // MSAA textures cannot have mipmaps
             bool multisampled = sampleCount != SampleCount.Count1;
             uint mipLevels    = multisampled ? 1 : CalcMipLevels(width, height);
             SupportsMipMaps   = !multisampled;
@@ -118,8 +139,8 @@ namespace Velvet.Graphics.Textures
             Sampler       = CreateSampler(gd, mipLevels);
 
             _logger.Information(
-                "(Window-{WindowId}): Render texture created — {W}x{H}, {Samples} samples, {Mips} mips",
-                renderer._window.windowID, width, height, sampleCount, mipLevels);
+                "(Window-{WindowId}): Render texture created: {W}x{H}, {Samples} samples, {Mips} mips",
+                renderer._window.WindowID, width, height, sampleCount, mipLevels);
         }
 
         // Mip generation
@@ -153,6 +174,9 @@ namespace Velvet.Graphics.Textures
                 lodBias:          0,
                 borderColor:      SamplerBorderColor.TransparentBlack));
 
+        /// <summary>
+        /// Disposes the texture and its resources.
+        /// </summary>
         public void Dispose()
         {
             View?.Dispose();

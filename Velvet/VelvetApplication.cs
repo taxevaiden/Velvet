@@ -9,172 +9,177 @@ using Velvet.Windowing;
 namespace Velvet
 {
     /// <summary>
-    /// The base class for all Velvet-based applications. 
-    /// Handles window creation, rendering setup, input processing, and the main execution loop.
+    /// Base class for all Velvet applications.
+    /// Handles window creation, rendering, input, and the main loop.
     /// </summary>
     public abstract class VelvetApplication
     {
         private readonly ILogger _logger = Log.ForContext<VelvetApplication>();
 
-        /// <summary> Access to the VelvetWindow. </summary>
-        protected VelvetWindow Window { get; private set; }
-        /// <summary> Access to the VelvetRenderer. </summary>
-        protected VelvetRenderer Renderer { get; private set; }
+        /// <summary>The application window.</summary>
+        protected VelvetWindow Window { get; private set; } = null!;
 
-        /// <summary> The time elapsed between the last frame and the current frame in seconds. </summary>
+        /// <summary>The renderer bound to <see cref="Window"/>.</summary>
+        protected VelvetRenderer Renderer { get; private set; } = null!;
+
+        /// <summary>Seconds elapsed between the previous frame and the current one.</summary>
         public float DeltaTime { get; private set; }
-        private ulong lastCounter;
 
-        private SDL.MainFunc? _runCallback;
-        private SDL.AppInitFunc? _initCallback;
-        private SDL.AppIterateFunc? _iterateCallback;
-        private SDL.AppEventFunc? _eventCallback;
-        private SDL.AppQuitFunc? _quitCallback;
-        private int _width;
-        private int _height;
-        private string _title;
-        private GraphicsAPI _graphicsAPI;
-        private bool _vsync;
+        /// <summary>Total seconds elapsed since <see cref="Run"/> was called.</summary>
+        public float TotalTime { get; private set; }
 
-        #region Constructors
+        /// <summary>Number of frames rendered since <see cref="Run"/> was called.</summary>
+        public ulong FrameCount { get; private set; }
+
+        private ulong _lastCounter;
+
+        // SDL lifecycle callbacks
+        private readonly SDL.MainFunc        _runCallback;
+        private readonly SDL.AppInitFunc     _initCallback;
+        private readonly SDL.AppIterateFunc  _iterateCallback;
+        private readonly SDL.AppEventFunc    _eventCallback;
+        private readonly SDL.AppQuitFunc     _quitCallback;
+
+        private readonly int          _width;
+        private readonly int          _height;
+        private readonly string       _title;
+        private readonly GraphicsAPI  _graphicsAPI;
+        private readonly bool         _vsync;
+
+        // Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VelvetApplication"/> class with the specified window dimensions, and title.
+        /// </summary>
+        /// <param name="width">The width of the application window in pixels.</param>
+        /// <param name="height">The height of the application window in pixels.</param>
+        /// <param name="title">The title of the application window.</param>
         protected VelvetApplication(int width, int height, string title)
-        {
-            InitApp(width, height, title, GraphicsAPI.Default, true);
-        }
+            : this(width, height, title, GraphicsAPI.Default, vsync: true) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VelvetApplication"/> class with the specified window dimensions, title, and graphics API.
+        /// </summary>
+        /// <param name="width">The width of the application window in pixels.</param>
+        /// <param name="height">The height of the application window in pixels.</param>
+        /// <param name="title">The title of the application window.</param>
+        /// <param name="graphicsAPI">The graphics API to use for rendering.</param>
         protected VelvetApplication(int width, int height, string title, GraphicsAPI graphicsAPI)
-        {
-            InitApp(width, height, title, graphicsAPI, true);
-        }
+            : this(width, height, title, graphicsAPI, vsync: true) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VelvetApplication"/> class with the specified window dimensions, title, graphics API, and VSync setting.
+        /// </summary>
+        /// <param name="width">The width of the application window in pixels.</param>
+        /// <param name="height">The height of the application window in pixels.</param>
+        /// <param name="title">The title of the application window.</param>
+        /// <param name="graphicsAPI">The graphics API to use for rendering.</param>
+        /// <param name="vsync">Whether to enable VSync.</param>
         protected VelvetApplication(int width, int height, string title, GraphicsAPI graphicsAPI, bool vsync)
-        {
-            InitApp(width, height, title, graphicsAPI, vsync);
-        }
-        #endregion
-
-        private void InitApp(int width, int height, string title, GraphicsAPI graphicsAPI, bool vsync)
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .Enrich.FromLogContext()
-                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}")
+                .WriteTo.Console(outputTemplate:
+                    "[{Timestamp:HH:mm:ss.fff} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
 
-            _width = width;
-            _height = height;
-            _title = title;
+            _width       = width;
+            _height      = height;
+            _title       = title;
             _graphicsAPI = graphicsAPI;
-            _vsync = vsync;
+            _vsync       = vsync;
 
-            _runCallback = RunCallback;
-            _initCallback = InitCallback;
-            _iterateCallback = IterateCallback;
-            _eventCallback = EventCallback;
-            _quitCallback = QuitCallback;
+            _runCallback      = RunCallback;
+            _initCallback     = InitCallback;
+            _iterateCallback  = IterateCallback;
+            _eventCallback    = EventCallback;
+            _quitCallback     = QuitCallback;
         }
 
-        /// <summary>
-        /// Starts the application.
-        /// </summary>
+        // Entry point
+
+        /// <summary>Starts the application and blocks until it exits.</summary>
         public int Run(int argc, string[] argv)
-        {
-            return SDL.RunApp(argc, argv, _runCallback, (nint)null);
-        }
+            => SDL.RunApp(argc, argv, _runCallback, nint.Zero);
+
+        // SDL callbacks
 
         private int RunCallback(int argc, string[] argv)
-        {
-            return SDL.EnterAppMainCallbacks(
-                argc, argv,
-                _initCallback,
-                _iterateCallback,
-                _eventCallback,
-                _quitCallback
-            );
-        }
+            => SDL.EnterAppMainCallbacks(argc, argv,
+                _initCallback, _iterateCallback, _eventCallback, _quitCallback);
 
-        SDL.AppResult InitCallback(nint appstate, int argc, string[] argv)
+        private SDL.AppResult InitCallback(nint appstate, int argc, string[] argv)
         {
-            Window = new VelvetWindow(_title, _width, _height); // This already initializes SDL3 so it should be fine to use everything else here
-
+            Window   = new VelvetWindow(_title, _width, _height);
             Renderer = new VelvetRenderer(Window, _graphicsAPI, _vsync);
 
-            lastCounter = SDL.GetPerformanceCounter();
+            _lastCounter = SDL.GetPerformanceCounter();
 
             OnInit();
-
             return SDL.AppResult.Continue;
         }
 
-        SDL.AppResult IterateCallback(nint appstate)
+        private SDL.AppResult IterateCallback(nint appstate)
         {
             ulong currentCounter = SDL.GetPerformanceCounter();
-            DeltaTime = (currentCounter - lastCounter) / (float)SDL.GetPerformanceFrequency();
-            lastCounter = currentCounter;
+            DeltaTime = (currentCounter - _lastCounter) / (float)SDL.GetPerformanceFrequency();
+            TotalTime += DeltaTime;
+            FrameCount++;
+            _lastCounter = currentCounter;
 
             InputManager.Update();
             Update(DeltaTime);
             Draw();
             InputManager.EndFrame();
+
             return SDL.AppResult.Continue;
         }
 
-        SDL.AppResult EventCallback(nint appstate, ref SDL.Event @event)
+        private SDL.AppResult EventCallback(nint appstate, ref SDL.Event @event)
         {
             InputManager.ProcessEvent(@event);
 
             switch ((SDL.EventType)@event.Type)
             {
-                case SDL.EventType.WindowExposed:
-                    {
-                        _logger.Information("Window exposed!");
-                        break;
-                    }
                 case SDL.EventType.WindowResized:
-                    {
-                        if (@event.Window.WindowID == Window.windowID)
-                            Renderer.Resize(Window.Width, Window.Height);
-
-                        break;
-                    }
+                    if (@event.Window.WindowID == Window.WindowID)
+                        Renderer.Resize(Window.Width, Window.Height);
+                    break;
 
                 case SDL.EventType.WindowCloseRequested:
+                    if (@event.Window.WindowID == Window.WindowID)
                     {
-                        if (@event.Window.WindowID == Window.windowID)
-                        {
-                            _logger.Information("Window close requested");
-                            return SDL.AppResult.Success;
-
-                        }
-                        break;
-                    }
-
-                case SDL.EventType.Quit:
-                    {
-                        _logger.Information("SDL quit requested");
+                        _logger.Information("(Window-{WindowId}): Close requested.", Window.WindowID);
                         return SDL.AppResult.Success;
                     }
+                    break;
+
+                case SDL.EventType.Quit:
+                    _logger.Information("SDL quit event received.");
+                    return SDL.AppResult.Success;
             }
 
             return SDL.AppResult.Continue;
         }
 
-        void QuitCallback(nint appstate, SDL.AppResult result)
+        private void QuitCallback(nint appstate, SDL.AppResult result)
         {
+            _logger.Information("Shutting down (result = {Result})...", result);
             OnShutdown();
             Renderer.Dispose();
             Window.Dispose();
         }
 
+        // Virtual hooks
 
-        #region Virtual Hooks
-        /// <summary> Override to perform setup logic. </summary>
+        /// <summary>Called once after the window and renderer are ready. Override to load resources.</summary>
         protected virtual void OnInit() { }
 
-        /// <summary> Override to handle frame-by-frame logic. </summary>
+        /// <summary>Called every frame before <see cref="Draw"/>. Override for game logic.</summary>
         protected virtual void Update(float deltaTime) { }
 
-        /// <summary> Override to perform rendering. </summary>
+        /// <summary>Called every frame after <see cref="Update"/>. Override to issue draw calls.</summary>
         protected virtual void Draw()
         {
             Renderer.Begin();
@@ -182,10 +187,7 @@ namespace Velvet
             Renderer.End();
         }
 
-        /// <summary> Override to handle manual resource cleanup. </summary>
+        /// <summary>Called just before the window and renderer are destroyed. Override to release resources.</summary>
         protected virtual void OnShutdown() { }
-        #endregion
     }
-
 }
-

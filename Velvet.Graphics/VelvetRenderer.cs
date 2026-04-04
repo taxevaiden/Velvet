@@ -9,7 +9,8 @@ namespace Velvet.Graphics
     /// </summary>
     public partial class VelvetRenderer : IDisposable
     {
-        #region Constructors
+        // Constructors
+
         /// <summary>
         /// Initializes a VelvetRenderer with a VelvetWindow.
         /// </summary>
@@ -55,23 +56,24 @@ namespace Velvet.Graphics
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 InitVeldrid_LINUX(resolvedAPI, window, vsync);
         }
-        #endregion
+
+        // IDisposable
 
         /// <summary>
         /// Clears up the resources used for the VelvetRenderer.
         /// </summary>
         public void Dispose()
         {
-            _logger.Information($"(Window-{_window.windowID}): Disposing default texture...");
+            _logger.Information($"(Window-{_window.WindowID}): Disposing default texture...");
             DefaultTexture.Dispose();
-            _logger.Information($"(Window-{_window.windowID}): Disposing shaders...");
+            _logger.Information($"(Window-{_window.WindowID}): Disposing shaders...");
             DefaultShader.Dispose();
-            _logger.Information($"(Window-{_window.windowID}): Disposing command list...");
+            _logger.Information($"(Window-{_window.WindowID}): Disposing command list...");
             _commandList.Dispose();
-            _logger.Information($"(Window-{_window.windowID}): Disposing buffers...");
+            _logger.Information($"(Window-{_window.WindowID}): Disposing buffers...");
             _vertexBuffer.Dispose();
             _indexBuffer.Dispose();
-            _logger.Information($"(Window-{_window.windowID}): Disposing graphics device...");
+            _logger.Information($"(Window-{_window.WindowID}): Disposing graphics device...");
             _graphicsDevice.Dispose();
 
         }

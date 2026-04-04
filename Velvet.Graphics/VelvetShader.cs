@@ -11,24 +11,66 @@ namespace Velvet.Graphics.Shaders
 {
     // Public types
 
+    /// <summary>
+    /// The type of a shader uniform. This is used to determine the size and alignment of the uniform in the shader's uniform buffer.
+    /// </summary>
     public enum UniformType
     {
+        /// <summary>
+        /// A single float value.
+        /// </summary>
         Float,
+        /// <summary>
+        /// A single int value.
+        /// </summary>
         Int,
+        /// <summary>
+        /// A single uint value.
+        /// </summary>
         UInt,
+        /// <summary>
+        /// A 2D vector of floats.
+        /// </summary>
         Vector2,
+        /// <summary>
+        /// A 3D vector of floats. Note that in std140 layout, a vec3 takes up 16 bytes of space (the same as a vec4) to ensure proper alignment.
+        /// </summary>
         Vector3,
+        /// <summary>
+        /// A 4D vector of floats.
+        /// </summary>
         Vector4,
+        /// <summary>
+        /// A 4x4 matrix of floats, stored in column-major order. This takes up 64 bytes of space in the uniform buffer.
+        /// </summary>
         Matrix4x4
     }
 
+    /// <summary>
+    /// The shader stage(s) that a uniform is used in. This is used to determine which shader stages the uniform buffer will be bound to.
+    /// </summary>
     public enum UniformStage
     {
+        /// <summary>
+        /// The uniform is used in the vertex shader stage.
+        /// </summary>
         Vertex   = ShaderStages.Vertex,
+        /// <summary>
+        /// The uniform is used in the fragment shader stage.
+        /// </summary>
         Fragment = ShaderStages.Fragment,
+        /// <summary>
+        /// The uniform is used in both the vertex and fragment shader stages.
+        /// </summary>
         Both     = ShaderStages.Vertex | ShaderStages.Fragment
     }
 
+    /// <summary>
+    /// A description of a shader uniform, including its name, type, and the shader stage(s) it is used in. This is used to define the layout of the shader's uniform buffer.
+    /// </summary>
+    /// <param name="Name">The name of the uniform.</param>
+    /// <param name="Type">The type of the uniform.</param>
+    /// <param name="Stage">The shader stage(s) the uniform is used in.</param>
     public readonly record struct UniformDescription(
         string      Name,
         UniformType Type,
@@ -44,6 +86,9 @@ namespace Velvet.Graphics.Shaders
 
     // VelvetShader
 
+    /// <summary>
+    /// A shader that can be used for rendering.
+    /// </summary>
     public sealed class VelvetShader : IDisposable
     {
         // Pipeline cache key — record struct gives structural Equals/GetHashCode for free.
@@ -144,7 +189,7 @@ namespace Velvet.Graphics.Shaders
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
 
-        // Initialisation
+        // Initialization
 
         private void Init(
             string?               vertPath,
@@ -186,7 +231,7 @@ namespace Velvet.Graphics.Shaders
             _resourceLayout = _gd.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(layoutElements.ToArray()));
 
-            // Compile shaders — read bytes directly rather than round-tripping through string.
+            // Compile shaders
             byte[] vertBytes = vertPath is null
                 ? Encoding.UTF8.GetBytes(DefaultVertexCode)
                 : File.ReadAllBytes(vertPath);
@@ -290,6 +335,7 @@ namespace Velvet.Graphics.Shaders
             _currentOutputs      = newOutputs;
             _pipelineDirty       = true;
         }
+
         // Write / flush
 
         private unsafe void Write<T>(string name, T value) where T : unmanaged
@@ -324,6 +370,9 @@ namespace Velvet.Graphics.Shaders
 
         // IDisposable
 
+        /// <summary>
+        /// Disposes the shader and its resources.
+        /// </summary>
         public void Dispose()
         {
             ResourceSet?.Dispose();

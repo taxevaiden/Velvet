@@ -126,7 +126,7 @@ more examples can be found in `Velvet.Tests`.
 - shaders with uniform support
 - render textures
   - multisampling supported
-  - known issue: drawing a `VelvetTexture` to a multisampled `VelvetRenderTexture` does nothing on the OpenGL backend. the Vulkan backend also doesn't render multisampled render textures smoothly. D3D11 has both of these working correctly.
+  - known issue: drawing a `VelvetTexture` to a multisampled `VelvetRenderTexture` does nothing on the OpenGL backend. this works fine on Vulkan and D3D11.
   - known issue: OpenGL flips texture samples across the x-axis when drawing to a `VelvetRenderTexture`. regular `VelvetTexture`s are unaffected. to compensate, Velvet automatically flips UVs when rendering to a render texture on OpenGL. keep this in mind when writing shader code!
 - keyboard and mouse input
 - all four major graphics APIs

@@ -8,6 +8,16 @@ using Velvet.Graphics.Textures;
 
 namespace Velvet.Graphics
 {
+    /// <summary>
+    /// The GraphicsAPI to use for rendering. The default GraphicsAPI for each operating system is as follows:  
+    /// 
+    /// Windows: D3D11  
+    /// 
+    /// macOS: Metal  
+    /// 
+    /// Linux: Vulkan  
+    /// 
+    /// </summary>
     public enum GraphicsAPI
     {
         /// <summary>
@@ -113,11 +123,6 @@ namespace Velvet.Graphics
 
     public partial class VelvetRenderer
     {
-        /// <summary>
-        /// Converts a System.Drawing.Color to an RgbaFloat.
-        /// </summary>
-        /// <param name="c"></param>
-        /// <returns>The converted RgbaFloat.</returns>
         private static RgbaFloat ToRgbaFloat(Color c)
         {
             return new RgbaFloat(c.R / 255f, c.G / 255f, c.B / 255f, c.A / 255f);

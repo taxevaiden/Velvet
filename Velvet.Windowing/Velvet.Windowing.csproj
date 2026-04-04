@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-
+      
     <ProjectReference Include="..\Velvet.Input\Velvet.Input.csproj" />
 
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
@@ -22,26 +22,5 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
   </ItemGroup>
-
-
-  <!-- <ItemGroup
-    Condition="'$(RuntimeIdentifier)' == 'osx-arm64' Or '$(RuntimeIdentifier)' == 'osx-x64'"
-  >
-    <None
-      Include="runtimes/$(RuntimeIdentifier)/native/libSDL3.dylib">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libSDL3.dylib</Link>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup
-    Condition="'$(RuntimeIdentifier)' == 'linux-x64'"
-  >
-    <None
-      Include="runtimes/$(RuntimeIdentifier)/native/libSDL3.so">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libSDL3.so</Link>
-    </None>
-  </ItemGroup> -->
 
 </Project>
