@@ -137,7 +137,7 @@ namespace Velvet.Graphics
                 },
                 deleteContext:          ctx =>
                 {
-                    // SDL destroys the context by handle, not window — use ctx directly.
+                    // SDL destroys the context by handle, not window: use ctx directly.
                     if (!SDL.GLDestroyContext(ctx))
                         throw new InvalidOperationException($"Failed to destroy OpenGL context: {SDL.GetError()}");
                 },
@@ -148,7 +148,6 @@ namespace Velvet.Graphics
                 },
                 setSyncToVerticalBlank: enabled =>
                 {
-                    // BUG FIX: was capturing outer `vsync` instead of using the `enabled` parameter.
                     if (!SDL.GLSetSwapInterval(enabled ? 1 : 0))
                         throw new InvalidOperationException($"Failed to set swap interval: {SDL.GetError()}");
                 }

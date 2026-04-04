@@ -109,7 +109,7 @@ namespace Velvet.Windowing
 
             WindowID = SDL.GetWindowID(WindowPtr);
 
-            _logger.Information("(Window-{WindowId}): Created — {W}x{H}, ptr={Ptr}",
+            _logger.Information("(Window-{WindowId}): Created: {W}x{H}, ptr={Ptr}",
                 WindowID, width, height, WindowPtr);
 
             Running = true;

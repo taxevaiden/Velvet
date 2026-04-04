@@ -91,7 +91,7 @@ namespace Velvet.Graphics.Shaders
     /// </summary>
     public sealed class VelvetShader : IDisposable
     {
-        // Pipeline cache key — record struct gives structural Equals/GetHashCode for free.
+        // Pipeline cache key: record struct gives structural Equals/GetHashCode for free.
         private readonly record struct PipelineKey(OutputDescription Outputs);
 
         // Default GLSL sources
