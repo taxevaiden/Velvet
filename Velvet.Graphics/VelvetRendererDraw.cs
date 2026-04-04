@@ -1,6 +1,6 @@
-using System.Buffers;
 using System.Drawing;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 using Veldrid;
 
@@ -11,523 +11,425 @@ namespace Velvet.Graphics
 {
     public partial class VelvetRenderer : IDisposable
     {
-        public VelvetTexture DefaultTexture { get; internal set; } = null!;
-        internal VelvetTexture CurrentTexture = null!;
-        internal VelvetRenderTexture? CurrentRenderTarget = null!;
-        public VelvetShader DefaultShader { get; internal set; } = null!;
-        private VelvetShader CurrentShader = null!;
-        private uint _vertexOff = 0;
-        private uint _indexOff = 0;
-        private List<Batch> _batches = null!;
+        public VelvetTexture  DefaultTexture    { get; internal set; } = null!;
+        internal VelvetTexture  CurrentTexture    = null!;
+        internal VelvetRenderTexture? CurrentRenderTarget = null;
+        public VelvetShader   DefaultShader     { get; internal set; } = null!;
+        private VelvetShader  CurrentShader     = null!;
+        private List<Batch>   _batches          = null!;
+        private Vector2   _cachedRenderSize = Vector2.Zero;
+        private Matrix3x2 _cachedProjection;
 
-        private static Vector2 GetAnchor(AnchorPosition anchor)
+        // Helpers
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector2 GetAnchor(AnchorPosition anchor) => anchor switch
         {
-            return anchor switch
-            {
-                AnchorPosition.TopLeft => new Vector2(0f, 0f),
-                AnchorPosition.Top => new Vector2(0.5f, 0f),
-                AnchorPosition.TopRight => new Vector2(1f, 0f),
+            AnchorPosition.TopLeft     => new Vector2(0f,   0f  ),
+            AnchorPosition.Top         => new Vector2(0.5f, 0f  ),
+            AnchorPosition.TopRight    => new Vector2(1f,   0f  ),
+            AnchorPosition.Left        => new Vector2(0f,   0.5f),
+            AnchorPosition.Center      => new Vector2(0.5f, 0.5f),
+            AnchorPosition.Right       => new Vector2(1f,   0.5f),
+            AnchorPosition.BottomLeft  => new Vector2(0f,   1f  ),
+            AnchorPosition.Bottom      => new Vector2(0.5f, 1f  ),
+            AnchorPosition.BottomRight => new Vector2(1f,   1f  ),
+            _                          => Vector2.Zero
+        };
 
-                AnchorPosition.Left => new Vector2(0f, 0.5f),
-                AnchorPosition.Center => new Vector2(0.5f, 0.5f),
-                AnchorPosition.Right => new Vector2(1f, 0.5f),
-
-                AnchorPosition.BottomLeft => new Vector2(0f, 1f),
-                AnchorPosition.Bottom => new Vector2(0.5f, 1f),
-                AnchorPosition.BottomRight => new Vector2(1f, 1f),
-
-                _ => Vector2.Zero
-            };
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsRectangleVisible(Vector2 pos, Vector2 size)
         {
-            Vector2 renderSize = GetRenderSize();
-            return pos.X + size.X > 0 && pos.X < renderSize.X &&
-                   pos.Y + size.Y > 0 && pos.Y < renderSize.Y;
+            Vector2 rs = GetRenderSize();
+            return pos.X + size.X > 0f && pos.X < rs.X &&
+                   pos.Y + size.Y > 0f && pos.Y < rs.Y;
         }
 
-        #region Draw Commands
-        /// <summary>
-        /// Draws a rectangle.
-        /// </summary>
-        /// <param name="pos">The position of the rectangle.</param>
-        /// <param name="size">The size of the rectangle.</param>
-        /// <param name="color">The color of the rectangle.</param>
-        public void DrawRectangle(Vector2 pos, Vector2 size, System.Drawing.Color color)
-        {
-            DrawRectangle(pos, size, GetFullUV(), 0.0f, AnchorPosition.TopLeft, color);
-        }
-
-        /// <summary>
-        /// Draws a rectangle, rotated around the top-left of the rectangle.
-        /// </summary>
-        /// <param name="pos">The position of the rectangle.</param>
-        /// <param name="size">The size of the rectangle.</param>
-        /// <param name="rotation">The rotation of the rectangle, in radians.</param>
-        /// <param name="color">The color of the rectangle.</param>
-        public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, System.Drawing.Color color)
-        {
-            DrawRectangle(pos, size, GetFullUV(), rotation, AnchorPosition.TopLeft, color);
-        }
-
-        /// <summary>
-        /// Draws a rectangle, rotated around the specified anchor.
-        /// </summary>
-        /// <param name="pos">The position of the rectangle.</param>
-        /// <param name="size">The size of the rectangle.</param>
-        /// <param name="rotation">The rotation of the rectangle, in radians.</param>
-        /// <param name="anchor">Where the rectangle is rotated around.</param>
-        /// <param name="color">The color of the rectangle.</param>
-        public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, AnchorPosition anchor, System.Drawing.Color color)
-        {
-
-            DrawRectangle(pos, size, GetFullUV(), rotation, AnchorPosition.TopLeft, color);
-        }
-
-        /// <summary>
-        /// Draws a rectangle, rotated around the specified anchor.
-        /// </summary>
-        /// <param name="pos">The position of the rectangle.</param>
-        /// <param name="size">The size of the rectangle.</param>
-        /// <param name="uv">A Rectangle defining the UV coordinates.</param>
-        /// <param name="rotation">The rotation of the rectangle, in radians.</param>
-        /// <param name="anchor">Where the rectangle is rotated around.</param>
-        /// <param name="color">The color of the rectangle.</param>
-        public void DrawRectangle(Vector2 pos, Vector2 size, Rectangle uv, float rotation, AnchorPosition anchor, System.Drawing.Color color)
-        {
-            // Cull rects that are completely off-screen
-            if (!IsRectangleVisible(pos, size))
-                return;
-
-            if (CurrentTexture.FromRenderTexture && _graphicsDevice.BackendType == GraphicsBackend.OpenGL)
-            {
-                Vector2 uvPos = new Vector2(uv.Location.X, uv.Location.Y) / new Vector2(CurrentTexture.Width, CurrentTexture.Height);
-                Vector2 uvSize = new Vector2(uv.Size.Width, uv.Size.Height) / new Vector2(CurrentTexture.Width, CurrentTexture.Height);
-                uvSize.Y = 1.0f - uvSize.Y;
-
-                EnsureSpaceFor(4, 6, CurrentRenderTarget);
-                _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos, pos + GetAnchor(anchor) * size, rotation), uvPos, ToRgbaFloat(color));
-                _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size * Vector2.UnitY, pos + GetAnchor(anchor) * size, rotation), uvPos + Vector2.UnitY * uvSize, ToRgbaFloat(color));
-                _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size, pos + GetAnchor(anchor) * size, rotation), uvPos + uvSize, ToRgbaFloat(color));
-                _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size * Vector2.UnitX, pos + GetAnchor(anchor) * size, rotation), uvPos + Vector2.UnitX * uvSize, ToRgbaFloat(color));
-            }
-            else
-            {
-                Vector2 uvPos = new Vector2(uv.Location.X, uv.Location.Y) / new Vector2(CurrentTexture.Width, CurrentTexture.Height);
-                Vector2 uvSize = new Vector2(uv.Size.Width, uv.Size.Height) / new Vector2(CurrentTexture.Width, CurrentTexture.Height);
-
-                EnsureSpaceFor(4, 6, CurrentRenderTarget);
-                _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos, pos + GetAnchor(anchor) * size, rotation), uvPos, ToRgbaFloat(color));
-                _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size * Vector2.UnitY, pos + GetAnchor(anchor) * size, rotation), uvPos + Vector2.UnitY * uvSize, ToRgbaFloat(color));
-                _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size, pos + GetAnchor(anchor) * size, rotation), uvPos + uvSize, ToRgbaFloat(color));
-                _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size * Vector2.UnitX, pos + GetAnchor(anchor) * size, rotation), uvPos + Vector2.UnitX * uvSize, ToRgbaFloat(color));
-            }
-
-            int baseIndex = _vertexCount - 4;
-
-            _indices[_indexCount++] = (uint)(baseIndex + 0);
-            _indices[_indexCount++] = (uint)(baseIndex + 1);
-            _indices[_indexCount++] = (uint)(baseIndex + 2);
-            _indices[_indexCount++] = (uint)(baseIndex + 2);
-            _indices[_indexCount++] = (uint)(baseIndex + 3);
-            _indices[_indexCount++] = (uint)(baseIndex + 0);
-        }
-
-        /// <summary>
-        /// Draws a circle.
-        /// </summary>
-        /// <param name="pos">The position of the circle.</param>
-        /// <param name="radius">The radius of the circle.</param>
-        /// <param name="color">The color of the circle.</param>
-        public void DrawCircle(Vector2 pos, float radius, System.Drawing.Color color)
-        {
-            int segments = Math.Max(12, (int)(radius / 50) * (int)(radius / 50 * 2.5));
-            DrawCircle(pos, radius, segments, color);
-        }
-
-        /// <summary>
-        /// Draws a circle.
-        /// </summary>
-        /// <param name="pos">The position of the circle.</param>
-        /// <param name="radius">The radius of the circle.</param>
-        /// <param name="segments">The amount of segments that make up the circle.</param>
-        /// <param name="color">The color of the circle.</param>
-        public void DrawCircle(Vector2 pos, float radius, int segments, System.Drawing.Color color)
-        {
-            // Cull circles that are completely off-screen
-            if (!IsRectangleVisible(pos - Vector2.One * radius, Vector2.One * radius * 2))
-                return;
-
-            int baseIndex = _vertexCount;
-            EnsureSpaceFor(segments, segments * 3, CurrentRenderTarget);
-            for (int i = 0; i < segments; i++)
-            {
-                Vector2 dir = new Vector2(MathF.Cos(360.0f / segments * i * DEG2RAD), MathF.Sin(360.0f / segments * i * DEG2RAD));
-                _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + dir * radius), Vector2.One * 0.5f + dir / 2, ToRgbaFloat(color));
-                _indices[_indexCount++] = (uint)(baseIndex + 0);
-                _indices[_indexCount++] = (uint)(baseIndex + i);
-                _indices[_indexCount++] = (uint)(baseIndex + (i + 1) % segments);
-            }
-        }
-
-        /// <summary>
-        /// Draws a polygon.
-        /// </summary>
-        /// <param name="pos">The position of the polygon.</param>
-        /// <param name="vertices">An array of vertices to render.</param>
-        /// <param name="indices">An array of indices that determine how the vertices connect.</param>
-        /// <param name="color">The color of the polygon.</param>
-        public void DrawPolygon(Vector2 pos, Vector2[] vertices, uint[] indices, System.Drawing.Color color)
-        {
-            // Cull polygons that are completely off-screen by checking bounding box
-            if (vertices.Length > 0)
-            {
-                Vector2 min = vertices[0], max = vertices[0];
-                for (int i = 1; i < vertices.Length; i++)
-                {
-                    min = Vector2.Min(min, vertices[i]);
-                    max = Vector2.Max(max, vertices[i]);
-                }
-                if (!IsRectangleVisible(pos + min, max - min))
-                    return;
-            }
-
-            int baseIndex = _vertexCount;
-            EnsureSpaceFor(vertices.Length, indices.Length, CurrentRenderTarget);
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + vertices[i]), Vector2.Zero, ToRgbaFloat(color));
-            }
-
-            for (int i = 0; i < indices.Length; i++)
-            {
-                _indices[_indexCount++] = (uint)(baseIndex + indices[i]);
-            }
-        }
-
-        /// <summary>
-        /// Draws a line.
-        /// </summary>
-        /// <param name="a">The starting position of the line.</param>
-        /// <param name="b">The ending position of the line.</param>
-        /// <param name="thickness">The thickness of the line.</param>
-        /// <param name="color">The color of the line.</param>
-        public void DrawLine(Vector2 a, Vector2 b, float thickness, Color color)
-        {
-            // Cull lines that are completely off-screen
-            Vector2 min = Vector2.Min(a, b) - Vector2.One * thickness;
-            Vector2 max = Vector2.Max(a, b) + Vector2.One * thickness;
-            if (!IsRectangleVisible(min, max - min))
-                return;
-
-            Vector2 dir = b - a;
-            float length = dir.Length();
-            float rot = MathF.Atan2(dir.Y, dir.X) - MathF.PI * 0.5f;
-
-            DrawRectangle(
-                a,
-                new Vector2(thickness, length),
-                rot,
-                AnchorPosition.Top,
-                color
-            );
-        }
-
-        /// <summary>
-        /// Sets the render target to a VelvetRenderTexture.
-        /// </summary>
-        public void SetRenderTarget(VelvetRenderTexture rt)
-        {
-            if (CurrentRenderTarget == rt)
-                return;
-
-            if (CurrentRenderTarget != rt)
-                if (_vertexCount > 0 && _indexCount > 0)
-                {
-                    Flush(CurrentRenderTarget);
-                }
-
-            CurrentRenderTarget = rt;
-        }
-
-        /// <summary>
-        /// Sets the render target to the screen.
-        /// </summary>
-        public void SetRenderTargetToScreen()
-        {
-            if (CurrentRenderTarget == null)
-                return;
-
-            if (CurrentRenderTarget != null)
-                if (_vertexCount > 0 && _indexCount > 0)
-                {
-                    Flush(CurrentRenderTarget);
-                }
-
-            CurrentRenderTarget = null;
-        }
-
-        /// <summary>
-        /// Applies a VelvetTexture.
-        /// </summary>
-        /// <remarks>When this is called, anything drawn has the provided VelvetTexture applied. To make anything drawn have a solid color again, call <code>ApplyTexture()</code></remarks>
-        /// <param name="texture">The VelvetTexture to apply. Can be null.</param>
-        public void ApplyTexture(VelvetTexture? texture = null)
-        {
-            texture ??= DefaultTexture;
-
-            if (texture == CurrentTexture) return;
-
-            if (CurrentTexture != texture)
-                if (_vertexCount > 0 && _indexCount > 0)
-                    Flush(CurrentRenderTarget);
-
-            CurrentTexture = texture;
-
-        }
-
-        /// <summary>
-        /// Applies a VelvetShader.
-        /// </summary>
-        /// <remarks>When this is called, anything drawn has the provided VelvetShader applied to it. **This does not apply the VelvetShader to the entire screen.** To make anything drawn use the default shader again, call <code>ApplyShader()</code></remarks>
-        /// <param name="shader">The VelvetShader to apply. Can be null.</param>
-        public void ApplyShader(VelvetShader? shader = null)
-        {
-            shader ??= DefaultShader;
-
-            if (shader == CurrentShader) return;
-
-            if (CurrentShader != shader)
-                if (_vertexCount > 0 && _indexCount > 0)
-                    Flush(CurrentRenderTarget);
-
-            CurrentShader = shader;
-        }
-
-        #endregion
-
-        private void EnsureSpaceFor(int vertexNeeded, int indexNeeded, VelvetRenderTexture? renderTarget)
-        {
-            if (_vertexCount + vertexNeeded > _vertexCapacity || _indexCount + indexNeeded > _indexCapacity)
-            {
-                Flush(renderTarget);
-            }
-        }
-
-        private Vector2 TranslateVertex(Vector2 pos)
+        private Matrix3x2 GetProjection()
         {
             Vector2 viewport = GetRenderSize();
-            Matrix3x2 projection = Matrix3x2.CreateScale(2f / viewport.X, 2f / viewport.Y);
-            projection *= Matrix3x2.CreateTranslation(-1f, -1f);
-
-            pos = Vector2.Transform(pos, projection);
-
-            return pos;
+            if (viewport != _cachedRenderSize)
+            {
+                _cachedRenderSize = viewport;
+                _cachedProjection  = Matrix3x2.CreateScale(2f / viewport.X, 2f / viewport.Y);
+                _cachedProjection *= Matrix3x2.CreateTranslation(-1f, -1f);
+                _cachedProjection *= Matrix3x2.CreateScale(1f, -1f);
+            }
+            return _cachedProjection;
         }
 
+        // Vertex translation
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Vector2 TranslateVertex(Vector2 pos)
+            => Vector2.Transform(pos, GetProjection());
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Vector2 TranslateVertex(Vector2 pos, Vector2 anchor, float rotation)
         {
             pos -= anchor;
 
             float c = MathF.Cos(rotation);
             float s = MathF.Sin(rotation);
+            pos = new Vector2(pos.X * c - pos.Y * s, pos.X * s + pos.Y * c);
 
-            Matrix3x2 rot = new Matrix3x2(
-                c, s,
-                -s, c,
-                0f, 0f
-            );
-
-            pos = Vector2.Transform(pos, rot);
             pos += anchor;
-
-            Vector2 viewport = GetRenderSize();
-            Matrix3x2 projection = Matrix3x2.CreateScale(2f / viewport.X, 2f / viewport.Y);
-            projection *= Matrix3x2.CreateTranslation(-1f, -1f);
-
-            pos = Vector2.Transform(pos, projection);
-
-            return pos;
+            return Vector2.Transform(pos, GetProjection());
         }
+
+        // UV helpers
+
+        private (Vector2 uvPos, Vector2 uvSize) NormaliseUV(Rectangle uv, bool flipY)
+        {
+            var texSize = new Vector2(CurrentTexture.Width, CurrentTexture.Height);
+            Vector2 uvPos  = new Vector2(uv.X, uv.Y) / texSize;
+            Vector2 uvSize = new Vector2(uv.Width, uv.Height) / texSize;
+
+            if (flipY)
+                uvPos.Y = 1f - uvPos.Y - uvSize.Y;
+
+            return (uvPos, uvSize);
+        }
+
+        #region Draw Commands
+
+        public void DrawRectangle(Vector2 pos, Vector2 size, Color color)
+            => DrawRectangle(pos, size, GetFullUV(), 0f, AnchorPosition.TopLeft, color);
+
+        public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, Color color)
+            => DrawRectangle(pos, size, GetFullUV(), rotation, AnchorPosition.TopLeft, color);
+
+        public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, AnchorPosition anchor, Color color)
+            => DrawRectangle(pos, size, GetFullUV(), rotation, anchor, color);
+
+        /// <summary>Core rectangle draw — all overloads funnel here.</summary>
+        public void DrawRectangle(
+            Vector2 pos, Vector2 size, Rectangle uv,
+            float rotation, AnchorPosition anchor, Color color)
+        {
+            bool flipY = CurrentTexture.FromRenderTexture &&
+                         _graphicsDevice.BackendType == GraphicsBackend.OpenGL;
+
+            var (uvPos, uvSize) = NormaliseUV(uv, flipY);
+
+            RgbaFloat rgba    = ToRgbaFloat(color);
+            Vector2   anchorW = pos + GetAnchor(anchor) * size;
+
+            EnsureSpaceFor(4, 6, CurrentRenderTarget);
+
+            // NOTE: indices are ABSOLUTE (no vertexOffset used in DrawIndexed).
+            uint baseIndex = (uint)_vertexCount;
+
+            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos,                        anchorW, rotation), uvPos,                         rgba);
+            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size * Vector2.UnitY, anchorW, rotation), uvPos + Vector2.UnitY * uvSize, rgba);
+            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size,                 anchorW, rotation), uvPos + uvSize,                 rgba);
+            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size * Vector2.UnitX, anchorW, rotation), uvPos + Vector2.UnitX * uvSize, rgba);
+
+            _indices[_indexCount++] = baseIndex;
+            _indices[_indexCount++] = baseIndex + 1;
+            _indices[_indexCount++] = baseIndex + 2;
+            _indices[_indexCount++] = baseIndex + 2;
+            _indices[_indexCount++] = baseIndex + 3;
+            _indices[_indexCount++] = baseIndex;
+        }
+
+        /// <summary>Draws a circle with automatic segment count based on radius.</summary>
+        public void DrawCircle(Vector2 pos, float radius, Color color)
+        {
+            int segments = Math.Max(12, (int)(MathF.Sqrt(radius) * 4f));
+            DrawCircle(pos, radius, segments, color);
+        }
+
+        /// <summary>Draws a circle with a fixed segment count.</summary>
+        public void DrawCircle(Vector2 pos, float radius, int segments, Color color)
+        {
+            if (segments < 3) segments = 3;
+
+            EnsureSpaceFor(segments + 1, segments * 3, CurrentRenderTarget);
+
+            uint      baseIndex = (uint)_vertexCount;
+            RgbaFloat rgba      = ToRgbaFloat(color);
+
+            // Centre vertex.
+            _vertices[_vertexCount++] = new Vertex(
+                TranslateVertex(pos), new Vector2(0.5f, 0.5f), rgba);
+
+            // Perimeter vertices.
+            float step = MathF.Tau / segments;
+            for (int i = 0; i < segments; i++)
+            {
+                float   angle = step * i;
+                Vector2 dir   = new(MathF.Cos(angle), MathF.Sin(angle));
+                _vertices[_vertexCount++] = new Vertex(
+                    TranslateVertex(pos + dir * radius),
+                    new Vector2(0.5f, 0.5f) + dir * 0.5f,
+                    rgba);
+            }
+
+            // Triangle fan.
+            for (int i = 0; i < segments; i++)
+            {
+                _indices[_indexCount++] = baseIndex;
+                _indices[_indexCount++] = baseIndex + 1 + (uint)i;
+                _indices[_indexCount++] = baseIndex + 1 + (uint)((i + 1) % segments);
+            }
+        }
+
+        /// <summary>Draws an arbitrary polygon.</summary>
+        public void DrawPolygon(Vector2 pos, Vector2[] vertices, uint[] indices, Color color)
+        {
+            if (vertices.Length == 0 || indices.Length == 0) return;
+
+            Vector2 min = vertices[0], max = vertices[0];
+            for (int i = 1; i < vertices.Length; i++)
+            {
+                min = Vector2.Min(min, vertices[i]);
+                max = Vector2.Max(max, vertices[i]);
+            }
+            if (!IsRectangleVisible(pos + min, max - min)) return;
+
+            uint      baseIndex = (uint)_vertexCount;
+            RgbaFloat rgba      = ToRgbaFloat(color);
+
+            EnsureSpaceFor(vertices.Length, indices.Length, CurrentRenderTarget);
+
+            for (int i = 0; i < vertices.Length; i++)
+                _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + vertices[i]), Vector2.Zero, rgba);
+
+            for (int i = 0; i < indices.Length; i++)
+                _indices[_indexCount++] = baseIndex + indices[i];
+        }
+
+        /// <summary>Draws a thick line between two points.</summary>
+        public void DrawLine(Vector2 a, Vector2 b, float thickness, Color color)
+        {
+            Vector2 min = Vector2.Min(a, b) - Vector2.One * thickness;
+            Vector2 max = Vector2.Max(a, b) + Vector2.One * thickness;
+            if (!IsRectangleVisible(min, max - min)) return;
+
+            Vector2 dir    = b - a;
+            float   length = dir.Length();
+            if (length < 0.0001f) return;
+
+            float rot = MathF.Atan2(dir.Y, dir.X) - MathF.PI * 0.5f;
+            DrawRectangle(a, new Vector2(thickness, length), rot, AnchorPosition.Top, color);
+        }
+
+        /// <summary>Draws a string using a bitmap font atlas.</summary>
+        public void DrawText(VelvetFont font, string text, int pxSize, Vector2 position, Color color)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+
+            VelvetTexture previousTex = CurrentTexture;
+            ApplyTexture(font.TextureAtlas);
+
+            float scale = pxSize / (float)font.FontSize;
+            float x     = position.X;
+            float y     = position.Y;
+
+            foreach (char c in text)
+            {
+                if (c < 0 || c >= 128) continue;
+                var glyph = font.glyphs[c];
+                var uv    = new Rectangle(glyph.x0, glyph.y0, glyph.x1 - glyph.x0, glyph.y1 - glyph.y0);
+                DrawRectangle(
+                    new Vector2(x + glyph.x_off * scale, y - glyph.y_off * scale),
+                    new Vector2(uv.Width, uv.Height) * scale,
+                    uv, 0f, AnchorPosition.TopLeft, color);
+                x += glyph.advance * scale;
+            }
+
+            ApplyTexture(previousTex);
+        }
+
+        #endregion
+
+        // State management
+
+        public void SetRenderTarget(VelvetRenderTexture rt)
+        {
+            if (CurrentRenderTarget == rt) return;
+            FlushIfPending();
+            CurrentRenderTarget = rt;
+        }
+
+        public void SetRenderTargetToScreen()
+        {
+            if (CurrentRenderTarget == null) return;
+            FlushIfPending();
+            CurrentRenderTarget = null;
+        }
+
+        public void ApplyTexture(VelvetTexture? texture = null)
+        {
+            texture ??= DefaultTexture;
+            if (CurrentTexture == texture) return;
+            FlushIfPending();
+            CurrentTexture = texture;
+        }
+
+        public void ApplyShader(VelvetShader? shader = null)
+        {
+            shader ??= DefaultShader;
+            if (CurrentShader == shader) return;
+            FlushIfPending();
+            CurrentShader = shader;
+        }
+
+        // Buffer / batch management
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void FlushIfPending()
+        {
+            if (_vertexCount - _lastFlushedVertexCount > 0 &&
+                _indexCount  - _lastFlushedIndexCount  > 0)
+                Flush(CurrentRenderTarget);
+        }
+
+        private void EnsureSpaceFor(int verticesNeeded, int indicesNeeded, VelvetRenderTexture? renderTarget)
+        {
+            if (_vertexCount + verticesNeeded > _vertexCapacity ||
+                _indexCount  + indicesNeeded  > _indexCapacity)
+                Flush(renderTarget);
+        }
+
+        private void Flush(VelvetRenderTexture? renderTarget)
+        {
+            int vertexCount = _vertexCount - _lastFlushedVertexCount;
+            int indexCount  = _indexCount  - _lastFlushedIndexCount;
+            if (vertexCount <= 0 || indexCount <= 0) return;
+
+            _batches.Add(new Batch(
+                _lastFlushedVertexCount, vertexCount,
+                _lastFlushedIndexCount,  indexCount,
+                CurrentTexture, CurrentShader, renderTarget));
+
+            _lastFlushedVertexCount = _vertexCount;
+            _lastFlushedIndexCount  = _indexCount;
+        }
+
+        // Frame lifecycle
 
         #region Rendering
 
-        /// <summary>
-        /// Begins the command list. Call this before drawing anything.
-        /// </summary>
         public void Begin()
         {
-            CurrentTexture = DefaultTexture;
+            CurrentTexture      = DefaultTexture;
             CurrentRenderTarget = null;
-            CurrentShader = DefaultShader;
+            CurrentShader       = DefaultShader;
 
             _commandList.Begin();
-
             _commandList.SetFramebuffer(_graphicsDevice.SwapchainFramebuffer);
         }
 
-        /// <summary>
-        /// Clears the screen to a color.
-        /// </summary>
-        /// <param name="color">The color to clear the screen to.</param>
-        public void ClearColor(System.Drawing.Color color)
+        public void ClearColor(Color color)
         {
-            if (CurrentRenderTarget != null) _commandList.SetFramebuffer(CurrentRenderTarget.Framebuffer); else _commandList.SetFramebuffer(_graphicsDevice.SwapchainFramebuffer);
+            _commandList.SetFramebuffer(
+                CurrentRenderTarget?.Framebuffer ?? _graphicsDevice.SwapchainFramebuffer);
             _commandList.ClearColorTarget(0, ToRgbaFloat(color));
         }
 
-        /// <summary>
-        /// Renders everything to the screen. Call this after drawing.
-        /// </summary>
         public void End()
         {
             SubmitBatches();
 
             _commandList.End();
             _graphicsDevice.SubmitCommands(_commandList);
-
             _graphicsDevice.SwapBuffers();
 
-            _vertexCount = 0;
-            _indexCount = 0;
+            // Reset frame state.
+            _vertexCount            = 0;
+            _indexCount             = 0;
+            _lastFlushedVertexCount = 0;
+            _lastFlushedIndexCount  = 0;
             _batches.Clear();
-
-            _vertexOff = 0;
-            _indexOff = 0;
         }
 
         #endregion
+        // Batch submission
 
         private void SubmitBatches()
         {
-            if (_vertexCount > 0 && _indexCount > 0)
-                Flush(CurrentRenderTarget);
-
+            FlushIfPending();
             if (_batches.Count == 0) return;
 
-            // Merge consecutive batches with same texture/shader/render target
-            List<Batch> mergedBatches = new();
-            Batch currentMerged = _batches[0];
+            if (_vertexCount > 0)
+                _graphicsDevice.UpdateBuffer(
+                    _vertexBuffer, 0,
+                    ref _vertices[0],
+                    (uint)(_vertexCount * (int)Vertex.SizeInBytes));
+
+            if (_indexCount > 0)
+                _graphicsDevice.UpdateBuffer(
+                    _indexBuffer, 0,
+                    ref _indices[0],
+                    (uint)(_indexCount * sizeof(uint)));
+
+            List<Batch> merged = new(_batches.Count);
+            Batch       cur    = _batches[0];
 
             for (int i = 1; i < _batches.Count; i++)
             {
                 Batch next = _batches[i];
-                if (currentMerged.Texture == next.Texture &&
-                    currentMerged.Shader == next.Shader &&
-                    currentMerged.RenderTarget == next.RenderTarget)
+                if (cur.Texture      == next.Texture  &&
+                    cur.Shader       == next.Shader   &&
+                    cur.RenderTarget == next.RenderTarget)
                 {
-                    // Merge: extend count
-                    currentMerged.IndexCount += next.IndexCount;
+                    cur.VertexCount += next.VertexCount;
+                    cur.IndexCount  += next.IndexCount;
                 }
                 else
                 {
-                    mergedBatches.Add(currentMerged);
-                    currentMerged = next;
+                    merged.Add(cur);
+                    cur = next;
                 }
             }
-            mergedBatches.Add(currentMerged);
+            merged.Add(cur);
 
-            // Single pass: update all vertex and index data
-            if (_vertexCount > 0)
-            {
-                var vertexHandle = System.Runtime.InteropServices.GCHandle.Alloc(_vertices, System.Runtime.InteropServices.GCHandleType.Pinned);
-                _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, vertexHandle.AddrOfPinnedObject(), (uint)(_vertexCount * (int)Vertex.SizeInBytes));
-                vertexHandle.Free();
-            }
+            _commandList.SetVertexBuffer(0, _vertexBuffer);
+            _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
 
-            if (_indexCount > 0)
+            foreach (Batch batch in merged)
             {
-                var indexHandle = System.Runtime.InteropServices.GCHandle.Alloc(_indices, System.Runtime.InteropServices.GCHandleType.Pinned);
-                _graphicsDevice.UpdateBuffer(_indexBuffer, 0, indexHandle.AddrOfPinnedObject(), (uint)(_indexCount * 4));
-                indexHandle.Free();
-            }
+                batch.Texture.GenerateMipMapsIfNeeded(_commandList);
 
-            // Draw all merged batches
-            foreach (Batch batch in mergedBatches)
-            {
-                batch.Texture.CreateMipMaps(_commandList);
                 batch.Shader.SetTexture(batch.Texture);
                 batch.Shader.SetRenderTexture(batch.RenderTarget);
                 batch.Shader.Flush();
 
-                _commandList.SetVertexBuffer(0, _vertexBuffer);
-                _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
-
                 if (batch.RenderTarget != null)
                 {
                     _commandList.SetFramebuffer(batch.RenderTarget.Framebuffer);
-                    _commandList.SetViewport(
-                        0,
-                        new Viewport(
-                            0,
-                            0,
-                            batch.RenderTarget.Width,
-                            batch.RenderTarget.Height,
-                            0,
-                            1
-                        )
-                    );
-
-                    _commandList.SetScissorRect(
-                        0,
-                        0,
-                        0,
-                        batch.RenderTarget.Width,
-                        batch.RenderTarget.Height
-                    );
+                    _commandList.SetViewport(0, new Viewport(
+                        0, 0, batch.RenderTarget.Width, batch.RenderTarget.Height, 0, 1));
+                    _commandList.SetScissorRect(0, 0, 0,
+                        batch.RenderTarget.Width, batch.RenderTarget.Height);
                 }
                 else
                 {
-                    _commandList.SetFramebuffer(_graphicsDevice.SwapchainFramebuffer);
-                    _commandList.SetViewport(
-                        0,
-                        new Viewport(
-                            0,
-                            0,
-                            _graphicsDevice.SwapchainFramebuffer.Width,
-                            _graphicsDevice.SwapchainFramebuffer.Height,
-                            0,
-                            1
-                        )
-                    );
-
-                    _commandList.SetScissorRect(
-                        0,
-                        0,
-                        0,
-                        _graphicsDevice.SwapchainFramebuffer.Width,
-                        _graphicsDevice.SwapchainFramebuffer.Height
-                    );
+                    var fb = _graphicsDevice.SwapchainFramebuffer;
+                    _commandList.SetFramebuffer(fb);
+                    _commandList.SetViewport(0, new Viewport(0, 0, fb.Width, fb.Height, 0, 1));
+                    _commandList.SetScissorRect(0, 0, 0, fb.Width, fb.Height);
                 }
 
                 _commandList.SetPipeline(batch.Shader.Pipeline);
                 _commandList.SetGraphicsResourceSet(0, batch.Shader.ResourceSet);
+
                 _commandList.DrawIndexed(
-                    indexCount: (uint)batch.IndexCount,
+                    indexCount:    (uint)batch.IndexCount,
                     instanceCount: 1,
-                    indexStart: (uint)batch.IndexStart,
-                    vertexOffset: batch.VertexStart,
+                    indexStart:    (uint)batch.IndexStart,
+                    vertexOffset:  0,
                     instanceStart: 0);
 
-                if (batch.RenderTarget != null && batch.RenderTarget.IsMultiSampled)
+                if (batch.RenderTarget?.IsMultiSampled == true)
                     batch.RenderTarget.Resolve(_commandList);
             }
-        }
 
-        private void Flush(VelvetRenderTexture? renderTarget = null)
-        {
-            if (_vertexCount == 0) return;
-
-            int vertexStart = _batches.Count == 0 ? 0 : _batches[^1].VertexStart + _batches[^1].VertexCount;
-            int indexStart = _batches.Count == 0 ? 0 : _batches[^1].IndexStart + _batches[^1].IndexCount;
-
-            Batch batch = new(vertexStart, _vertexCount - vertexStart, indexStart, _indexCount - indexStart, CurrentTexture, CurrentShader, renderTarget);
-
-            _batches.Add(batch);
-
-            _vertexCount = vertexStart + batch.VertexCount;
-            _indexCount = indexStart + batch.IndexCount;
+            // Reset per-frame mip flags for all textures used this frame.
+            foreach (Batch batch in merged)
+                batch.Texture.MipMapsGenerated = false;
         }
     }
 }

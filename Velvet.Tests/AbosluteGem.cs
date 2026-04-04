@@ -36,11 +36,6 @@ public class GeminiApp : VelvetApplication
 
         Renderer.ClearColor(Color.Black);
 
-        Renderer.DrawRectangle(
-            _playerPosition,
-            new Vector2(50, 50),
-            Color.Red
-        );
 
         Renderer.DrawCircle(
             new Vector2(400, 300),
@@ -48,6 +43,11 @@ public class GeminiApp : VelvetApplication
             Color.SkyBlue
         );
 
+        Renderer.DrawRectangle(
+            _playerPosition,
+            new Vector2(50, 50),
+            Color.Red
+        );
         Renderer.End();
     }
 
