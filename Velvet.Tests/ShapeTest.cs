@@ -88,7 +88,7 @@ namespace Velvet.Tests
             Renderer.DrawCircle(pos, 20.0f, Color.Blue);
             Renderer.DrawRectangle(pos2, new Vector2(20.0f, 20.0f), Color.Blue);
             
-            Renderer.DrawText(font, $"FPS: {fps:F1}", 32, new Vector2(50, 50), Color.Black);
+            Renderer.DrawText(font, $"FPS: {fps:F3}", 32, new Vector2(50, 50), Color.Black);
 
             Renderer.SetRenderTargetToScreen();
             Renderer.ClearColor(Color.White);
