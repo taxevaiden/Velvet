@@ -14,17 +14,17 @@ namespace Velvet.Graphics
         /// <summary>
         /// The default texture used when no texture is applied. This is a 1x1 white pixel.
         /// </summary>
-        public VelvetTexture  DefaultTexture    { get; internal set; } = null!;
-        internal VelvetTexture  CurrentTexture  = null!;
+        public VelvetTexture DefaultTexture { get; internal set; } = null!;
+        internal VelvetTexture CurrentTexture = null!;
         internal VelvetRenderTexture? CurrentRenderTarget = null;
         /// <summary>
         /// The default shader used when no shader is applied. This is a simple shader that supports textured and colored rendering.
         /// </summary>
-        public VelvetShader   DefaultShader     { get; internal set; } = null!;
-        private VelvetShader  CurrentShader     = null!;
+        public VelvetShader DefaultShader { get; internal set; } = null!;
+        private VelvetShader CurrentShader = null!;
         private List<Batch> _batches = new();
 
-        private Vector2   _cachedRenderSize = Vector2.Zero;
+        private Vector2 _cachedRenderSize = Vector2.Zero;
         private Matrix3x2 _cachedProjection;
 
         // Helpers
@@ -32,16 +32,16 @@ namespace Velvet.Graphics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector2 GetAnchor(AnchorPosition anchor) => anchor switch
         {
-            AnchorPosition.TopLeft     => new Vector2(0f,   0f  ),
-            AnchorPosition.Top         => new Vector2(0.5f, 0f  ),
-            AnchorPosition.TopRight    => new Vector2(1f,   0f  ),
-            AnchorPosition.Left        => new Vector2(0f,   0.5f),
-            AnchorPosition.Center      => new Vector2(0.5f, 0.5f),
-            AnchorPosition.Right       => new Vector2(1f,   0.5f),
-            AnchorPosition.BottomLeft  => new Vector2(0f,   1f  ),
-            AnchorPosition.Bottom      => new Vector2(0.5f, 1f  ),
-            AnchorPosition.BottomRight => new Vector2(1f,   1f  ),
-            _                          => Vector2.Zero
+            AnchorPosition.TopLeft => new Vector2(0f, 0f),
+            AnchorPosition.Top => new Vector2(0.5f, 0f),
+            AnchorPosition.TopRight => new Vector2(1f, 0f),
+            AnchorPosition.Left => new Vector2(0f, 0.5f),
+            AnchorPosition.Center => new Vector2(0.5f, 0.5f),
+            AnchorPosition.Right => new Vector2(1f, 0.5f),
+            AnchorPosition.BottomLeft => new Vector2(0f, 1f),
+            AnchorPosition.Bottom => new Vector2(0.5f, 1f),
+            AnchorPosition.BottomRight => new Vector2(1f, 1f),
+            _ => Vector2.Zero
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -59,7 +59,7 @@ namespace Velvet.Graphics
             if (viewport != _cachedRenderSize)
             {
                 _cachedRenderSize = viewport;
-                _cachedProjection  = Matrix3x2.CreateScale(2f / viewport.X, 2f / viewport.Y);
+                _cachedProjection = Matrix3x2.CreateScale(2f / viewport.X, 2f / viewport.Y);
                 _cachedProjection *= Matrix3x2.CreateTranslation(-1f, -1f);
                 _cachedProjection *= Matrix3x2.CreateScale(1f, -1f);
             }
@@ -90,7 +90,7 @@ namespace Velvet.Graphics
         private (Vector2 uvPos, Vector2 uvSize) NormaliseUV(Rectangle uv, bool flipY)
         {
             var texSize = new Vector2(CurrentTexture.Width, CurrentTexture.Height);
-            Vector2 uvPos  = new Vector2(uv.X, uv.Y) / texSize;
+            Vector2 uvPos = new Vector2(uv.X, uv.Y) / texSize;
             Vector2 uvSize = new Vector2(uv.Width, uv.Height) / texSize;
 
             if (flipY)
@@ -123,16 +123,16 @@ namespace Velvet.Graphics
 
             var (uvPos, uvSize) = NormaliseUV(uv, flipY);
 
-            RgbaFloat rgba    = ToRgbaFloat(color);
-            Vector2   anchorW = pos + GetAnchor(anchor) * size;
+            RgbaFloat rgba = ToRgbaFloat(color);
+            Vector2 anchorW = pos + GetAnchor(anchor) * size;
 
             EnsureSpaceFor(4, 6, CurrentRenderTarget);
 
             uint baseIndex = (uint)_vertexCount;
 
-            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos,                        anchorW, rotation), uvPos,                         rgba);
+            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos, anchorW, rotation), uvPos, rgba);
             _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size * Vector2.UnitY, anchorW, rotation), uvPos + Vector2.UnitY * uvSize, rgba);
-            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size,                 anchorW, rotation), uvPos + uvSize,                 rgba);
+            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size, anchorW, rotation), uvPos + uvSize, rgba);
             _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size * Vector2.UnitX, anchorW, rotation), uvPos + Vector2.UnitX * uvSize, rgba);
 
             _indices[_indexCount++] = baseIndex;
@@ -157,8 +157,8 @@ namespace Velvet.Graphics
 
             EnsureSpaceFor(segments + 1, segments * 3, CurrentRenderTarget);
 
-            uint      baseIndex = (uint)_vertexCount;
-            RgbaFloat rgba      = ToRgbaFloat(color);
+            uint baseIndex = (uint)_vertexCount;
+            RgbaFloat rgba = ToRgbaFloat(color);
 
             _vertices[_vertexCount++] = new Vertex(
                 TranslateVertex(pos), new Vector2(0.5f, 0.5f), rgba);
@@ -166,8 +166,8 @@ namespace Velvet.Graphics
             float step = MathF.Tau / segments;
             for (int i = 0; i < segments; i++)
             {
-                float   angle = step * i;
-                Vector2 dir   = new(MathF.Cos(angle), MathF.Sin(angle));
+                float angle = step * i;
+                Vector2 dir = new(MathF.Cos(angle), MathF.Sin(angle));
                 _vertices[_vertexCount++] = new Vertex(
                     TranslateVertex(pos + dir * radius),
                     new Vector2(0.5f, 0.5f) + dir * 0.5f,
@@ -195,8 +195,8 @@ namespace Velvet.Graphics
             }
             if (!IsRectangleVisible(pos + min, max - min)) return;
 
-            uint      baseIndex = (uint)_vertexCount;
-            RgbaFloat rgba      = ToRgbaFloat(color);
+            uint baseIndex = (uint)_vertexCount;
+            RgbaFloat rgba = ToRgbaFloat(color);
 
             EnsureSpaceFor(vertices.Length, indices.Length, CurrentRenderTarget);
 
@@ -214,8 +214,8 @@ namespace Velvet.Graphics
             Vector2 max = Vector2.Max(a, b) + Vector2.One * thickness;
             if (!IsRectangleVisible(min, max - min)) return;
 
-            Vector2 dir    = b - a;
-            float   length = dir.Length();
+            Vector2 dir = b - a;
+            float length = dir.Length();
             if (length < 0.0001f) return;
 
             float rot = MathF.Atan2(dir.Y, dir.X) - MathF.PI * 0.5f;
@@ -231,14 +231,14 @@ namespace Velvet.Graphics
             ApplyTexture(font.TextureAtlas);
 
             float scale = pxSize / (float)font.FontSize;
-            float x     = position.X;
-            float y     = position.Y;
+            float x = position.X;
+            float y = position.Y;
 
             foreach (char c in text)
             {
                 if (c < 0 || c >= 128) continue;
                 var glyph = font.glyphs[c];
-                var uv    = new Rectangle(glyph.x0, glyph.y0, glyph.x1 - glyph.x0, glyph.y1 - glyph.y0);
+                var uv = new Rectangle(glyph.x0, glyph.y0, glyph.x1 - glyph.x0, glyph.y1 - glyph.y0);
                 DrawRectangle(
                     new Vector2(x + glyph.x_off * scale, y - glyph.y_off * scale),
                     new Vector2(uv.Width, uv.Height) * scale,
@@ -291,7 +291,7 @@ namespace Velvet.Graphics
         private void FlushIfPending()
         {
             if (_vertexCount - _lastFlushedVertexCount > 0 &&
-                _indexCount  - _lastFlushedIndexCount  > 0)
+                _indexCount - _lastFlushedIndexCount > 0)
                 Flush(CurrentRenderTarget);
         }
 
@@ -299,39 +299,39 @@ namespace Velvet.Graphics
         private void EnsureSpaceFor(int verticesNeeded, int indicesNeeded, VelvetRenderTexture? renderTarget)
         {
             if (_vertexCount + verticesNeeded > _vertexCapacity ||
-                _indexCount  + indicesNeeded  > _indexCapacity)
+                _indexCount + indicesNeeded > _indexCapacity)
                 Flush(renderTarget);
         }
 
         private void Flush(VelvetRenderTexture? renderTarget)
         {
             int vertexCount = _vertexCount - _lastFlushedVertexCount;
-            int indexCount  = _indexCount  - _lastFlushedIndexCount;
+            int indexCount = _indexCount - _lastFlushedIndexCount;
             if (vertexCount <= 0 || indexCount <= 0) return;
 
             if (_batches.Count > 0)
             {
                 Batch last = _batches[_batches.Count - 1];
-                if (last.Texture      == CurrentTexture  &&
-                    last.Shader       == CurrentShader   &&
+                if (last.Texture == CurrentTexture &&
+                    last.Shader == CurrentShader &&
                     last.RenderTarget == renderTarget)
                 {
                     last.VertexCount += vertexCount;
-                    last.IndexCount  += indexCount;
+                    last.IndexCount += indexCount;
                     _batches[_batches.Count - 1] = last;
                     _lastFlushedVertexCount = _vertexCount;
-                    _lastFlushedIndexCount  = _indexCount;
+                    _lastFlushedIndexCount = _indexCount;
                     return;
                 }
             }
 
             _batches.Add(new Batch(
                 _lastFlushedVertexCount, vertexCount,
-                _lastFlushedIndexCount,  indexCount,
+                _lastFlushedIndexCount, indexCount,
                 CurrentTexture, CurrentShader, renderTarget));
 
             _lastFlushedVertexCount = _vertexCount;
-            _lastFlushedIndexCount  = _indexCount;
+            _lastFlushedIndexCount = _indexCount;
         }
 
         // Frame lifecycle
@@ -342,9 +342,9 @@ namespace Velvet.Graphics
         /// </summary>
         public void Begin()
         {
-            CurrentTexture      = DefaultTexture;
+            CurrentTexture = DefaultTexture;
             CurrentRenderTarget = null;
-            CurrentShader       = DefaultShader;
+            CurrentShader = DefaultShader;
 
             _commandList.Begin();
             _commandList.SetFramebuffer(_graphicsDevice.SwapchainFramebuffer);
@@ -370,10 +370,10 @@ namespace Velvet.Graphics
             _graphicsDevice.SubmitCommands(_commandList);
             _graphicsDevice.SwapBuffers();
 
-            _vertexCount            = 0;
-            _indexCount             = 0;
+            _vertexCount = 0;
+            _indexCount = 0;
             _lastFlushedVertexCount = 0;
-            _lastFlushedIndexCount  = 0;
+            _lastFlushedIndexCount = 0;
             _batches.Clear();
         }
 
@@ -429,10 +429,10 @@ namespace Velvet.Graphics
                 _commandList.SetGraphicsResourceSet(0, batch.Shader.ResourceSet);
 
                 _commandList.DrawIndexed(
-                    indexCount:    (uint)batch.IndexCount,
+                    indexCount: (uint)batch.IndexCount,
                     instanceCount: 1,
-                    indexStart:    (uint)batch.IndexStart,
-                    vertexOffset:  0,
+                    indexStart: (uint)batch.IndexStart,
+                    vertexOffset: 0,
                     instanceStart: 0);
 
                 if (batch.RenderTarget?.IsMultiSampled == true)

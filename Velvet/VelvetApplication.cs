@@ -34,17 +34,17 @@ namespace Velvet
         private ulong _lastCounter;
 
         // SDL lifecycle callbacks
-        private readonly SDL.MainFunc        _runCallback;
-        private readonly SDL.AppInitFunc     _initCallback;
-        private readonly SDL.AppIterateFunc  _iterateCallback;
-        private readonly SDL.AppEventFunc    _eventCallback;
-        private readonly SDL.AppQuitFunc     _quitCallback;
+        private readonly SDL.MainFunc _runCallback;
+        private readonly SDL.AppInitFunc _initCallback;
+        private readonly SDL.AppIterateFunc _iterateCallback;
+        private readonly SDL.AppEventFunc _eventCallback;
+        private readonly SDL.AppQuitFunc _quitCallback;
 
-        private readonly int          _width;
-        private readonly int          _height;
-        private readonly string       _title;
-        private readonly GraphicsAPI  _graphicsAPI;
-        private readonly bool         _vsync;
+        private readonly int _width;
+        private readonly int _height;
+        private readonly string _title;
+        private readonly GraphicsAPI _graphicsAPI;
+        private readonly bool _vsync;
 
         // Constructors
 
@@ -84,17 +84,17 @@ namespace Velvet
                     "[{Timestamp:HH:mm:ss.fff} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
 
-            _width       = width;
-            _height      = height;
-            _title       = title;
+            _width = width;
+            _height = height;
+            _title = title;
             _graphicsAPI = graphicsAPI;
-            _vsync       = vsync;
+            _vsync = vsync;
 
-            _runCallback      = RunCallback;
-            _initCallback     = InitCallback;
-            _iterateCallback  = IterateCallback;
-            _eventCallback    = EventCallback;
-            _quitCallback     = QuitCallback;
+            _runCallback = RunCallback;
+            _initCallback = InitCallback;
+            _iterateCallback = IterateCallback;
+            _eventCallback = EventCallback;
+            _quitCallback = QuitCallback;
         }
 
         // Entry point
@@ -111,7 +111,7 @@ namespace Velvet
 
         private SDL.AppResult InitCallback(nint appstate, int argc, string[] argv)
         {
-            Window   = new VelvetWindow(_title, _width, _height);
+            Window = new VelvetWindow(_title, _width, _height);
             Renderer = new VelvetRenderer(Window, _graphicsAPI, _vsync);
 
             _lastCounter = SDL.GetPerformanceCounter();

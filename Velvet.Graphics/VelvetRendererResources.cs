@@ -28,17 +28,17 @@ namespace Velvet.Graphics
         private DeviceBuffer _indexBuffer = null!;
 
         private const uint VertexBufferSize = 1024 * 1024 * 32; // 32 MB
-        private const uint IndexBufferSize  = 1024 * 1024 * 48; // 48 MB
+        private const uint IndexBufferSize = 1024 * 1024 * 48; // 48 MB
 
         private Vertex[] _vertices = null!;
-        private uint[]   _indices  = null!;
+        private uint[] _indices = null!;
 
-        private int _vertexCount            = 0;
-        private int _indexCount             = 0;
+        private int _vertexCount = 0;
+        private int _indexCount = 0;
         private int _lastFlushedVertexCount = 0;
-        private int _lastFlushedIndexCount  = 0;
-        private int _vertexCapacity         = 0;
-        private int _indexCapacity          = 0;
+        private int _lastFlushedIndexCount = 0;
+        private int _vertexCapacity = 0;
+        private int _indexCapacity = 0;
 
         /// <summary>Initializes Veldrid for Windows.</summary>
         private void InitVeldrid_WIN(GraphicsAPI api, VelvetWindow window, bool vsync)
@@ -48,11 +48,11 @@ namespace Velvet.Graphics
 
             _graphicsDevice = api switch
             {
-                GraphicsAPI.D3D11  => CreateD3D11Device(window, vsync),
+                GraphicsAPI.D3D11 => CreateD3D11Device(window, vsync),
                 GraphicsAPI.Vulkan => CreateVulkanDevice(window, vsync, GetWin32Source(window)),
                 GraphicsAPI.OpenGL => CreateOpenGLDevice(window, vsync),
-                GraphicsAPI.Metal  => throw PlatformUnsupported(api, "Windows", "D3D11, Vulkan, or OpenGL"),
-                _                  => throw new ArgumentOutOfRangeException(nameof(api))
+                GraphicsAPI.Metal => throw PlatformUnsupported(api, "Windows", "D3D11, Vulkan, or OpenGL"),
+                _ => throw new ArgumentOutOfRangeException(nameof(api))
             };
 
             CreateResources();
@@ -68,9 +68,9 @@ namespace Velvet.Graphics
             {
                 GraphicsAPI.Vulkan => CreateVulkanDevice(window, vsync, GetLinuxSource(window)),
                 GraphicsAPI.OpenGL => CreateOpenGLDevice(window, vsync),
-                GraphicsAPI.D3D11  => throw PlatformUnsupported(api, "Linux",   "Vulkan or OpenGL"),
-                GraphicsAPI.Metal  => throw PlatformUnsupported(api, "Linux",   "Vulkan or OpenGL"),
-                _                  => throw new ArgumentOutOfRangeException(nameof(api))
+                GraphicsAPI.D3D11 => throw PlatformUnsupported(api, "Linux", "Vulkan or OpenGL"),
+                GraphicsAPI.Metal => throw PlatformUnsupported(api, "Linux", "Vulkan or OpenGL"),
+                _ => throw new ArgumentOutOfRangeException(nameof(api))
             };
 
             CreateResources();
@@ -84,11 +84,11 @@ namespace Velvet.Graphics
 
             _graphicsDevice = api switch
             {
-                GraphicsAPI.Metal  => CreateMetalDevice(window, vsync),
+                GraphicsAPI.Metal => CreateMetalDevice(window, vsync),
                 GraphicsAPI.Vulkan => CreateVulkanDevice(window, vsync, GetCocoaSource(window)),
-                GraphicsAPI.D3D11  => throw PlatformUnsupported(api, "macOS", "Metal or Vulkan"),
+                GraphicsAPI.D3D11 => throw PlatformUnsupported(api, "macOS", "Metal or Vulkan"),
                 GraphicsAPI.OpenGL => throw PlatformUnsupported(api, "macOS", "Metal or Vulkan"),
-                _                  => throw new ArgumentOutOfRangeException(nameof(api))
+                _ => throw new ArgumentOutOfRangeException(nameof(api))
             };
 
             CreateResources();
@@ -99,21 +99,21 @@ namespace Velvet.Graphics
         private GraphicsDevice CreateD3D11Device(VelvetWindow window, bool vsync)
         {
             var options = MakeOptions(vsync, debug: true);
-            var scDesc  = MakeSwapchain(window, vsync, GetWin32Source(window));
+            var scDesc = MakeSwapchain(window, vsync, GetWin32Source(window));
             return GraphicsDevice.CreateD3D11(options, scDesc);
         }
 
         private GraphicsDevice CreateVulkanDevice(VelvetWindow window, bool vsync, SwapchainSource source)
         {
             var options = MakeOptions(vsync);
-            var scDesc  = MakeSwapchain(window, vsync, source);
+            var scDesc = MakeSwapchain(window, vsync, source);
             return GraphicsDevice.CreateVulkan(options, scDesc);
         }
 
         private GraphicsDevice CreateMetalDevice(VelvetWindow window, bool vsync)
         {
             var options = MakeOptions(vsync);
-            var scDesc  = MakeSwapchain(window, vsync, GetCocoaSource(window));
+            var scDesc = MakeSwapchain(window, vsync, GetCocoaSource(window));
             return GraphicsDevice.CreateMetal(options, scDesc);
         }
 
@@ -122,26 +122,26 @@ namespace Velvet.Graphics
             IntPtr glContext = SDL.GLCreateContext(window.WindowPtr);
 
             var platformInfo = new OpenGLPlatformInfo(
-                openGLContextHandle:    glContext,
-                getProcAddress:         SDL.GLGetProcAddress,
-                makeCurrent:            ctx =>
+                openGLContextHandle: glContext,
+                getProcAddress: SDL.GLGetProcAddress,
+                makeCurrent: ctx =>
                 {
                     if (!SDL.GLMakeCurrent(window.WindowPtr, ctx))
                         throw new InvalidOperationException($"Failed to make OpenGL context current: {SDL.GetError()}");
                 },
-                getCurrentContext:      SDL.GLGetCurrentContext,
-                clearCurrentContext:    () =>
+                getCurrentContext: SDL.GLGetCurrentContext,
+                clearCurrentContext: () =>
                 {
                     if (!SDL.GLMakeCurrent(IntPtr.Zero, IntPtr.Zero))
                         throw new InvalidOperationException($"Failed to clear OpenGL context: {SDL.GetError()}");
                 },
-                deleteContext:          ctx =>
+                deleteContext: ctx =>
                 {
                     // SDL destroys the context by handle, not window: use ctx directly.
                     if (!SDL.GLDestroyContext(ctx))
                         throw new InvalidOperationException($"Failed to destroy OpenGL context: {SDL.GetError()}");
                 },
-                swapBuffers:            () =>
+                swapBuffers: () =>
                 {
                     if (!SDL.GLSwapWindow(window.WindowPtr))
                         throw new InvalidOperationException($"Failed to swap buffers: {SDL.GetError()}");
@@ -160,17 +160,17 @@ namespace Velvet.Graphics
 
         private SwapchainSource GetWin32Source(VelvetWindow window)
         {
-            var props    = SDL.GetWindowProperties(window.WindowPtr);
+            var props = SDL.GetWindowProperties(window.WindowPtr);
             var hinstance = SDL.GetPointerProperty(props, SDL.Props.WindowWin32InstancePointer, IntPtr.Zero);
-            var hwnd      = SDL.GetPointerProperty(props, SDL.Props.WindowWin32HWNDPointer,     IntPtr.Zero);
+            var hwnd = SDL.GetPointerProperty(props, SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
             return SwapchainSource.CreateWin32(hwnd, hinstance);
         }
 
         private SwapchainSource GetLinuxSource(VelvetWindow window)
         {
-            var props      = SDL.GetWindowProperties(window.WindowPtr);
-            var wlDisplay  = SDL.GetPointerProperty(props, SDL.Props.WindowWaylandDisplayPointer, IntPtr.Zero);
-            var wlSurface  = SDL.GetPointerProperty(props, SDL.Props.WindowWaylandSurfacePointer, IntPtr.Zero);
+            var props = SDL.GetWindowProperties(window.WindowPtr);
+            var wlDisplay = SDL.GetPointerProperty(props, SDL.Props.WindowWaylandDisplayPointer, IntPtr.Zero);
+            var wlSurface = SDL.GetPointerProperty(props, SDL.Props.WindowWaylandSurfacePointer, IntPtr.Zero);
 
             if (wlDisplay != IntPtr.Zero && wlSurface != IntPtr.Zero)
             {
@@ -180,7 +180,7 @@ namespace Velvet.Graphics
 
             _logger.Information("(Window-{WindowId}): Display protocol: X11", _window.WindowID);
             var x11Display = SDL.GetPointerProperty(props, SDL.Props.WindowX11DisplayPointer, IntPtr.Zero);
-            var x11Window  = (uint)SDL.GetNumberProperty(props, SDL.Props.WindowX11WindowNumber, 0);
+            var x11Window = (uint)SDL.GetNumberProperty(props, SDL.Props.WindowX11WindowNumber, 0);
             return SwapchainSource.CreateXlib(x11Display, (IntPtr)x11Window);
         }
 
@@ -197,12 +197,12 @@ namespace Velvet.Graphics
 
         private static GraphicsDeviceOptions MakeOptions(bool vsync, bool debug = false) =>
             new(
-                debug:                          debug,
-                swapchainDepthFormat:           null,
-                syncToVerticalBlank:            vsync,
-                resourceBindingModel:           ResourceBindingModel.Improved,
+                debug: debug,
+                swapchainDepthFormat: null,
+                syncToVerticalBlank: vsync,
+                resourceBindingModel: ResourceBindingModel.Improved,
                 preferStandardClipSpaceYDirection: true,
-                preferDepthRangeZeroToOne:      true);
+                preferDepthRangeZeroToOne: true);
 
         private static SwapchainDescription MakeSwapchain(
             VelvetWindow window, bool vsync, SwapchainSource source) =>
@@ -220,12 +220,12 @@ namespace Velvet.Graphics
             _logger.Information("(Window-{WindowId}): Creating resources...", _window.WindowID);
 
             _vertexCapacity = (int)(VertexBufferSize / Vertex.SizeInBytes);
-            _indexCapacity  = (int)(IndexBufferSize  / sizeof(uint));
-            _vertices       = new Vertex[_vertexCapacity];
-            _indices        = new uint[_indexCapacity];
-            _vertexCount    = 0;
-            _indexCount     = 0;
-            _batches        = new List<Batch>();
+            _indexCapacity = (int)(IndexBufferSize / sizeof(uint));
+            _vertices = new Vertex[_vertexCapacity];
+            _indices = new uint[_indexCapacity];
+            _vertexCount = 0;
+            _indexCount = 0;
+            _batches = new List<Batch>();
 
             var factory = _graphicsDevice.ResourceFactory;
 
@@ -234,13 +234,13 @@ namespace Velvet.Graphics
             _vertexBuffer = factory.CreateBuffer(
                 new BufferDescription(VertexBufferSize, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
             _indexBuffer = factory.CreateBuffer(
-                new BufferDescription(IndexBufferSize,  BufferUsage.IndexBuffer  | BufferUsage.Dynamic));
+                new BufferDescription(IndexBufferSize, BufferUsage.IndexBuffer | BufferUsage.Dynamic));
 
             _logger.Information(
                 "(Window-{WindowId}): Vertex buffer: {VBSize} MB  |  Index buffer: {IBSize} MB",
                 _window.WindowID,
-                VertexBufferSize  / (1024 * 1024),
-                IndexBufferSize   / (1024 * 1024));
+                VertexBufferSize / (1024 * 1024),
+                IndexBufferSize / (1024 * 1024));
 
             _commandList = factory.CreateCommandList();
 

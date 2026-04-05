@@ -18,8 +18,8 @@ namespace Velvet.Tests
     /// </summary>
     class AudioTest : VelvetApplication
     {
-        private const string OneShotPath  = "assets/audio/boom.mp3";
-        private const string SpatialPath  = "assets/audio/funny.mp3";
+        private const string OneShotPath = "assets/audio/boom.mp3";
+        private const string SpatialPath = "assets/audio/funny.mp3";
 
         private VelvetAudioEngine _audioEngine = null!;
 
@@ -27,9 +27,9 @@ namespace Velvet.Tests
         private const int PoolSize = 8;
 
         private VelvetAudio _spatialSound = null!;
-        private float       _spatialX     = 0f;
+        private float _spatialX = 0f;
 
-        private const float MoveSpeed   = 200f;
+        private const float MoveSpeed = 200f;
         private const float MaxDistance = 500f;
         private VelvetFont font;
 
@@ -49,9 +49,9 @@ namespace Velvet.Tests
 
             _spatialSound = new VelvetAudio(_audioEngine, SpatialPath)
             {
-                Loop           = true,
+                Loop = true,
                 Spatialization = true,
-                Volume         = 1f,
+                Volume = 1f,
             };
             _spatialSound.SetAttenuationRange(50f, MaxDistance);
             _spatialSound.SetPosition(new Vector3(_spatialX, 0f, -10f));
@@ -118,7 +118,7 @@ namespace Velvet.Tests
 
         private void DrawSpatialVisualiser()
         {
-            float cx = Window.Width  * 0.5f;
+            float cx = Window.Width * 0.5f;
             float cy = Window.Height * 0.5f;
 
             Renderer.DrawCircle(new Vector2(cx, cy), MaxDistance * (cx / MaxDistance) * 0.4f,
@@ -139,12 +139,12 @@ namespace Velvet.Tests
             // controls text (each control separated by a newline. do a drawtext for each line)
 
             float ty = Window.Height - 400f;
-            Renderer.DrawText(font, "controls:",                                 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 60;
-            Renderer.DrawText(font, "space: play one-shot sound",                16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
-            Renderer.DrawText(font, "left/right: move spatial sound",            16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
-            Renderer.DrawText(font, "p: play/resume spatial sound",              16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
-            Renderer.DrawText(font, "s: stop spatial sound",                     16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
-            Renderer.DrawText(font, "l: toggle spatial sound looping",           16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
+            Renderer.DrawText(font, "controls:", 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 60;
+            Renderer.DrawText(font, "space: play one-shot sound", 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
+            Renderer.DrawText(font, "left/right: move spatial sound", 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
+            Renderer.DrawText(font, "p: play/resume spatial sound", 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
+            Renderer.DrawText(font, "s: stop spatial sound", 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
+            Renderer.DrawText(font, "l: toggle spatial sound looping", 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
             Renderer.DrawText(font, "up/down: raise/lower spatial sound volume", 16, new Vector2(10, ty), System.Drawing.Color.LightGray);
         }
     }

@@ -1,6 +1,5 @@
 using System.Numerics;
 
-using MiniAudioEx;
 using MiniAudioEx.Native;
 
 using Serilog;
@@ -16,8 +15,8 @@ namespace Velvet.Audio
     /// </summary>
     public sealed class VelvetAudio : IDisposable
     {
-        private readonly ILogger        _logger = Log.ForContext<VelvetAudio>();
-        private readonly ma_sound_ptr   _sound;
+        private readonly ILogger _logger = Log.ForContext<VelvetAudio>();
+        private readonly ma_sound_ptr _sound;
         private readonly VelvetAudioEngine _engine;
 
         private bool _disposed = false;
@@ -36,7 +35,7 @@ namespace Velvet.Audio
                 throw new FileNotFoundException($"Audio file not found: {filePath}", filePath);
 
             _engine = engine;
-            _sound  = new ma_sound_ptr(true);
+            _sound = new ma_sound_ptr(true);
 
             ma_result result = MiniAudioNative.ma_sound_init_from_file(
                 _engine.Engine, filePath, flags,
@@ -153,7 +152,7 @@ namespace Velvet.Audio
         }
 
         /// <summary>Fades in from silence to full volume over the given duration.</summary>
-        public void FadeIn(ulong durationMs)  => FadeTo(0f, 1f, durationMs);
+        public void FadeIn(ulong durationMs) => FadeTo(0f, 1f, durationMs);
 
         /// <summary>Fades out to silence over the given duration.</summary>
         public void FadeOut(ulong durationMs) => FadeTo(-1f, 0f, durationMs);

@@ -1,6 +1,3 @@
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
 using FreeTypeSharp;
 
 using Velvet.Graphics.Textures;
@@ -26,7 +23,7 @@ namespace Velvet.Graphics
         /// <summary>
         /// The texture atlas containing the glyphs for this font. Each glyph is rendered into the texture atlas at initialization.
         /// </summary>
-        public VelvetTexture TextureAtlas {get; private set;} = null!;
+        public VelvetTexture TextureAtlas { get; private set; } = null!;
         /// <summary>
         /// The font size in pixels. This is determined at initialization and cannot be changed. To use a different font size, create a new instance of VelvetFont with the desired size.
         /// </summary>

@@ -1,4 +1,3 @@
-using System.IO;
 using System.Numerics;
 using System.Text;
 
@@ -54,7 +53,7 @@ namespace Velvet.Graphics.Shaders
         /// <summary>
         /// The uniform is used in the vertex shader stage.
         /// </summary>
-        Vertex   = ShaderStages.Vertex,
+        Vertex = ShaderStages.Vertex,
         /// <summary>
         /// The uniform is used in the fragment shader stage.
         /// </summary>
@@ -62,7 +61,7 @@ namespace Velvet.Graphics.Shaders
         /// <summary>
         /// The uniform is used in both the vertex and fragment shader stages.
         /// </summary>
-        Both     = ShaderStages.Vertex | ShaderStages.Fragment
+        Both = ShaderStages.Vertex | ShaderStages.Fragment
     }
 
     /// <summary>
@@ -72,17 +71,17 @@ namespace Velvet.Graphics.Shaders
     /// <param name="Type">The type of the uniform.</param>
     /// <param name="Stage">The shader stage(s) the uniform is used in.</param>
     public readonly record struct UniformDescription(
-        string      Name,
+        string Name,
         UniformType Type,
         UniformStage Stage);
 
     // Internal layout type
 
     internal readonly record struct PackedUniform(
-        string      Name,
+        string Name,
         UniformType Type,
-        uint        Offset,
-        uint        Size);
+        uint Offset,
+        uint Size);
 
     // VelvetShader
 
@@ -132,20 +131,20 @@ namespace Velvet.Graphics.Shaders
 
         // Veldrid objects
 
-        internal Pipeline    Pipeline    = null!;
-        internal Shader[]    Shaders     = null!;
+        internal Pipeline Pipeline = null!;
+        internal Shader[] Shaders = null!;
         internal ResourceSet ResourceSet = null!;
         internal DeviceBuffer? UniformBuffer;
 
         private readonly GraphicsDevice _gd;
         private readonly Dictionary<PipelineKey, Pipeline> _pipelineCache = new();
-        private readonly Dictionary<string, PackedUniform> _uniforms      = new();
+        private readonly Dictionary<string, PackedUniform> _uniforms = new();
 
         private ResourceLayout _resourceLayout = null!;
-        private VelvetTexture  _texture        = null!;
+        private VelvetTexture _texture = null!;
 
-        private byte[]               _cpuUniformBuffer = Array.Empty<byte>();
-        private OutputDescription    _currentOutputs;
+        private byte[] _cpuUniformBuffer = Array.Empty<byte>();
+        private OutputDescription _currentOutputs;
         private VelvetRenderTexture? _currentRenderTarget;
 
         private bool _uniformsDirty;
@@ -162,12 +161,12 @@ namespace Velvet.Graphics.Shaders
         /// <param name="fragPath">Path to a SPIR-V fragment shader, or <c>null</c> for the built-in default.</param>
         /// <param name="uniforms">Optional uniform layout. Pass <c>null</c> if the shader has no custom uniforms.</param>
         public VelvetShader(
-            VelvetRenderer       renderer,
-            string?              vertPath,
-            string?              fragPath,
+            VelvetRenderer renderer,
+            string? vertPath,
+            string? fragPath,
             UniformDescription[]? uniforms = null)
         {
-            _gd      = renderer._graphicsDevice;
+            _gd = renderer._graphicsDevice;
             _texture = renderer.CurrentTexture;
             Init(vertPath, fragPath, uniforms);
         }
@@ -179,12 +178,12 @@ namespace Velvet.Graphics.Shaders
 
         private static uint GetUniformSize(UniformType type) => type switch
         {
-            UniformType.Float    => 4,
-            UniformType.Int      => 4,
-            UniformType.UInt     => 4,
-            UniformType.Vector2  => 8,
-            UniformType.Vector3  => 16,  // std140 vec3 = 16 bytes
-            UniformType.Vector4  => 16,
+            UniformType.Float => 4,
+            UniformType.Int => 4,
+            UniformType.UInt => 4,
+            UniformType.Vector2 => 8,
+            UniformType.Vector3 => 16,  // std140 vec3 = 16 bytes
+            UniformType.Vector4 => 16,
             UniformType.Matrix4x4 => 64,
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
@@ -192,8 +191,8 @@ namespace Velvet.Graphics.Shaders
         // Initialization
 
         private void Init(
-            string?               vertPath,
-            string?               fragPath,
+            string? vertPath,
+            string? fragPath,
             UniformDescription[]? uniformDescriptions)
         {
             // Build resource layout elements (texture + sampler always present).
@@ -216,7 +215,7 @@ namespace Velvet.Graphics.Shaders
                     offset += size;
                 }
 
-                uint totalSize    = Align(offset, 16);
+                uint totalSize = Align(offset, 16);
                 _cpuUniformBuffer = new byte[totalSize];
 
                 UniformBuffer = _gd.ResourceFactory.CreateBuffer(
@@ -241,7 +240,7 @@ namespace Velvet.Graphics.Shaders
                 : File.ReadAllBytes(fragPath);
 
             Shaders = _gd.ResourceFactory.CreateFromSpirv(
-                new ShaderDescription(ShaderStages.Vertex,   vertBytes, "main"),
+                new ShaderDescription(ShaderStages.Vertex, vertBytes, "main"),
                 new ShaderDescription(ShaderStages.Fragment, fragBytes, "main"));
 
             _currentOutputs = _gd.SwapchainFramebuffer.OutputDescription;
@@ -255,13 +254,13 @@ namespace Velvet.Graphics.Shaders
         private void RebuildResourceSet()
         {
             ResourceSet?.Dispose();
- 
+
             ResourceSet = UniformBuffer is not null
                 ? _gd.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                     _resourceLayout, _texture.View, _texture.Sampler, UniformBuffer))
                 : _gd.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                     _resourceLayout, _texture.View, _texture.Sampler));
- 
+
             _resourceSetDirty = false;
         }
 
@@ -270,48 +269,48 @@ namespace Velvet.Graphics.Shaders
             var key = new PipelineKey(_currentOutputs);
             if (_pipelineCache.TryGetValue(key, out var cached))
             {
-                Pipeline      = cached;
+                Pipeline = cached;
                 _pipelineDirty = false;
                 return;
             }
 
             var vertexLayout = new VertexLayoutDescription(
                 new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-                new VertexElementDescription("UV",       VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-                new VertexElementDescription("Color",    VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float4));
+                new VertexElementDescription("UV", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
+                new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float4));
 
             var pipeline = _gd.ResourceFactory.CreateGraphicsPipeline(new GraphicsPipelineDescription
             {
-                BlendState        = BlendStateDescription.SINGLE_ALPHA_BLEND,
+                BlendState = BlendStateDescription.SINGLE_ALPHA_BLEND,
                 DepthStencilState = DepthStencilStateDescription.DISABLED,
-                RasterizerState   = new RasterizerStateDescription(
+                RasterizerState = new RasterizerStateDescription(
                     FaceCullMode.Back, PolygonFillMode.Solid, FrontFace.CounterClockwise,
                     depthClipEnabled: true, scissorTestEnabled: false),
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
-                ResourceLayouts   = new[] { _resourceLayout },
-                ShaderSet         = new ShaderSetDescription(new[] { vertexLayout }, Shaders),
-                Outputs           = _currentOutputs
+                ResourceLayouts = new[] { _resourceLayout },
+                ShaderSet = new ShaderSetDescription(new[] { vertexLayout }, Shaders),
+                Outputs = _currentOutputs
             });
 
             _pipelineCache[key] = pipeline;
-            Pipeline             = pipeline;
-            _pipelineDirty       = false;
+            Pipeline = pipeline;
+            _pipelineDirty = false;
         }
 
         // Public uniform setters
 
         /// <summary>Sets a uniform value by name.</summary>
-        public void Set(string name, float    value) => Write(name, value);
+        public void Set(string name, float value) => Write(name, value);
         /// <inheritdoc cref="Set(string,float)"/>
-        public void Set(string name, int      value) => Write(name, value);
+        public void Set(string name, int value) => Write(name, value);
         /// <inheritdoc cref="Set(string,float)"/>
-        public void Set(string name, uint     value) => Write(name, value);
+        public void Set(string name, uint value) => Write(name, value);
         /// <inheritdoc cref="Set(string,float)"/>
-        public void Set(string name, Vector2  value) => Write(name, value);
+        public void Set(string name, Vector2 value) => Write(name, value);
         /// <inheritdoc cref="Set(string,float)"/>
-        public void Set(string name, Vector3  value) => Write(name, value);
+        public void Set(string name, Vector3 value) => Write(name, value);
         /// <inheritdoc cref="Set(string,float)"/>
-        public void Set(string name, Vector4  value) => Write(name, value);
+        public void Set(string name, Vector4 value) => Write(name, value);
         /// <inheritdoc cref="Set(string,float)"/>
         public void Set(string name, Matrix4x4 value) => Write(name, value);
 
@@ -320,7 +319,7 @@ namespace Velvet.Graphics.Shaders
         internal void SetTexture(VelvetTexture texture)
         {
             if (_texture == texture) return;
-            _texture          = texture;
+            _texture = texture;
             _resourceSetDirty = true;
         }
 
@@ -332,8 +331,8 @@ namespace Velvet.Graphics.Shaders
             if (_currentRenderTarget == rt && _currentOutputs.Equals(newOutputs)) return;
 
             _currentRenderTarget = rt;
-            _currentOutputs      = newOutputs;
-            _pipelineDirty       = true;
+            _currentOutputs = newOutputs;
+            _pipelineDirty = true;
         }
 
         // Write / flush

@@ -10,19 +10,19 @@ namespace Velvet.Graphics.Textures
         /// <summary>
         /// No MSAA. This is the default sample count for render textures.
         /// </summary>
-        Count1  = TextureSampleCount.Count1,
+        Count1 = TextureSampleCount.Count1,
         /// <summary>
         /// 2x MSAA. This uses 2 samples per pixel for anti-aliasing.
         /// </summary>
-        Count2  = TextureSampleCount.Count2,
+        Count2 = TextureSampleCount.Count2,
         /// <summary>
         /// 4x MSAA. This uses 4 samples per pixel for anti-aliasing.
         /// </summary>
-        Count4  = TextureSampleCount.Count4,
+        Count4 = TextureSampleCount.Count4,
         /// <summary>
         /// 8x MSAA. This uses 8 samples per pixel for anti-aliasing.
         /// </summary>
-        Count8  = TextureSampleCount.Count8,
+        Count8 = TextureSampleCount.Count8,
         /// <summary>
         /// 16x MSAA. This uses 16 samples per pixel for anti-aliasing.
         /// </summary>
@@ -53,19 +53,19 @@ namespace Velvet.Graphics.Textures
         /// <summary>
         /// The width of the render texture in pixels. This is determined at initialization and cannot be changed. To use a different size, create a new instance of VelvetRenderTexture with the desired dimensions.
         /// </summary>
-        public uint        Width         => Texture.Width;
+        public uint Width => Texture.Width;
         /// <summary>
         /// The height of the render texture in pixels. This is determined at initialization and cannot be changed. To use a different size, create a new instance of VelvetRenderTexture with the desired dimensions.
         /// </summary>
-        public uint        Height        => Texture.Height;
+        public uint Height => Texture.Height;
         /// <summary>
         /// The MSAA sample count of the render texture. This is determined at initialization and cannot be changed. To use a different sample count, create a new instance of VelvetRenderTexture with the desired sample count.
         /// </summary>
-        public SampleCount SampleCount   { get; }
+        public SampleCount SampleCount { get; }
         /// <summary>
         /// Whether this render texture is multi-sampled (MSAA) or not. This is determined by the SampleCount and is true if SampleCount is greater than Count1. Multi-sampled render textures require an explicit Resolve step after rendering and before sampling, but can produce smoother edges. Non-MSAA render textures can be sampled directly without resolving, but may have jagged edges.
         /// </summary>
-        public bool        IsMultiSampled => SampleCount != SampleCount.Count1;
+        public bool IsMultiSampled => SampleCount != SampleCount.Count1;
 
         private readonly GraphicsDevice _gd;
 
@@ -80,11 +80,11 @@ namespace Velvet.Graphics.Textures
         /// <param name="sampleCount">MSAA sample count (default: no MSAA).</param>
         public VelvetRenderTexture(
             VelvetRenderer renderer,
-            uint           width,
-            uint           height,
-            SampleCount    sampleCount = SampleCount.Count1)
+            uint width,
+            uint height,
+            SampleCount sampleCount = SampleCount.Count1)
         {
-            _gd         = renderer._graphicsDevice;
+            _gd = renderer._graphicsDevice;
             SampleCount = sampleCount;
 
             // The framebuffer always draws into _mainTexture.

@@ -3,7 +3,7 @@
 using Serilog;
 
 namespace Velvet.Windowing
-{   
+{
     /// <summary>
     /// A window that can be drawn to and receive input. This is created by <c>VelvetApplication</c> and passed to the <c>VelvetRenderer</c> for drawing.
     /// </summary>
@@ -121,7 +121,7 @@ namespace Velvet.Windowing
         public void SetSize(int width, int height)
         {
             if (WindowPtr == IntPtr.Zero) return;
-            width  = Math.Max(1, width);
+            width = Math.Max(1, width);
             height = Math.Max(1, height);
             SDL.SetWindowSize(WindowPtr, width, height);
             _logger.Debug("(Window-{WindowId}): Resized to {W}x{H}", WindowID, width, height);

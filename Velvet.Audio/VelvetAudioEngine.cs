@@ -1,5 +1,4 @@
-﻿using MiniAudioEx;
-using MiniAudioEx.Native;
+﻿using MiniAudioEx.Native;
 
 using Serilog;
 
@@ -13,9 +12,9 @@ namespace Velvet.Audio
     {
         private readonly ILogger _logger = Log.ForContext<VelvetAudioEngine>();
 
-        private readonly ma_engine_ptr          _engine;
-        private readonly ma_context_ptr         _context;
-        private readonly ma_device_ptr          _device;
+        private readonly ma_engine_ptr _engine;
+        private readonly ma_context_ptr _context;
+        private readonly ma_device_ptr _device;
         private readonly ma_resource_manager_ptr _resourceManager;
 
         // Kept alive to prevent the delegate from being GC'd while the device is running.
@@ -32,11 +31,11 @@ namespace Velvet.Audio
         /// </summary>
         public VelvetAudioEngine()
         {
-            _engine          = new ma_engine_ptr(true);
-            _context         = new ma_context_ptr(true);
-            _device          = new ma_device_ptr(true);
+            _engine = new ma_engine_ptr(true);
+            _context = new ma_context_ptr(true);
+            _device = new ma_device_ptr(true);
             _resourceManager = new ma_resource_manager_ptr(true);
-            _deviceDataProc  = OnDeviceData;
+            _deviceDataProc = OnDeviceData;
 
             InitContext();
             InitDevice();
@@ -61,9 +60,9 @@ namespace Velvet.Audio
         private void InitDevice()
         {
             ma_device_config cfg = MiniAudioNative.ma_device_config_init(ma_device_type.playback);
-            cfg.playback.format   = ma_format.f32;
+            cfg.playback.format = ma_format.f32;
             cfg.playback.channels = 2;
-            cfg.sampleRate        = 44100;
+            cfg.sampleRate = 44100;
             cfg.periodSizeInFrames = 2048;
             cfg.SetDataCallback(_deviceDataProc);
 
@@ -113,8 +112,8 @@ namespace Velvet.Audio
         private void InitEngine()
         {
             ma_engine_config cfg = MiniAudioNative.ma_engine_config_init();
-            cfg.listenerCount    = MiniAudioNative.MA_ENGINE_MAX_LISTENERS;
-            cfg.pDevice          = _device;
+            cfg.listenerCount = MiniAudioNative.MA_ENGINE_MAX_LISTENERS;
+            cfg.pDevice = _device;
             cfg.pResourceManager = _resourceManager;
 
             if (MiniAudioNative.ma_engine_init(ref cfg, _engine) != ma_result.success)

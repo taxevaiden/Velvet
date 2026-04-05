@@ -7,8 +7,8 @@ using SDL3;
 
 namespace Velvet.Input
 {
-    #pragma warning disable CS1591
-    
+#pragma warning disable CS1591
+
     /// <summary>
     /// Represents keyboard keys.
     /// Values correspond to physical key positions rather than character input.
@@ -33,51 +33,51 @@ namespace Velvet.Input
         D9 = SDL.Scancode.Alpha9,
 
         // Whitespace / control
-        Return    = SDL.Scancode.Return,
-        Escape    = SDL.Scancode.Escape,
+        Return = SDL.Scancode.Return,
+        Escape = SDL.Scancode.Escape,
         Backspace = SDL.Scancode.Backspace,
-        Tab       = SDL.Scancode.Tab,
-        Space     = SDL.Scancode.Space,
+        Tab = SDL.Scancode.Tab,
+        Space = SDL.Scancode.Space,
 
         // Punctuation
-        Minus        = SDL.Scancode.Minus,
-        Equals       = SDL.Scancode.Equals,
-        LeftBracket  = SDL.Scancode.Leftbracket,
+        Minus = SDL.Scancode.Minus,
+        Equals = SDL.Scancode.Equals,
+        LeftBracket = SDL.Scancode.Leftbracket,
         RightBracket = SDL.Scancode.Rightbracket,
-        Backslash    = SDL.Scancode.Backslash,
-        Semicolon    = SDL.Scancode.Semicolon,
-        Quote        = SDL.Scancode.Apostrophe,
-        Grave        = SDL.Scancode.Grave,
-        Comma        = SDL.Scancode.Comma,
-        Period       = SDL.Scancode.Period,
-        Slash        = SDL.Scancode.Slash,
+        Backslash = SDL.Scancode.Backslash,
+        Semicolon = SDL.Scancode.Semicolon,
+        Quote = SDL.Scancode.Apostrophe,
+        Grave = SDL.Scancode.Grave,
+        Comma = SDL.Scancode.Comma,
+        Period = SDL.Scancode.Period,
+        Slash = SDL.Scancode.Slash,
 
         // Function keys
-        F1  = SDL.Scancode.F1,  F2  = SDL.Scancode.F2,  F3  = SDL.Scancode.F3,
-        F4  = SDL.Scancode.F4,  F5  = SDL.Scancode.F5,  F6  = SDL.Scancode.F6,
-        F7  = SDL.Scancode.F7,  F8  = SDL.Scancode.F8,  F9  = SDL.Scancode.F9,
+        F1 = SDL.Scancode.F1, F2 = SDL.Scancode.F2, F3 = SDL.Scancode.F3,
+        F4 = SDL.Scancode.F4, F5 = SDL.Scancode.F5, F6 = SDL.Scancode.F6,
+        F7 = SDL.Scancode.F7, F8 = SDL.Scancode.F8, F9 = SDL.Scancode.F9,
         F10 = SDL.Scancode.F10, F11 = SDL.Scancode.F11, F12 = SDL.Scancode.F12,
 
         // Navigation
-        Insert   = SDL.Scancode.Insert,   Home     = SDL.Scancode.Home,
-        PageUp   = SDL.Scancode.Pageup,   Delete   = SDL.Scancode.Delete,
-        End      = SDL.Scancode.End,      PageDown = SDL.Scancode.Pagedown,
-        Right    = SDL.Scancode.Right,    Left     = SDL.Scancode.Left,
-        Down     = SDL.Scancode.Down,     Up       = SDL.Scancode.Up,
+        Insert = SDL.Scancode.Insert, Home = SDL.Scancode.Home,
+        PageUp = SDL.Scancode.Pageup, Delete = SDL.Scancode.Delete,
+        End = SDL.Scancode.End, PageDown = SDL.Scancode.Pagedown,
+        Right = SDL.Scancode.Right, Left = SDL.Scancode.Left,
+        Down = SDL.Scancode.Down, Up = SDL.Scancode.Up,
 
         // Modifiers
-        LeftCtrl  = SDL.Scancode.LCtrl,  LeftShift  = SDL.Scancode.LShift,
-        LeftAlt   = SDL.Scancode.LAlt,   LeftGui    = SDL.Scancode.LGUI,
-        RightCtrl = SDL.Scancode.RCtrl,  RightShift = SDL.Scancode.RShift,
-        RightAlt  = SDL.Scancode.RAlt,   RightGui   = SDL.Scancode.RGUI,
+        LeftCtrl = SDL.Scancode.LCtrl, LeftShift = SDL.Scancode.LShift,
+        LeftAlt = SDL.Scancode.LAlt, LeftGui = SDL.Scancode.LGUI,
+        RightCtrl = SDL.Scancode.RCtrl, RightShift = SDL.Scancode.RShift,
+        RightAlt = SDL.Scancode.RAlt, RightGui = SDL.Scancode.RGUI,
 
         // Numpad
-        NumLockClear   = SDL.Scancode.NumLockClear,
-        NumpadDivide   = SDL.Scancode.KpDivide,
+        NumLockClear = SDL.Scancode.NumLockClear,
+        NumpadDivide = SDL.Scancode.KpDivide,
         NumpadMultiply = SDL.Scancode.KpMultiply,
-        NumpadMinus    = SDL.Scancode.KpMinus,
-        NumpadPlus     = SDL.Scancode.KpPlus,
-        NumpadEnter    = SDL.Scancode.KpEnter,
+        NumpadMinus = SDL.Scancode.KpMinus,
+        NumpadPlus = SDL.Scancode.KpPlus,
+        NumpadEnter = SDL.Scancode.KpEnter,
         Numpad0 = SDL.Scancode.Kp0, Numpad1 = SDL.Scancode.Kp1,
         Numpad2 = SDL.Scancode.Kp2, Numpad3 = SDL.Scancode.Kp3,
         Numpad4 = SDL.Scancode.Kp4, Numpad5 = SDL.Scancode.Kp5,
@@ -86,11 +86,11 @@ namespace Velvet.Input
         NumpadPeriod = SDL.Scancode.KpPeriod,
 
         // Locks / system
-        CapsLock    = SDL.Scancode.Capslock,
+        CapsLock = SDL.Scancode.Capslock,
         PrintScreen = SDL.Scancode.Printscreen,
-        ScrollLock  = SDL.Scancode.Scrolllock,
-        Pause       = SDL.Scancode.Pause,
-        Menu        = SDL.Scancode.Menu,
+        ScrollLock = SDL.Scancode.Scrolllock,
+        Pause = SDL.Scancode.Pause,
+        Menu = SDL.Scancode.Menu,
 
         Unknown = SDL.Scancode.Unknown,
     }
@@ -98,14 +98,14 @@ namespace Velvet.Input
     /// <summary>Represents mouse buttons.</summary>
     public enum MouseButton
     {
-        Left   = 1,
+        Left = 1,
         Middle = 2,
-        Right  = 3,
-        Side1  = 4,
-        Side2  = 5,
+        Right = 3,
+        Side1 = 4,
+        Side2 = 5,
     }
 
-    #pragma warning restore CS1591
+#pragma warning restore CS1591
 
     /// <summary>
     /// Provides access to keyboard and mouse input state.
@@ -113,11 +113,11 @@ namespace Velvet.Input
     /// </summary>
     public static class InputManager
     {
-        private static readonly bool[] _keyboardState     = new bool[(uint)SDL.Scancode.Count];
+        private static readonly bool[] _keyboardState = new bool[(uint)SDL.Scancode.Count];
         private static readonly bool[] _prevKeyboardState = new bool[(uint)SDL.Scancode.Count];
 
-        private static readonly HashSet<byte> _heldButtons     = new();
-        private static readonly HashSet<byte> _pressedButtons  = new();
+        private static readonly HashSet<byte> _heldButtons = new();
+        private static readonly HashSet<byte> _pressedButtons = new();
         private static readonly HashSet<byte> _releasedButtons = new();
 
         private static float _mouseX, _mouseY;
@@ -171,8 +171,8 @@ namespace Velvet.Input
         {
             _prevMouseX = _mouseX;
             _prevMouseY = _mouseY;
-            _scrollX    = 0f;
-            _scrollY    = 0f;
+            _scrollX = 0f;
+            _scrollY = 0f;
             _pressedButtons.Clear();
             _releasedButtons.Clear();
         }
