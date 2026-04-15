@@ -24,8 +24,8 @@ public class GeminiApp : VelvetApplication
 
     protected override void Update(float deltaTime)
     {
-        if (InputManager.IsKeyDown(KeyCode.W)) _playerPosition.Y += _moveSpeed * deltaTime;
-        if (InputManager.IsKeyDown(KeyCode.S)) _playerPosition.Y -= _moveSpeed * deltaTime;
+        if (InputManager.IsKeyDown(KeyCode.W)) _playerPosition.Y -= _moveSpeed * deltaTime;
+        if (InputManager.IsKeyDown(KeyCode.S)) _playerPosition.Y += _moveSpeed * deltaTime;
         if (InputManager.IsKeyDown(KeyCode.A)) _playerPosition.X -= _moveSpeed * deltaTime;
         if (InputManager.IsKeyDown(KeyCode.D)) _playerPosition.X += _moveSpeed * deltaTime;
     }

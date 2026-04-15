@@ -1,14 +1,14 @@
 # Velvet
 
-a heavily unfinished framework for .NET 10. you can make games, tools, whatever.
+A heavily unfinished framework for .NET 10. you can make games, tools, whatever.
 
-there are better frameworks out there that do a lot more than this, like [Bliss](https://github.com/MrScautHD/Bliss). velvet was made for fun and to learn more about how graphics and rendering work.
+There are better frameworks out there that are a lot more capable, like [Bliss](https://github.com/MrScautHD/Bliss). Velvet was purely made for fun and for learning.
 
 ---
 
-## getting started
+## Getting started
 
-getting a window open is as easy as:
+Getting a window open is as easy as doing...
 
 ```csharp
 // Game.cs
@@ -38,9 +38,9 @@ namespace MyGame
 }
 ```
 
-and you have a window! `Window` and `Renderer` are exposed to whatever class you derive from `VelvetApplication`, so you can do anything you want from there.
+...and you have a window! `Window` and `Renderer` are exposed to whatever class you derive from `VelvetApplication`, so you can do whatever you want with them.
 
-here's a more complete example using a texture, a custom shader, and uniforms:
+Here's a more complete example using a texture, a custom shader, and uniforms:
 
 ```csharp
 // Game.cs
@@ -48,7 +48,7 @@ protected override void OnInit()
 {
     base.OnInit();
     stopwatch = new();
-    usagi     = new VelvetTexture(Renderer, "assets/usagi.jpg");
+    usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
     testShader = new VelvetShader(
         Renderer,
         "assets/shaders/shader.vert",
@@ -70,6 +70,7 @@ protected override void Draw()
 {
     Renderer.Begin();
     Renderer.ClearColor(Color.White);
+
     Renderer.ApplyTexture(usagi);
     Renderer.ApplyShader(testShader);
     Renderer.DrawRectangle(
@@ -77,6 +78,7 @@ protected override void Draw()
         new Vector2(Window.Width - 100.0f, Window.Height - 100.0f),
         Color.White
     );
+    
     Renderer.End();
 }
 
@@ -109,41 +111,45 @@ void main()
 {
     vec2 pos = vec2(Position.x, Position.y + sin(Position.x * 100.0f + time) * 0.1f);
     gl_Position = vec4(pos, 0.0, 1.0);
-    fsin_UV    = UV;
+    fsin_UV = UV;
     fsin_Color = Color;
 }
 ```
 
-more examples can be found in `Velvet.Tests`.
+More examples can be found in `Velvet.Tests`.
 
 ---
 
-## what's done
+## What's done?
 
-- basic window
-- drawing rectangles, circles, and arbitrary polygons with color
-- textures
-- shaders with uniform support
-- render textures
-  - multisampling supported
-  - known issue: drawing a `VelvetTexture` to a multisampled `VelvetRenderTexture` does nothing on the OpenGL backend. this works fine on Vulkan and D3D11.
-  - known issue: OpenGL flips texture samples across the x-axis when drawing to a `VelvetRenderTexture`. regular `VelvetTexture`s are unaffected. to compensate, Velvet automatically flips UVs when rendering to a render texture on OpenGL. keep this in mind when writing shader code!
-- keyboard and mouse input
-- all four major graphics APIs
+- Basic windowing
+- Drawing rectangles, circles, and arbitrary polygons with color
+- Textures
+- Shaders with uniform support
+- Render textures
+  - Multisampling supported
+- Keyboard and mouse input
+- All four major graphics APIs
   - D3D11
   - Vulkan
   - Metal
   - OpenGL
+- Audio (that can be 3D)
+
+## Known issues
+
+- (OpenGL) Drawing a rectangle (that has a `VelvetTexture` applied to it) on a multisampled `VelvetRenderTexture` results in the rectangle being invisible
+- (Kinda fixed I haven't found a better solution for this) OpenGL has its texture coordinate origin in the bottom-left, whereas D3D11, Vulkan, and Metal have it in the top-left. This results in `VelvetRenderTexture`s being flipped across the X-axis, so to compensate, **Velvet flips the UVs of any rectangle rendered with a `VelvetRenderTexture` applied.** Keep this in mind when writing custom shader code!
 
 ---
 
 ![Stress Test](assets/image.png)
 
-*~60 FPS with ~100,000 rectangles*
+_~60 FPS with ~100,000 rectangles, Apple M1_
 
 ---
 
-## running locally
+## Running locally
 
 ```sh
 git clone https://github.com/taxevaiden/Velvet.git

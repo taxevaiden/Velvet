@@ -1,4 +1,6 @@
-﻿using SDL3;
+﻿using System.Numerics;
+
+using SDL3;
 
 using Serilog;
 
@@ -20,7 +22,6 @@ namespace Velvet.Windowing
         /// <summary>Whether the window has been successfully created and not yet destroyed.</summary>
         public bool Running { get; private set; } = false;
 
-        // Size / position
 
         /// <summary>The width of the window's client area in pixels.</summary>
         public int Width
@@ -36,14 +37,73 @@ namespace Velvet.Windowing
             set => SetSize(Width, value);
         }
 
+        /// <summary>The size of the window's client area in pixels.</summary>
+        public Vector2 Size
+        {
+            get { SDL.GetWindowSize(WindowPtr, out int w, out int h); return new Vector2(w, h); }
+            set => SetSize((int)value.X, (int)value.Y);
+        }
+
+        /// <summary>
+        /// The minimum allowed width of the window's client area in pixels.
+        /// </summary>
+        public int MinWidth
+        {
+            get { SDL.GetWindowMinimumSize(WindowPtr, out int w, out _); return w; }
+            set => SDL.SetWindowMinimumSize(WindowPtr, value, MinHeight);
+        }
+
+        /// <summary>
+        /// The minimum allowed height of the window's client area in pixels.
+        /// </summary>
+        public int MinHeight
+        {
+            get { SDL.GetWindowMinimumSize(WindowPtr, out _, out int h); return h; }
+            set => SDL.SetWindowMinimumSize(WindowPtr, MinWidth, value);
+        }
+
+        /// <summary>
+        /// The minimum allowed size of the window's client area in pixels.
+        /// </summary>
+        public Vector2 MinSize
+        {
+            get { SDL.GetWindowMinimumSize(WindowPtr, out int w, out int h); return new Vector2(w, h); }
+            set => SDL.SetWindowMinimumSize(WindowPtr, (int)value.X, (int)value.Y);
+        }
+
+        /// <summary>
+        /// The maximum allowed width of the window's client area in pixels.
+        /// </summary>
+        public int MaxWidth
+        {
+            get { SDL.GetWindowMaximumSize(WindowPtr, out int w, out _); return w; }
+            set => SDL.SetWindowMaximumSize(WindowPtr, value, MaxHeight);
+        }
+
+        /// <summary>
+        /// The maximum allowed height of the window's client area in pixels.
+        /// </summary>
+        public int MaxHeight
+        {
+            get { SDL.GetWindowMaximumSize(WindowPtr, out _, out int h); return h; }
+            set => SDL.SetWindowMaximumSize(WindowPtr, MaxWidth, value);
+        }
+
+        /// <summary>
+        /// The maximum allowed size of the window's client area in pixels.
+        /// </summary>
+        public Vector2 MaxSize
+        {
+            get { SDL.GetWindowMaximumSize(WindowPtr, out int w, out int h); return new Vector2(w, h); }
+            set => SDL.SetWindowMaximumSize(WindowPtr, (int)value.X, (int)value.Y);
+        }
+
         /// <summary>The position of the window's top-left corner on the desktop.</summary>
         public (int X, int Y) Position
         {
             get { SDL.GetWindowPosition(WindowPtr, out int x, out int y); return (x, y); }
             set => SDL.SetWindowPosition(WindowPtr, value.X, value.Y);
         }
-
-        // Appearance
 
         /// <summary>The window title.</summary>
         public string Title
@@ -69,27 +129,65 @@ namespace Velvet.Windowing
             set => SDL.SetWindowBordered(WindowPtr, value);
         }
 
-        // State
-
         /// <summary>Whether the window is currently fullscreen.</summary>
-        public bool IsFullscreen => HasFlag(SDL.WindowFlags.Fullscreen);
+        public bool Fullscreen
+        {
+            get => HasFlag(SDL.WindowFlags.Fullscreen);
+            set => SDL.SetWindowFullscreen(WindowPtr, value);
+        }
 
-        /// <summary>Whether the window is currently minimized.</summary>
-        public bool IsMinimized => HasFlag(SDL.WindowFlags.Minimized);
+        /// <summary>
+        /// Whether the window is currently minimized.
+        /// </summary>
+        public bool Minimized
+        {
+            get => HasFlag(SDL.WindowFlags.Minimized);
+            set { if (value) SDL.MinimizeWindow(WindowPtr); else Restore(); }
+        }
 
-        /// <summary>Whether the window is currently maximized.</summary>
-        public bool IsMaximized => HasFlag(SDL.WindowFlags.Maximized);
+        /// <summary>
+        /// Whether the window is currently maximized.
+        /// </summary>
+        public bool Maximized
+        {
+            get => HasFlag(SDL.WindowFlags.Maximized);
+            set { if (value) SDL.MaximizeWindow(WindowPtr); else Restore(); }
+        }
 
-        /// <summary>Whether the window currently has input focus.</summary>
-        public bool IsFocused => HasFlag(SDL.WindowFlags.InputFocus);
+        /// <summary>
+        /// Whether the window currently has input focus.
+        /// </summary>
+        public bool Focused
+        {
+            get => HasFlag(SDL.WindowFlags.InputFocus);
+        }
+
+        /// <summary>
+        /// Whether the window can be resized by the user.
+        /// </summary>
+        public bool Resizable
+        {
+            get => HasFlag(SDL.WindowFlags.Resizable);
+            set => SDL.SetWindowResizable(WindowPtr, value);
+        }
+
+        /// <summary>
+        /// Whether the window is currently hidden.
+        /// </summary>
+        public bool Hidden
+        {
+            get => HasFlag(SDL.WindowFlags.Hidden);
+            set
+            {
+                if (value) SDL.HideWindow(WindowPtr);
+                else SDL.ShowWindow(WindowPtr);
+            }
+        }
 
         // Construction
 
         /// <summary>Creates and shows a new window.</summary>
-        /// <param name="title">Window title.</param>
-        /// <param name="width">Client width in pixels.</param>
-        /// <param name="height">Client height in pixels.</param>
-        /// <exception cref="InvalidOperationException">Thrown if SDL or window creation fails.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if window creation fails.</exception>
         public VelvetWindow(string title, int width, int height)
         {
             _logger.Information("Initializing SDL3...");
@@ -99,7 +197,7 @@ namespace Velvet.Windowing
             _logger.Information("Creating window...");
             WindowPtr = SDL.CreateWindow(
                 title, width, height,
-                SDL.WindowFlags.MouseFocus | SDL.WindowFlags.Resizable | SDL.WindowFlags.OpenGL);
+                SDL.WindowFlags.MouseFocus | SDL.WindowFlags.OpenGL);
 
             if (WindowPtr == IntPtr.Zero)
             {
@@ -117,8 +215,32 @@ namespace Velvet.Windowing
 
         // Window actions
 
-        /// <summary>Resizes the window. Values are clamped to a minimum of 1.</summary>
-        public void SetSize(int width, int height)
+        /// <summary>Centers the window on its current display.</summary>
+        public void Center()
+            => SDL.SetWindowPosition(WindowPtr, (int)SDL.WindowPosCentered(), (int)SDL.WindowPosCentered());
+
+        /// <summary>Restores the window from a minimized or maximized state.</summary>
+        public void Restore() => SDL.RestoreWindow(WindowPtr);
+
+        /// <summary>
+        /// Brings the window to the front and gives it input focus.
+        /// </summary>
+        public void Focus() => SDL.RaiseWindow(WindowPtr);
+
+        /// <summary>
+        /// Shows or hides the mouse cursor.
+        /// </summary>
+        public static void ShowCursor(bool show)
+        { if (show) SDL.ShowCursor(); else SDL.HideCursor(); }
+
+        // Helpers
+
+        private bool HasFlag(SDL.WindowFlags flag)
+            => WindowPtr != IntPtr.Zero &&
+               ((SDL.WindowFlags)SDL.GetWindowFlags(WindowPtr) & flag) != 0;
+
+        // Tbh I could make this public but I think making this a property is more convenient
+        private void SetSize(int width, int height)
         {
             if (WindowPtr == IntPtr.Zero) return;
             width = Math.Max(1, width);
@@ -126,54 +248,6 @@ namespace Velvet.Windowing
             SDL.SetWindowSize(WindowPtr, width, height);
             _logger.Debug("(Window-{WindowId}): Resized to {W}x{H}", WindowID, width, height);
         }
-
-        /// <summary>Centers the window on its current display.</summary>
-        public void Center()
-            => SDL.SetWindowPosition(WindowPtr, (int)SDL.WindowPosCentered(), (int)SDL.WindowPosCentered());
-
-        /// <summary>Minimizes the window.</summary>
-        public void Minimize() => SDL.MinimizeWindow(WindowPtr);
-
-        /// <summary>Maximizes the window.</summary>
-        public void Maximize() => SDL.MaximizeWindow(WindowPtr);
-
-        /// <summary>Restores the window from a minimized or maximized state.</summary>
-        public void Restore() => SDL.RestoreWindow(WindowPtr);
-
-        /// <summary>Raises the window to the front and gives it input focus.</summary>
-        public void Focus() => SDL.RaiseWindow(WindowPtr);
-
-        /// <summary>
-        /// Toggles fullscreen mode.
-        /// </summary>
-        /// <param name="fullscreen">
-        /// <c>true</c> for fullscreen, <c>false</c> for windowed.
-        /// Omit to toggle from the current state.
-        /// </param>
-        public void SetFullscreen(bool? fullscreen = null)
-        {
-            bool enter = fullscreen ?? !IsFullscreen;
-            SDL.SetWindowFullscreen(WindowPtr, enter);
-            _logger.Debug("(Window-{WindowId}): Fullscreen = {Value}", WindowID, enter);
-        }
-
-        /// <summary>
-        /// Sets the minimum allowed window size.
-        /// </summary>
-        public void SetMinimumSize(int width, int height)
-            => SDL.SetWindowMinimumSize(WindowPtr, width, height);
-
-        /// <summary>
-        /// Sets the maximum allowed window size.
-        /// </summary>
-        public void SetMaximumSize(int width, int height)
-            => SDL.SetWindowMaximumSize(WindowPtr, width, height);
-
-        // Helpers
-
-        private bool HasFlag(SDL.WindowFlags flag)
-            => WindowPtr != IntPtr.Zero &&
-               ((SDL.WindowFlags)SDL.GetWindowFlags(WindowPtr) & flag) != 0;
 
         // IDisposable
 

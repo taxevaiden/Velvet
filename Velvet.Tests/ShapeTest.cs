@@ -29,7 +29,7 @@ namespace Velvet.Tests
         {
             base.OnInit();
             usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
-            renderTexture = new VelvetRenderTexture(Renderer, 1600, 900, SampleCount.Count4);
+            renderTexture = new VelvetRenderTexture(Renderer, 1600, 900, SampleCount.Count1);
             shader = new VelvetShader(Renderer, null, "assets/shaders/jpeg.frag", [new UniformDescription("Resolution", UniformType.Vector2, UniformStage.Fragment)]);
             shader.Set("Resolution", new Vector2(1600, 900));
             shader.Flush();

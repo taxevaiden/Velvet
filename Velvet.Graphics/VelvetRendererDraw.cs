@@ -94,7 +94,9 @@ namespace Velvet.Graphics
             Vector2 uvSize = new Vector2(uv.Width, uv.Height) / texSize;
 
             if (flipY)
-                uvPos.Y = 1f - uvPos.Y - uvSize.Y;
+            {
+                uvPos.Y = 1f - uvPos.Y; uvSize.Y = -uvSize.Y;
+            }
 
             return (uvPos, uvSize);
         }
