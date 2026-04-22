@@ -85,19 +85,7 @@ namespace Velvet.Graphics
         BottomRight
     }
 
-    struct Vertex
-    {
-        public Vector2 Position;
-        public Vector2 UV;
-        public RgbaFloat Color;
-        public Vertex(Vector2 position, Vector2 uv, RgbaFloat color)
-        {
-            Position = position;
-            UV = uv;
-            Color = color;
-        }
-        public const uint SizeInBytes = 32;
-    }
+
 
     struct Batch
     {
@@ -123,9 +111,77 @@ namespace Velvet.Graphics
 
     public partial class VelvetRenderer
     {
-        private static RgbaFloat ToRgbaFloat(Color c)
+
+        /// <summary>
+        /// A struct representing a color with 4 bytes (R, G, B, A). This is used for vertex colors in the renderer. 
+        /// The implicit conversion from System.Drawing.Color allows you to easily use System.Drawing.Color with the VelvetRenderer's drawing functions.
+        /// </summary>
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        public struct RgbaColor
         {
-            return new RgbaFloat(c.R / 255f, c.G / 255f, c.B / 255f, c.A / 255f);
+            /// <summary>The red component of the color, from 0 to 255.</summary>
+            public byte R;
+            /// <summary>The green component of the color, from 0 to 255.</summary>
+            public byte G;
+            /// <summary>The blue component of the color, from 0 to 255.</summary>
+            public byte B;
+            /// <summary>The alpha component of the color, from 0 to 255.</summary>
+            public byte A;
+
+            /// <summary>
+            /// Initializes a new instance of the RgbaColor struct with the specified red, green, blue, and alpha components.
+            /// </summary>
+            /// <param name="r">The red component of the color, from 0 to 255.</param>
+            /// <param name="g">The green component of the color, from 0 to 255.</param>
+            /// <param name="b">The blue component of the color, from 0 to 255.</param>
+            /// <param name="a">The alpha component of the color, from 0 to 255.</param>
+            public RgbaColor(byte r, byte g, byte b, byte a) { R = r; G = g; B = b; A = a; }
+
+            /// <summary>
+            /// Defines an implicit conversion from System.Drawing.Color to RgbaColor, allowing you to use System.Drawing.Color with the VelvetRenderer's drawing functions without needing to manually convert them to RgbaColor.
+            /// </summary>
+            /// <param name="c">The System.Drawing.Color to convert.</param>
+            /// <returns>The RgbaColor equivalent.</returns>
+            public static implicit operator RgbaColor(System.Drawing.Color c) => new(c.R, c.G, c.B, c.A);
+        }
+
+        internal RgbaFloat ToRgbaFloat(RgbaColor c) => new RgbaFloat(c.R / 255f, c.G / 255f, c.B / 255f, c.A / 255f);
+        
+        /// <summary>
+        /// A struct representing a vertex with a position, UV coordinates, and a color.
+        /// </summary>
+        public struct Vertex
+        {
+            /// <summary>
+            /// The position of the vertex in 3D space.
+            /// </summary>
+            public Vector3 Position;
+            /// <summary>
+            /// The UV coordinates of the vertex, used for texturing.
+            /// </summary>
+            public Vector2 UV;
+            /// <summary>
+            /// The color of the vertex.
+            /// </summary>
+            public RgbaColor Color;
+
+            /// <summary>
+            /// Initializes a new instance of the Vertex struct with the specified position, UV coordinates, and color.
+            /// </summary>
+            /// <param name="position">The position of the vertex in 3D space.</param>
+            /// <param name="uv">The UV coordinates of the vertex, used for texturing.</param>
+            /// <param name="color">The color of the vertex.</param>
+            public Vertex(Vector3 position, Vector2 uv, RgbaColor color)
+            {
+                Position = position;
+                UV = uv;
+                Color = color;
+            }
+
+            /// <summary>
+            /// The size of the Vertex struct in bytes.
+            /// </summary>
+            public const uint SizeInBytes = 24;
         }
 
         private Vector2 GetRenderSize()
@@ -134,15 +190,6 @@ namespace Velvet.Graphics
                 return new Vector2(CurrentRenderTarget.Width, CurrentRenderTarget.Height);
 
             return new Vector2(_window.Width, _window.Height);
-        }
-
-        private static Rectangle Rect(Vector2 pos, Vector2 size)
-        {
-            return new Rectangle(
-                (int)pos.X,
-                (int)pos.Y,
-                (int)size.X,
-                (int)size.Y);
         }
 
         private Rectangle GetFullUV()

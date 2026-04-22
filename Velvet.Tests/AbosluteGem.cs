@@ -7,6 +7,8 @@ using Velvet.Graphics;
 using Velvet.Input;
 
 // Generated using Google Gemini
+// Don't use this to learn, use the other tests
+
 // Did this for fun kinda impressed at how well it did LOL
 
 public class GeminiApp : VelvetApplication
@@ -22,12 +24,12 @@ public class GeminiApp : VelvetApplication
         Console.WriteLine("Game Initialized!");
     }
 
-    protected override void Update(float deltaTime)
+    protected override void Update()
     {
-        if (InputManager.IsKeyDown(KeyCode.W)) _playerPosition.Y -= _moveSpeed * deltaTime;
-        if (InputManager.IsKeyDown(KeyCode.S)) _playerPosition.Y += _moveSpeed * deltaTime;
-        if (InputManager.IsKeyDown(KeyCode.A)) _playerPosition.X -= _moveSpeed * deltaTime;
-        if (InputManager.IsKeyDown(KeyCode.D)) _playerPosition.X += _moveSpeed * deltaTime;
+        if (InputManager.IsKeyDown(KeyCode.W)) _playerPosition.Y -= _moveSpeed * DeltaTime;
+        if (InputManager.IsKeyDown(KeyCode.S)) _playerPosition.Y += _moveSpeed * DeltaTime;
+        if (InputManager.IsKeyDown(KeyCode.A)) _playerPosition.X -= _moveSpeed * DeltaTime;
+        if (InputManager.IsKeyDown(KeyCode.D)) _playerPosition.X += _moveSpeed * DeltaTime;
     }
 
     protected override void Draw()

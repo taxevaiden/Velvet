@@ -12,6 +12,10 @@ using Velvet.Windowing;
 
 namespace Velvet.Tests
 {
+    /// <summary>
+    /// A shader test application for Velvet, demonstrating basic shader usage by applying a custom shader to a textured rectangle.
+    /// More shaders can be found in the assets/shaders folder.
+    /// </summary>
     class ShaderTest2 : VelvetApplication
     {
         VelvetTexture usagi;

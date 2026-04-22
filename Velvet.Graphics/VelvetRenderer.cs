@@ -22,22 +22,22 @@ namespace Velvet.Graphics
         /// Initializes a VelvetRenderer with a VelvetWindow.
         /// </summary>
         /// <param name="window">The VelvetWindow the VelvetRenderer will draw to.</param>
-        /// <param name="rendererAPI">The GraphicsAPI to use.</param>
-        public VelvetRenderer(VelvetWindow window, GraphicsAPI rendererAPI) { InitRenderer(window, rendererAPI, true); }
+        /// <param name="graphicsAPI">The GraphicsAPI to use.</param>
+        public VelvetRenderer(VelvetWindow window, GraphicsAPI graphicsAPI) { InitRenderer(window, graphicsAPI, true); }
 
         /// <summary>
         /// Initializes a VelvetRenderer with the specified GraphicsAPI with a VelvetWindow.
         /// </summary>
         /// <param name="window">The VelvetWindow the VelvetRenderer will draw to.</param>
-        /// <param name="rendererAPI">The GraphicsAPI to use.</param>
+        /// <param name="graphicsAPI">The GraphicsAPI to use.</param>
         /// <param name="vsync">Whether VSync will be enabled or not.</param>
-        public VelvetRenderer(VelvetWindow window, GraphicsAPI rendererAPI, bool vsync) { InitRenderer(window, rendererAPI, vsync); }
+        public VelvetRenderer(VelvetWindow window, GraphicsAPI graphicsAPI, bool vsync) { InitRenderer(window, graphicsAPI, vsync); }
 
-        private void InitRenderer(VelvetWindow window, GraphicsAPI rendererAPI, bool vsync)
+        private void InitRenderer(VelvetWindow window, GraphicsAPI graphicsAPI, bool vsync)
         {
-            GraphicsAPI resolvedAPI = rendererAPI;
+            GraphicsAPI resolvedAPI = graphicsAPI;
 
-            if (rendererAPI == GraphicsAPI.Default)
+            if (graphicsAPI == GraphicsAPI.Default)
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     resolvedAPI = GraphicsAPI.D3D11;

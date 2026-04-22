@@ -8,6 +8,8 @@ using Velvet.Windowing;
 namespace Velvet.Tests
 {
     /// <summary>
+    /// A test application for Velvet's audio system, demonstrating one-shot and spatial sounds, as well as basic audio controls.
+    /// 
     /// Controls:
     ///   Space                 play a one-shot sound at the origin
     ///   Left / Right arrow    move the spatial sound source left / right
@@ -58,25 +60,25 @@ namespace Velvet.Tests
             _spatialSound.Play();
         }
 
-        protected override void Update(float deltaTime)
+        protected override void Update()
         {
             if (InputManager.IsKeyPressed(KeyCode.Space))
                 PlayOneShot();
 
             if (InputManager.IsKeyDown(KeyCode.Left))
-                _spatialX -= MoveSpeed * deltaTime;
+                _spatialX -= MoveSpeed * DeltaTime;
 
             if (InputManager.IsKeyDown(KeyCode.Right))
-                _spatialX += MoveSpeed * deltaTime;
+                _spatialX += MoveSpeed * DeltaTime;
 
             _spatialX = Math.Clamp(_spatialX, -MaxDistance, MaxDistance);
             _spatialSound.SetPosition(new Vector3(_spatialX, 0f, -10f));
 
             if (InputManager.IsKeyDown(KeyCode.Up))
-                _spatialSound.Volume = Math.Min(2f, _spatialSound.Volume + deltaTime);
+                _spatialSound.Volume = Math.Min(2f, _spatialSound.Volume + DeltaTime);
 
             if (InputManager.IsKeyDown(KeyCode.Down))
-                _spatialSound.Volume = Math.Max(0f, _spatialSound.Volume - deltaTime);
+                _spatialSound.Volume = Math.Max(0f, _spatialSound.Volume - DeltaTime);
 
             if (InputManager.IsKeyPressed(KeyCode.P)) _spatialSound.Play();
             if (InputManager.IsKeyPressed(KeyCode.S)) _spatialSound.Stop();
@@ -136,10 +138,8 @@ namespace Velvet.Tests
             Renderer.DrawLine(new Vector2(cx, cy), new Vector2(screenX, cy), 2f,
                 System.Drawing.Color.FromArgb(100, 100, 180));
 
-            // controls text (each control separated by a newline. do a drawtext for each line)
-
             float ty = Window.Height - 400f;
-            Renderer.DrawText(font, "controls:", 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 60;
+            Renderer.DrawText(font, "controls:", 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 40;
             Renderer.DrawText(font, "space: play one-shot sound", 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
             Renderer.DrawText(font, "left/right: move spatial sound", 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;
             Renderer.DrawText(font, "p: play/resume spatial sound", 16, new Vector2(10, ty), System.Drawing.Color.LightGray); ty += 20;

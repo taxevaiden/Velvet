@@ -10,7 +10,10 @@ using Velvet.Windowing;
 
 namespace Velvet.Tests
 {
-    public class StressTest : VelvetApplication
+    /// <summary>
+    /// A stress test application for Velvet, designed to test the performance of the renderer under heavy load by simulating a large number of moving particles on the screen.
+    /// </summary>
+    class StressTest : VelvetApplication
     {
         private List<Vector2> particles;
         private List<Vector2> velocities;
@@ -27,14 +30,14 @@ namespace Velvet.Tests
         protected override void OnInit()
         {
             base.OnInit();
-            // Optionally prepopulate some particles
+            // Prepopulate some particles
             for (int i = 0; i < 100; i++)
             {
                 AddParticle();
             }
         }
 
-        protected override void Update(float deltaTime)
+        protected override void Update()
         {
             // Add new particles
             for (int i = 0; i < 25; i++)
@@ -46,11 +49,25 @@ namespace Velvet.Tests
             Parallel.For(0, particles.Count, i =>
             {
                 particles[i] += velocities[i];
-                // Uncomment to add bounds handling
-                // ClampParticle(i);
+                // Bounds handling
+                ClampParticle(i);
             });
 
-            Console.WriteLine($"{1 / deltaTime:F1} FPS : {particles.Count}");
+            Console.WriteLine($"{1 / DeltaTime:F1} FPS : {particles.Count}");
+        }
+
+        private void ClampParticle(int i)
+        {
+            if (particles[i].X < 0 || particles[i].X > Window.Width)
+            {
+                velocities[i] = new Vector2(-velocities[i].X, velocities[i].Y);
+                particles[i] = new Vector2(Math.Clamp(particles[i].X, 0, Window.Width), particles[i].Y);
+            }
+            if (particles[i].Y < 0 || particles[i].Y > Window.Height)
+            {
+                velocities[i] = new Vector2(velocities[i].X, -velocities[i].Y);
+                particles[i] = new Vector2(particles[i].X, Math.Clamp(particles[i].Y, 0, Window.Height));
+            }
         }
 
         protected override void Draw()
@@ -58,6 +75,7 @@ namespace Velvet.Tests
             Renderer.Begin();
             Renderer.ClearColor(Color.Black);
 
+            // Draw particles
             for (int i = 0; i < particles.Count; i++)
             {
                 Renderer.DrawRectangle(

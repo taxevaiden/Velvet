@@ -98,7 +98,7 @@ namespace Velvet.Graphics.Shaders
         private const string DefaultVertexCode = """
             #version 450
 
-            layout(location = 0) in vec2 Position;
+            layout(location = 0) in vec3 Position;
             layout(location = 1) in vec2 UV;
             layout(location = 2) in vec4 Color;
 
@@ -107,21 +107,22 @@ namespace Velvet.Graphics.Shaders
 
             void main()
             {
-                gl_Position = vec4(Position, 0.0, 1.0);
-                fsin_UV     = UV;
-                fsin_Color  = Color;
+                gl_Position = vec4(Position, 1.0);
+                fsin_UV = UV;
+                fsin_Color = Color;
             }
             """;
 
         private const string DefaultFragmentCode = """
             #version 450
 
-            layout(location = 0) in  vec2 fsin_UV;
-            layout(location = 1) in  vec4 fsin_Color;
+            layout(location = 0) in vec2 fsin_UV;
+            layout(location = 1) in vec4 fsin_Color;
+
             layout(location = 0) out vec4 fsout_Color;
 
             layout(set = 0, binding = 0) uniform texture2D Texture0;
-            layout(set = 0, binding = 1) uniform sampler   Sampler0;
+            layout(set = 0, binding = 1) uniform sampler Sampler0;
 
             void main()
             {
@@ -154,7 +155,7 @@ namespace Velvet.Graphics.Shaders
         // Construction
 
         /// <summary>
-        /// Creates a new <see cref="VelvetShader"/>.
+        /// Creates a new <see cref="VelvetShader"/>. In your shader, uniforms will be defined in a uniform block.
         /// </summary>
         /// <param name="renderer">The owning renderer.</param>
         /// <param name="vertPath">Path to a SPIR-V vertex shader, or <c>null</c> for the built-in default.</param>
@@ -275,9 +276,9 @@ namespace Velvet.Graphics.Shaders
             }
 
             var vertexLayout = new VertexLayoutDescription(
-                new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
+                new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
                 new VertexElementDescription("UV", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-                new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float4));
+                new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Byte4Norm));
 
             var pipeline = _gd.ResourceFactory.CreateGraphicsPipeline(new GraphicsPipelineDescription
             {

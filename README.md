@@ -123,7 +123,7 @@ More examples can be found in `Velvet.Tests`.
 ## What's done?
 
 - Basic windowing
-- Drawing rectangles, circles, and arbitrary polygons with color
+- Drawing rectangles, circles, arbitrary polygons, and text with color
 - Textures
 - Shaders with uniform support
 - Render textures
@@ -145,15 +145,21 @@ More examples can be found in `Velvet.Tests`.
 
 ![Stress Test](assets/image.png)
 
-_~60 FPS with ~100,000 rectangles, Apple M1_
+*~60 FPS with ~100,000 rectangles, Apple M1*
 
 ---
 
-## Running locally
+## Running a test locally
 
 ```sh
 git clone https://github.com/taxevaiden/Velvet.git
 cd Velvet
 dotnet restore
 dotnet run
+```
+
+In `Program.cs`, you can change this line to run another test:
+
+```csharp
+var test = new TextTest(resolvedAPI); // <-- You can change this to the other tests available
 ```

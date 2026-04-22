@@ -256,10 +256,10 @@ namespace Velvet.Input
 
         // Mouse scroll
 
-        /// <summary>Scroll delta for the current frame as a <see cref="Vector2"/>.</summary>
+        /// <summary>Mouse scroll delta for the current frame as a <see cref="Vector2"/>.</summary>
         public static Vector2 ScrollDelta => new(_scrollX, _scrollY);
 
         /// <summary>Gets the mouse scroll delta for the current frame.</summary>
-        public static void GetMouseScroll(out float x, out float y) { x = _scrollX; y = _scrollY; }
+        public static void GetScrollDelta(out float x, out float y) { x = _scrollX; y = _scrollY; }
     }
 }

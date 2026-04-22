@@ -60,7 +60,7 @@ namespace Velvet.Graphics.Textures
             InitFromPixels(renderer, pixels, Width, Height);
         }
 
-        /// <summary>Creates a texture from raw RGBA pixel data.</summary>
+        /// <summary>Creates a texture from raw RGBA pixel data. Every pixel is represented as four items in an array: `[255, 255, 255, 255]`</summary>
         public VelvetTexture(VelvetRenderer renderer, byte[] imageData, uint width, uint height)
         {
             InitFromPixels(renderer, imageData, width, height);

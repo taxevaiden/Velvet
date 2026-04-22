@@ -8,6 +8,9 @@ using Velvet.Windowing;
 
 namespace Velvet.Tests
 {
+    /// <summary>
+    /// A text rendering test application for Velvet, demonstrating the ability to render text using a custom font. It loads a TTF font and renders a sample sentence at different sizes on the screen.
+    /// </summary>
     class TextTest : VelvetApplication
     {
         VelvetFont font = null!;
@@ -26,8 +29,14 @@ namespace Velvet.Tests
             Renderer.Begin();
             Renderer.ClearColor(Color.White);
 
-            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", 48, new Vector2(150, 150), Color.Black);
-            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", 16, new Vector2(150, 300), Color.Black);
+            // Draw text at different sizes
+            int size = 48;
+            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", size, new Vector2(150, 150), Color.Black); size -= 8;
+            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", size, new Vector2(150, 200), Color.Black); size -= 8;
+            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", size, new Vector2(150, 250), Color.Black); size -= 8;
+            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", size, new Vector2(150, 300), Color.Black); size -= 8;
+            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", size, new Vector2(150, 350), Color.Black); size -= 8;
+
             Renderer.End();
         }
 

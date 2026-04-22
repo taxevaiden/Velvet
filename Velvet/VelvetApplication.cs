@@ -129,7 +129,7 @@ namespace Velvet
             _lastCounter = currentCounter;
 
             InputManager.Update();
-            Update(DeltaTime);
+            Update();
             Draw();
             InputManager.EndFrame();
 
@@ -177,7 +177,7 @@ namespace Velvet
         protected virtual void OnInit() { }
 
         /// <summary>Called every frame before <see cref="Draw"/>. Override for game logic.</summary>
-        protected virtual void Update(float deltaTime) { }
+        protected virtual void Update() { }
 
         /// <summary>Called every frame after <see cref="Update"/>. Override to issue draw calls.</summary>
         protected virtual void Draw()
