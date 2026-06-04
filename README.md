@@ -104,13 +104,14 @@ layout(location = 1) out vec4 fsin_Color;
 
 layout(set = 0, binding = 2) uniform Globals
 {
+    mat4x4 Projection; // Automatically passed to the shader by Velvet
     float time;
 };
 
 void main()
 {
     vec2 pos = vec2(Position.x, Position.y + sin(Position.x * 100.0f + time) * 0.1f);
-    gl_Position = vec4(pos, 0.0, 1.0);
+    gl_Position = Projection * vec4(pos, 0.0, 1.0);
     fsin_UV = UV;
     fsin_Color = Color;
 }

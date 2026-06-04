@@ -20,7 +20,7 @@ namespace Velvet.Tests
             else
                 throw new PlatformNotSupportedException();
 
-            var test = new TextTest(resolvedAPI); // <-- You can change this to the other tests available
+            var test = new ShaderTest2(resolvedAPI); // <-- You can change this to the other tests available
             test.Run(args.Length, args);
         }
     }

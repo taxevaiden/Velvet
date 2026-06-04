@@ -105,9 +105,14 @@ namespace Velvet.Graphics.Shaders
             layout(location = 0) out vec2 fsin_UV;
             layout(location = 1) out vec4 fsin_Color;
 
+            layout(set = 0, binding = 2) uniform Globals
+            {
+                mat4 Projection;
+            };
+
             void main()
             {
-                gl_Position = vec4(Position, 1.0);
+                gl_Position = Projection * vec4(Position, 1.0);
                 fsin_UV = UV;
                 fsin_Color = Color;
             }
@@ -203,30 +208,27 @@ namespace Velvet.Graphics.Shaders
                 new("Sampler0", ResourceKind.Sampler,         ShaderStages.Fragment),
             };
 
-            // Pack uniforms into a single UBO if any were supplied.
-            if (uniformDescriptions is { Length: > 0 })
+            // Reserve the first 64 bytes for the built-in Globals.Projection matrix.
+            uint offset = 64;
+            foreach (var u in uniformDescriptions ?? Array.Empty<UniformDescription>())
             {
-                uint offset = 0;
-                foreach (var u in uniformDescriptions)
-                {
-                    uint size = GetUniformSize(u.Type);
-                    offset = Align(offset, size);
+                uint size = GetUniformSize(u.Type);
+                offset = Align(offset, size);
 
-                    _uniforms[u.Name] = new PackedUniform(u.Name, u.Type, offset, size);
-                    offset += size;
-                }
-
-                uint totalSize = Align(offset, 16);
-                _cpuUniformBuffer = new byte[totalSize];
-
-                UniformBuffer = _gd.ResourceFactory.CreateBuffer(
-                    new BufferDescription(totalSize, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-
-                layoutElements.Add(new ResourceLayoutElementDescription(
-                    "Globals",
-                    ResourceKind.UniformBuffer,
-                    ShaderStages.Vertex | ShaderStages.Fragment));
+                _uniforms[u.Name] = new PackedUniform(u.Name, u.Type, offset, size);
+                offset += size;
             }
+
+            uint totalSize = Align(offset, 16);
+            _cpuUniformBuffer = new byte[totalSize];
+
+            UniformBuffer = _gd.ResourceFactory.CreateBuffer(
+                new BufferDescription(totalSize, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+
+            layoutElements.Add(new ResourceLayoutElementDescription(
+                "Globals",
+                ResourceKind.UniformBuffer,
+                ShaderStages.Vertex | ShaderStages.Fragment));
 
             _resourceLayout = _gd.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(layoutElements.ToArray()));
@@ -334,6 +336,17 @@ namespace Velvet.Graphics.Shaders
             _currentRenderTarget = rt;
             _currentOutputs = newOutputs;
             _pipelineDirty = true;
+        }
+
+        internal unsafe void SetProjection(Matrix4x4 projection)
+        {
+            if (UniformBuffer is null)
+                return;
+
+            fixed (byte* dst = &_cpuUniformBuffer[0])
+                *(Matrix4x4*)dst = projection;
+
+            _uniformsDirty = true;
         }
 
         // Write / flush

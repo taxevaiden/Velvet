@@ -10,6 +10,7 @@ layout(set = 0, binding = 0) uniform texture2D Texture2D;
 layout(set = 0, binding = 1) uniform sampler Sampler;
 layout(set = 0, binding = 2) uniform Globals
 {
+    mat4 Projection;
     vec2 Resolution;
 };
 

@@ -25,7 +25,7 @@ namespace Velvet.Graphics
         private List<Batch> _batches = new();
 
         private Vector2 _cachedRenderSize = Vector2.Zero;
-        private Matrix3x2 _cachedProjection;
+        private Matrix4x4 _cachedProjection = Matrix4x4.Identity;
 
         // Helpers
 
@@ -53,15 +53,14 @@ namespace Velvet.Graphics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Matrix3x2 GetProjection()
+        private Matrix4x4 GetProjection()
         {
             Vector2 viewport = GetRenderSize();
             if (viewport != _cachedRenderSize)
             {
                 _cachedRenderSize = viewport;
-                _cachedProjection = Matrix3x2.CreateScale(2f / viewport.X, 2f / viewport.Y);
-                _cachedProjection *= Matrix3x2.CreateTranslation(-1f, -1f);
-                _cachedProjection *= Matrix3x2.CreateScale(1f, -1f);
+                _cachedProjection = Matrix4x4.CreateOrthographicOffCenter(
+                    0f, viewport.X, viewport.Y, 0f, -1f, 1f);
             }
             return _cachedProjection;
         }
@@ -71,7 +70,7 @@ namespace Velvet.Graphics
         // 3D methods
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Vector3 TranslateVertex(Vector3 pos)
-            => new Vector3(Vector2.Transform(new Vector2(pos.X, pos.Y), GetProjection()), pos.Z);
+            => new Vector3(pos.X, pos.Y, pos.Z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Vector3 TranslateVertex(Vector3 pos, Vector2 anchor, float rotation)
@@ -83,13 +82,13 @@ namespace Velvet.Graphics
             pos2D = new Vector2(pos2D.X * c - pos2D.Y * s, pos2D.X * s + pos2D.Y * c);
 
             pos2D += anchor;
-            return new Vector3(Vector2.Transform(pos2D, GetProjection()), pos.Z);
+            return new Vector3(pos2D, pos.Z);
         }
 
         // 2D methods
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Vector3 TranslateVertex(Vector2 pos)
-            => new Vector3(Vector2.Transform(new Vector2(pos.X, pos.Y), GetProjection()), 0.0f);
+            => new Vector3(pos.X, pos.Y, 0.0f);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Vector3 TranslateVertex(Vector2 pos, Vector2 anchor, float rotation)
@@ -101,7 +100,7 @@ namespace Velvet.Graphics
             pos2D = new Vector2(pos2D.X * c - pos2D.Y * s, pos2D.X * s + pos2D.Y * c);
 
             pos2D += anchor;
-            return new Vector3(Vector2.Transform(pos2D, GetProjection()), 0.0f);
+            return new Vector3(pos2D, 0.0f);
         }
 
         // UV helpers
@@ -249,6 +248,7 @@ namespace Velvet.Graphics
             for (int i = 0; i < indices.Length; i++)
                 _indices[_indexCount++] = baseIndex + indices[i];
         }
+        
         /// <summary>Draws a thick line between two points.</summary>
         public void DrawLine(Vector2 a, Vector2 b, float thickness, RgbaColor color)
         {
@@ -449,6 +449,7 @@ namespace Velvet.Graphics
 
                 batch.Shader.SetTexture(batch.Texture);
                 batch.Shader.SetRenderTexture(batch.RenderTarget);
+                batch.Shader.SetProjection(GetProjection());
                 batch.Shader.Flush();
 
                 if (batch.RenderTarget != null)

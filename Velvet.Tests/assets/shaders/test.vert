@@ -8,13 +8,14 @@ layout(location = 0) out vec2 fsin_UV;
 layout(location = 1) out vec4 fsin_Color;
 layout(set = 0, binding = 2) uniform Globals
 {
+    mat4 Projection;
     float hehe;
 };
 
 void main()
 {   
     vec2 new = vec2(Position.x, Position.y + sin(Position.x * 100.0f + hehe) * 0.1f);
-    gl_Position = vec4(new, 0.0, 1.0);
+    gl_Position = Projection * vec4(new, 0.0, 1.0);
     fsin_UV = UV;
     fsin_Color = Color;
 }
