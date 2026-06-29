@@ -340,7 +340,7 @@ namespace Velvet.Windowing
         public nint GetGLContext()
         {
             if (_glContext == IntPtr.Zero) _glContext = SDL.GLCreateContext(WindowPtr);
-            
+
             return _glContext;
         }
         /// <summary>
@@ -451,7 +451,6 @@ namespace Velvet.Windowing
                 throw new WindowingException(
                     $"Failed to set swap interval: {SDL.GetError()}");
         }
-
 
         // IDisposable
 

@@ -252,7 +252,7 @@ namespace Velvet.Graphics
         }
 
         /// <summary>Draws a string using a <see cref="VelvetFont"/>.</summary>
-        public void DrawText(VelvetFont font, string text,Vector2 position, RgbaColor color)
+        public void DrawText(VelvetFont font, string text, Vector2 position, RgbaColor color)
         {
             if (string.IsNullOrEmpty(text)) return;
 

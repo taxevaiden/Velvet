@@ -210,7 +210,7 @@ namespace Velvet.Input
         private static float _scrollX, _scrollY;
 
         // Internal event / frame hooks
-        
+
         /// <summary>
         /// Processes an SDL event
         /// </summary>
