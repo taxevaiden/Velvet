@@ -113,7 +113,7 @@ namespace Velvet
             => SDL.EnterAppMainCallbacks(argc, argv,
                 _initCallback, _iterateCallback, _eventCallback, _quitCallback);
 
-        private SDL.AppResult InitCallback(nint appstate, int argc, string[] argv)
+        private SDL.AppResult InitCallback(ref nint appstate, int argc, string[] argv)
         {
             Window = new VelvetWindow(_title, _width, _height);
 

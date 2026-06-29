@@ -13,11 +13,22 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 
-    <PackageReference Include="SDL3-CS" Version="3.3.7" />
-    <PackageReference Include="SDL3-CS.Native" Version="3.3.7" />
+    <PackageReference Include="SDL3-CS" Version="3.4.10.5" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([System.OperatingSystem]::IsWindows())">
+    <PackageReference Include="SDL3-CS.Windows" Version="3.4.10.5" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([System.OperatingSystem]::IsLinux())">
+    <PackageReference Include="SDL3-CS.Linux" Version="3.4.10.5" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([System.OperatingSystem]::IsMacOS())">
+    <PackageReference Include="SDL3-CS.MacOS" Version="3.4.10.5" />
   </ItemGroup>
 
 </Project>

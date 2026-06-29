@@ -3,8 +3,6 @@ using System.Runtime.CompilerServices;
 
 using SDL3;
 
-[assembly: InternalsVisibleTo("Velvet")]
-
 namespace Velvet.Input
 {
 #pragma warning disable CS1591
@@ -212,8 +210,12 @@ namespace Velvet.Input
         private static float _scrollX, _scrollY;
 
         // Internal event / frame hooks
-
-        internal static void ProcessEvent(SDL.Event e)
+        
+        /// <summary>
+        /// Processes an SDL event
+        /// </summary>
+        /// <param name="e"></param>
+        public static void ProcessEvent(SDL.Event e)
         {
             switch ((SDL.EventType)e.Type)
             {
@@ -244,7 +246,7 @@ namespace Velvet.Input
             }
         }
 
-        internal static void Update()
+        public static void Update()
         {
             // Snapshot previous keyboard state before overwriting.
             Array.Copy(_keyboardState, _prevKeyboardState, _keyboardState.Length);
@@ -254,7 +256,7 @@ namespace Velvet.Input
                 _keyboardState[i] = keys[i];
         }
 
-        internal static void EndFrame()
+        public static void EndFrame()
         {
             _prevMouseX = _mouseX;
             _prevMouseY = _mouseY;
