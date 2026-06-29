@@ -59,7 +59,7 @@ namespace Velvet
         /// <param name="height">The height of the application window in pixels.</param>
         /// <param name="title">The title of the application window.</param>
         protected VelvetApplication(int width, int height, string title)
-            : this(width, height, title, GraphicsAPI.Default, vsync: true) { }
+            : this(width, height, title, GraphicsAPI.Default, vsync: false) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VelvetApplication"/> class with the specified window dimensions, title, and graphics API.
@@ -69,7 +69,7 @@ namespace Velvet
         /// <param name="title">The title of the application window.</param>
         /// <param name="graphicsAPI">The graphics API to use for rendering.</param>
         protected VelvetApplication(int width, int height, string title, GraphicsAPI graphicsAPI)
-            : this(width, height, title, graphicsAPI, vsync: true) { }
+            : this(width, height, title, graphicsAPI, vsync: false) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VelvetApplication"/> class with the specified window dimensions, title, graphics API, and VSync setting.

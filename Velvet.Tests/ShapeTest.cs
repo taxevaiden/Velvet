@@ -24,6 +24,8 @@ namespace Velvet.Tests
         VelvetShader shader;
         VelvetFont font;
         float fps = 60;
+        float accumFps = 60;
+        int fpsSamples = 1;
         public ShapeTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 720, string title = "Hello, world!")
             : base(width, height, title, graphicsAPI) { }
 
@@ -47,7 +49,7 @@ namespace Velvet.Tests
             shader.Set("Resolution", new Vector2(1280, 720)); // Set the "Resolution" uniform to the size of the render texture
             shader.Flush(); // Each time you set a uniform, it is marked as dirty and won't be sent to the GPU until Flush is called.
 
-            font = new VelvetFont(Renderer, "assets/sans.ttf", 32);
+            font = new VelvetFont(Renderer, "assets/sans.ttf", 16);
 
             rot = 22.5f;
             pos = Vector2.Zero;
@@ -78,6 +80,8 @@ namespace Velvet.Tests
             pos2 += vel;
 
             fps = 1.0f / DeltaTime;
+            accumFps += fps;
+            fpsSamples += 1;
         }
 
         protected override void Draw()
@@ -107,7 +111,8 @@ namespace Velvet.Tests
             Renderer.DrawCircle(pos, 20.0f, Color.Blue);
             Renderer.DrawRectangle(pos2, new Vector2(20.0f, 20.0f), Color.Blue);
 
-            Renderer.DrawText(font, $"FPS: {fps:F3}", 32, new Vector2(50, 50), Color.Black);
+            Renderer.DrawText(font, $"FPS: {fps:F3} ", 16, new Vector2(16, 16), Color.Black);
+            Renderer.DrawText(font, $"Average FPS: {accumFps/fpsSamples:F3}", 16, new Vector2(16, 32), Color.Black);
 
             Renderer.SetRenderTargetToScreen(); // Set the render target back to the screen
             Renderer.ClearColor(Color.White); // Clear the SCREEN to white
@@ -115,6 +120,7 @@ namespace Velvet.Tests
             Renderer.ApplyShader(shader);
             Renderer.ApplyTexture(renderTexture.Texture);
             Renderer.DrawRectangle(new Vector2(0, 0), new Vector2(1280, 720), Color.White); // Draw the render texture with a shader applied
+
 
             Renderer.End();
         }

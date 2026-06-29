@@ -17,14 +17,14 @@ namespace Velvet.Graphics
         /// </summary>
         /// <remarks>This chooses the GraphicsAPI depending on the platform you're on. If you're on Windows, the GraphicsAPI is D3D11. If you're on OSX, the GraphicsAPI is Metal. If you're on Linux, the GraphicsAPI is Vulkan.</remarks>
         /// <param name="environment">The VelvetRendererEnvironment required to initialize a <see cref="VelvetRenderer"/></param>
-        public VelvetRenderer(VelvetRendererEnvironment environment) { InitRenderer(environment, GraphicsAPI.Default, true); }
+        public VelvetRenderer(VelvetRendererEnvironment environment) { InitRenderer(environment, GraphicsAPI.Default, false); }
 
         /// <summary>
         /// Initializes a VelvetRenderer with a VelvetWindow.
         /// </summary>
         /// <param name="environment">The VelvetRendererEnvironment required to initialize a <see cref="VelvetRenderer"/></param>
         /// <param name="graphicsAPI">The GraphicsAPI to use.</param>
-        public VelvetRenderer(VelvetRendererEnvironment environment, GraphicsAPI graphicsAPI) { InitRenderer(environment, graphicsAPI, true); }
+        public VelvetRenderer(VelvetRendererEnvironment environment, GraphicsAPI graphicsAPI) { InitRenderer(environment, graphicsAPI, false); }
 
         /// <summary>
         /// Initializes a VelvetRenderer with the specified GraphicsAPI with a VelvetWindow.

@@ -257,6 +257,7 @@ namespace Velvet.Graphics
             if (string.IsNullOrEmpty(text)) return;
 
             VelvetTexture previousTex = CurrentTexture;
+            FlushIfPending();
             ApplyTexture(font.TextureAtlas);
 
             float x = position.X;
@@ -268,12 +269,13 @@ namespace Velvet.Graphics
                 var glyph = font.glyphs[c];
                 var uv = new Rectangle(glyph.x0, glyph.y0, glyph.x1 - glyph.x0, glyph.y1 - glyph.y0);
                 DrawRectangle(
-                    new Vector2(x + glyph.x_off, y - glyph.y_off),
+                    new Vector2(x + glyph.x_off, y - glyph.y_off + font.FontSize),
                     new Vector2(uv.Width, uv.Height),
                     uv, 0f, AnchorPosition.TopLeft, color);
                 x += glyph.advance;
             }
 
+            FlushIfPending();
             ApplyTexture(previousTex);
         }
 
@@ -283,6 +285,7 @@ namespace Velvet.Graphics
             if (string.IsNullOrEmpty(text)) return;
 
             VelvetTexture previousTex = CurrentTexture;
+            FlushIfPending();
             ApplyTexture(font.TextureAtlas);
 
             float scale = pxSize / (float)font.FontSize;
@@ -295,12 +298,13 @@ namespace Velvet.Graphics
                 var glyph = font.glyphs[c];
                 var uv = new Rectangle(glyph.x0, glyph.y0, glyph.x1 - glyph.x0, glyph.y1 - glyph.y0);
                 DrawRectangle(
-                    new Vector2(x + glyph.x_off * scale, y - glyph.y_off * scale),
+                    new Vector2(x + glyph.x_off * scale, y - glyph.y_off * scale + pxSize),
                     new Vector2(uv.Width, uv.Height) * scale,
                     uv, 0f, AnchorPosition.TopLeft, color);
                 x += glyph.advance * scale;
             }
 
+            FlushIfPending();
             ApplyTexture(previousTex);
         }
     }
