@@ -1,5 +1,3 @@
-using SDL3;
-
 using Serilog;
 
 using Veldrid;
@@ -7,20 +5,12 @@ using Veldrid.OpenGL;
 
 using Velvet.Graphics.Shaders;
 using Velvet.Graphics.Textures;
-using Velvet.Windowing;
 
 namespace Velvet.Graphics
 {
     public partial class VelvetRenderer : IDisposable
     {
         private readonly ILogger _logger = Log.ForContext<VelvetRenderer>();
-
-        /// <summary>
-        /// Helper to convert degrees to radians for rotation parameters. Usage example: `float rotation = 45f * VelvetRenderer.DEG2RAD;`
-        /// </summary>
-        public const float DEG2RAD = MathF.PI / 180.0f;
-
-        internal VelvetWindow _window = null!;
         internal GraphicsDevice _graphicsDevice = null!;
 
         private CommandList _commandList = null!;
@@ -40,17 +30,18 @@ namespace Velvet.Graphics
         private int _vertexCapacity = 0;
         private int _indexCapacity = 0;
 
+
+
         /// <summary>Initializes Veldrid for Windows.</summary>
-        private void InitVeldrid_WIN(GraphicsAPI api, VelvetWindow window, bool vsync)
+        private void InitVeldrid_WIN(GraphicsAPI api, VelvetRendererEnvironment environment, bool vsync)
         {
-            LogInit(window, "Windows", api, vsync);
-            _window = window;
+            LogInit("Windows", api, vsync);
 
             _graphicsDevice = api switch
             {
-                GraphicsAPI.D3D11 => CreateD3D11Device(window, vsync),
-                GraphicsAPI.Vulkan => CreateVulkanDevice(window, vsync, GetWin32Source(window)),
-                GraphicsAPI.OpenGL => CreateOpenGLDevice(window, vsync),
+                GraphicsAPI.D3D11 => CreateD3D11Device(environment, vsync),
+                GraphicsAPI.Vulkan => CreateVulkanDevice(environment, vsync, GetWin32Source(environment.Hwnd, environment.HInstance)),
+                GraphicsAPI.OpenGL => CreateOpenGLDevice(environment, vsync),
                 GraphicsAPI.Metal => throw PlatformUnsupported(api, "Windows", "D3D11, Vulkan, or OpenGL"),
                 _ => throw new ArgumentOutOfRangeException(nameof(api))
             };
@@ -59,15 +50,14 @@ namespace Velvet.Graphics
         }
 
         /// <summary>Initializes Veldrid for Linux.</summary>
-        private void InitVeldrid_LINUX(GraphicsAPI api, VelvetWindow window, bool vsync)
+        private void InitVeldrid_LINUX(GraphicsAPI api, VelvetRendererEnvironment environment, bool vsync)
         {
-            LogInit(window, "Linux", api, vsync);
-            _window = window;
+            LogInit("Linux", api, vsync);
 
             _graphicsDevice = api switch
             {
-                GraphicsAPI.Vulkan => CreateVulkanDevice(window, vsync, GetLinuxSource(window)),
-                GraphicsAPI.OpenGL => CreateOpenGLDevice(window, vsync),
+                GraphicsAPI.Vulkan => CreateVulkanDevice(environment, vsync, GetLinuxSource(environment.WaylandDisplay, environment.WaylandSurface, environment.X11Display, environment.X11Window)),
+                GraphicsAPI.OpenGL => CreateOpenGLDevice(environment, vsync),
                 GraphicsAPI.D3D11 => throw PlatformUnsupported(api, "Linux", "Vulkan or OpenGL"),
                 GraphicsAPI.Metal => throw PlatformUnsupported(api, "Linux", "Vulkan or OpenGL"),
                 _ => throw new ArgumentOutOfRangeException(nameof(api))
@@ -77,15 +67,14 @@ namespace Velvet.Graphics
         }
 
         /// <summary>Initializes Veldrid for macOS.</summary>
-        private void InitVeldrid_OSX(GraphicsAPI api, VelvetWindow window, bool vsync)
+        private void InitVeldrid_OSX(GraphicsAPI api, VelvetRendererEnvironment environment, bool vsync)
         {
-            LogInit(window, "macOS", api, vsync);
-            _window = window;
+            LogInit("macOS", api, vsync);
 
             _graphicsDevice = api switch
             {
-                GraphicsAPI.Metal => CreateMetalDevice(window, vsync),
-                GraphicsAPI.Vulkan => CreateVulkanDevice(window, vsync, GetCocoaSource(window)),
+                GraphicsAPI.Metal => CreateMetalDevice(environment, vsync),
+                GraphicsAPI.Vulkan => CreateVulkanDevice(environment, vsync, GetCocoaSource(environment.CocoaWindow)),
                 GraphicsAPI.D3D11 => throw PlatformUnsupported(api, "macOS", "Metal or Vulkan"),
                 GraphicsAPI.OpenGL => throw PlatformUnsupported(api, "macOS", "Metal or Vulkan"),
                 _ => throw new ArgumentOutOfRangeException(nameof(api))
@@ -96,102 +85,64 @@ namespace Velvet.Graphics
 
         // GraphicsDevice factories
 
-        private GraphicsDevice CreateD3D11Device(VelvetWindow window, bool vsync)
+        private GraphicsDevice CreateD3D11Device(VelvetRendererEnvironment environment, bool vsync)
         {
             var options = MakeOptions(vsync, debug: true);
-            var scDesc = MakeSwapchain(window, vsync, GetWin32Source(window));
+            var scDesc = MakeSwapchain(environment.WindowWidth, environment.WindowHeight, vsync, GetWin32Source(environment.Hwnd, environment.HInstance));
             return GraphicsDevice.CreateD3D11(options, scDesc);
         }
 
-        private GraphicsDevice CreateVulkanDevice(VelvetWindow window, bool vsync, SwapchainSource source)
+        private GraphicsDevice CreateVulkanDevice(VelvetRendererEnvironment environment, bool vsync, SwapchainSource source)
         {
             var options = MakeOptions(vsync);
-            var scDesc = MakeSwapchain(window, vsync, source);
+            var scDesc = MakeSwapchain(environment.WindowWidth, environment.WindowHeight, vsync, source);
             return GraphicsDevice.CreateVulkan(options, scDesc);
         }
 
-        private GraphicsDevice CreateMetalDevice(VelvetWindow window, bool vsync)
+        private GraphicsDevice CreateMetalDevice(VelvetRendererEnvironment environment, bool vsync)
         {
             var options = MakeOptions(vsync);
-            var scDesc = MakeSwapchain(window, vsync, GetCocoaSource(window));
+            var scDesc = MakeSwapchain(environment.WindowWidth, environment.WindowHeight, vsync, GetCocoaSource(environment.CocoaWindow));
             return GraphicsDevice.CreateMetal(options, scDesc);
         }
 
-        private GraphicsDevice CreateOpenGLDevice(VelvetWindow window, bool vsync)
+        private GraphicsDevice CreateOpenGLDevice(VelvetRendererEnvironment environment, bool vsync)
         {
-            IntPtr glContext = SDL.GLCreateContext(window.WindowPtr);
-
             var platformInfo = new OpenGLPlatformInfo(
-                openGLContextHandle: glContext,
-                getProcAddress: SDL.GLGetProcAddress,
-                makeCurrent: ctx =>
-                {
-                    if (!SDL.GLMakeCurrent(window.WindowPtr, ctx))
-                        throw new InvalidOperationException($"Failed to make OpenGL context current: {SDL.GetError()}");
-                },
-                getCurrentContext: SDL.GLGetCurrentContext,
-                clearCurrentContext: () =>
-                {
-                    if (!SDL.GLMakeCurrent(IntPtr.Zero, IntPtr.Zero))
-                        throw new InvalidOperationException($"Failed to clear OpenGL context: {SDL.GetError()}");
-                },
-                deleteContext: ctx =>
-                {
-                    // SDL destroys the context by handle, not window: use ctx directly.
-                    if (!SDL.GLDestroyContext(ctx))
-                        throw new InvalidOperationException($"Failed to destroy OpenGL context: {SDL.GetError()}");
-                },
-                swapBuffers: () =>
-                {
-                    if (!SDL.GLSwapWindow(window.WindowPtr))
-                        throw new InvalidOperationException($"Failed to swap buffers: {SDL.GetError()}");
-                },
-                setSyncToVerticalBlank: enabled =>
-                {
-                    if (!SDL.GLSetSwapInterval(enabled ? 1 : 0))
-                        throw new InvalidOperationException($"Failed to set swap interval: {SDL.GetError()}");
-                }
+                openGLContextHandle: environment.OpenGLPlatform.Context,
+                getProcAddress: environment.OpenGLPlatform.GetProcAddress,
+                makeCurrent: environment.OpenGLPlatform.MakeCurrent,
+                getCurrentContext: environment.OpenGLPlatform.GetCurrentContext,
+                clearCurrentContext: environment.OpenGLPlatform.ClearCurrentContext,
+                deleteContext: environment.OpenGLPlatform.DestroyContext,
+                swapBuffers: environment.OpenGLPlatform.SwapBuffers,
+                setSyncToVerticalBlank: environment.OpenGLPlatform.SetVSync
             );
 
-            return GraphicsDevice.CreateOpenGL(MakeOptions(vsync), platformInfo, (uint)window.Width, (uint)window.Height);
+            return GraphicsDevice.CreateOpenGL(MakeOptions(vsync), platformInfo, (uint)environment.WindowWidth, (uint)environment.WindowHeight);
         }
 
         // Swapchain source helpers
 
-        private SwapchainSource GetWin32Source(VelvetWindow window)
-        {
-            var props = SDL.GetWindowProperties(window.WindowPtr);
-            var hinstance = SDL.GetPointerProperty(props, SDL.Props.WindowWin32InstancePointer, IntPtr.Zero);
-            var hwnd = SDL.GetPointerProperty(props, SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
-            return SwapchainSource.CreateWin32(hwnd, hinstance);
-        }
+        private SwapchainSource GetWin32Source(nint hwnd, nint hinstance) => SwapchainSource.CreateWin32(hwnd, hinstance);
 
-        private SwapchainSource GetLinuxSource(VelvetWindow window)
+        // TODO: Maybe make it so You don't have to pass in like four pointers cause that just feels wasteful 
+        // if someone's on wayland and they have to get x11 pointers that dont exist anyway? 
+        // I don't know tho maybe this is fine
+        private SwapchainSource GetLinuxSource(nint wlDisplay, nint wlSurface, nint x11Display, nint x11Window)
         {
-            var props = SDL.GetWindowProperties(window.WindowPtr);
-            var wlDisplay = SDL.GetPointerProperty(props, SDL.Props.WindowWaylandDisplayPointer, IntPtr.Zero);
-            var wlSurface = SDL.GetPointerProperty(props, SDL.Props.WindowWaylandSurfacePointer, IntPtr.Zero);
-
             if (wlDisplay != IntPtr.Zero && wlSurface != IntPtr.Zero)
             {
-                _logger.Information("(Window-{WindowId}): Display protocol: Wayland", _window.WindowID);
+                _logger.Information("Display protocol: Wayland");
                 return SwapchainSource.CreateWayland(wlDisplay, wlSurface);
             }
 
-            _logger.Information("(Window-{WindowId}): Display protocol: X11", _window.WindowID);
-            var x11Display = SDL.GetPointerProperty(props, SDL.Props.WindowX11DisplayPointer, IntPtr.Zero);
-            var x11Window = (uint)SDL.GetNumberProperty(props, SDL.Props.WindowX11WindowNumber, 0);
-            return SwapchainSource.CreateXlib(x11Display, (IntPtr)x11Window);
+            _logger.Information("Display protocol: X11");
+            return SwapchainSource.CreateXlib(x11Display, x11Window);
         }
 
-        private SwapchainSource GetCocoaSource(VelvetWindow window)
-        {
-            var nsWindow = SDL.GetPointerProperty(
-                SDL.GetWindowProperties(window.WindowPtr),
-                SDL.Props.WindowCocoaWindowPointer,
-                IntPtr.Zero);
-            return SwapchainSource.CreateNSWindow(nsWindow);
-        }
+        // nsWindow is the WindowCocoaWindowPointer
+        private SwapchainSource GetCocoaSource(nint nsWindow) => SwapchainSource.CreateNSWindow(nsWindow);
 
         // Shared option / descriptor builders
 
@@ -205,11 +156,11 @@ namespace Velvet.Graphics
                 preferDepthRangeZeroToOne: true);
 
         private static SwapchainDescription MakeSwapchain(
-            VelvetWindow window, bool vsync, SwapchainSource source) =>
+            int width, int height, bool vsync, SwapchainSource source) =>
             new(
                 source,
-                (uint)window.Width,
-                (uint)window.Height,
+                (uint)width,
+                (uint)height,
                 PixelFormat.R32Float,
                 vsync);
 
@@ -217,7 +168,7 @@ namespace Velvet.Graphics
 
         private void CreateResources()
         {
-            _logger.Information("(Window-{WindowId}): Creating resources...", _window.WindowID);
+            _logger.Information("Creating resources...");
 
             _vertexCapacity = (int)(VertexBufferSize / Vertex.SizeInBytes);
             _indexCapacity = (int)(IndexBufferSize / sizeof(uint));
@@ -229,7 +180,7 @@ namespace Velvet.Graphics
 
             var factory = _graphicsDevice.ResourceFactory;
 
-            _logger.Information("(Window-{WindowId}): Creating buffers...", _window.WindowID);
+            _logger.Information("Creating buffers...");
 
             _vertexBuffer = factory.CreateBuffer(
                 new BufferDescription(VertexBufferSize, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
@@ -237,14 +188,13 @@ namespace Velvet.Graphics
                 new BufferDescription(IndexBufferSize, BufferUsage.IndexBuffer | BufferUsage.Dynamic));
 
             _logger.Information(
-                "(Window-{WindowId}): Vertex buffer: {VBSize} MB  |  Index buffer: {IBSize} MB",
-                _window.WindowID,
+                "Vertex buffer: {VBSize} MB, Index buffer: {IBSize} MB",
                 VertexBufferSize / (1024 * 1024),
                 IndexBufferSize / (1024 * 1024));
 
             _commandList = factory.CreateCommandList();
 
-            _logger.Information("(Window-{WindowId}): Creating default texture and shader...", _window.WindowID);
+            _logger.Information("Creating default texture and shader...");
 
             DefaultTexture = new VelvetTexture(this, [255, 255, 255, 255], 1, 1);
             CurrentTexture = DefaultTexture;
@@ -253,16 +203,16 @@ namespace Velvet.Graphics
             DefaultShader.SetTexture(DefaultTexture);
             CurrentShader = DefaultShader;
 
-            _logger.Information("(Window-{WindowId}): Resources ready.", _window.WindowID);
+            _logger.Information("Resources ready.");
         }
 
         // Logging / error helpers
 
-        private void LogInit(VelvetWindow window, string platform, GraphicsAPI api, bool vsync)
+        private void LogInit(string platform, GraphicsAPI api, bool vsync)
         {
             _logger.Information(
-                "(Window-{WindowId}): Initialising Veldrid  |  Platform: {Platform}  |  API: {Api}  |  VSync: {VSync}",
-                window.WindowID, platform, api, vsync);
+                "Initializing Veldrid: {Platform}, {Api}, VSync: {VSync}",
+                platform, api, vsync);
         }
 
         private static PlatformNotSupportedException PlatformUnsupported(

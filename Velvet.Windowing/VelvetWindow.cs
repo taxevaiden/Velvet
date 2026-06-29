@@ -13,6 +13,9 @@ namespace Velvet.Windowing
     {
         private readonly ILogger _logger = Log.ForContext<VelvetWindow>();
 
+        private uint _props;
+        private nint _glContext = IntPtr.Zero;
+
         /// <summary>The SDL window ID.</summary>
         public uint WindowID { get; private set; } = uint.MinValue;
 
@@ -187,22 +190,21 @@ namespace Velvet.Windowing
         // Construction
 
         /// <summary>Creates and shows a new window.</summary>
-        /// <exception cref="InvalidOperationException">Thrown if window creation fails.</exception>
+        /// <exception cref="WindowingException">Thrown if window creation fails.</exception>
         public VelvetWindow(string title, int width, int height)
         {
-            _logger.Information("Initializing SDL3...");
-            if (!SDL.Init(SDL.InitFlags.Video))
-                throw new InvalidOperationException($"Unable to initialize SDL: {SDL.GetError()}");
-
             _logger.Information("Creating window...");
             WindowPtr = SDL.CreateWindow(
                 title, width, height,
-                SDL.WindowFlags.MouseFocus | SDL.WindowFlags.OpenGL);
+                SDL.WindowFlags.MouseFocus | SDL.WindowFlags.OpenGL
+            );
+
+            _props = SDL.GetWindowProperties(WindowPtr);
 
             if (WindowPtr == IntPtr.Zero)
             {
                 SDL.Quit();
-                throw new InvalidOperationException($"Window creation failed: {SDL.GetError()}");
+                throw new WindowingException($"Window creation failed: {SDL.GetError()}");
             }
 
             WindowID = SDL.GetWindowID(WindowPtr);
@@ -237,7 +239,7 @@ namespace Velvet.Windowing
 
         private bool HasFlag(SDL.WindowFlags flag)
             => WindowPtr != IntPtr.Zero &&
-               ((SDL.WindowFlags)SDL.GetWindowFlags(WindowPtr) & flag) != 0;
+               (SDL.GetWindowFlags(WindowPtr) & flag) != 0;
 
         // Tbh I could make this public but I think making this a property is more convenient
         private void SetSize(int width, int height)
@@ -249,10 +251,212 @@ namespace Velvet.Windowing
             _logger.Debug("(Window-{WindowId}): Resized to {W}x{H}", WindowID, width, height);
         }
 
+        /// <summary>
+        /// Gets the native Win32 window handle (HWND) for this window.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <returns>
+        /// The native <c>HWND</c>, or <see cref="IntPtr.Zero"/> if the handle is unavailable.
+        /// </returns>
+        public nint GetHwnd() => SDL.GetPointerProperty(_props, SDL.Props.WindowWin32HWNDPointer, IntPtr.Zero);
+
+        /// <summary>
+        /// Gets the native Win32 application instance handle (HINSTANCE) associated with this window.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <returns>
+        /// The native <c>HINSTANCE</c>, or <see cref="IntPtr.Zero"/> if the handle is unavailable.
+        /// </returns>
+        public nint GetHInstance() => SDL.GetPointerProperty(_props, SDL.Props.WindowWin32InstancePointer, IntPtr.Zero);
+
+        /// <summary>
+        /// Gets the native Wayland display (<c>wl_display</c>) associated with this window.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <returns>
+        /// A pointer to the native <c>wl_display</c>, or <see cref="IntPtr.Zero"/> if unavailable.
+        /// </returns>
+        public nint GetWaylandDisplay() => SDL.GetPointerProperty(_props, SDL.Props.WindowWaylandDisplayPointer, IntPtr.Zero);
+
+        /// <summary>
+        /// Gets the native Wayland surface (<c>wl_surface</c>) for this window.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <returns>
+        /// A pointer to the native <c>wl_surface</c>, or <see cref="IntPtr.Zero"/> if unavailable.
+        /// </returns>
+        public nint GetWaylandSurface() => SDL.GetPointerProperty(_props, SDL.Props.WindowWaylandSurfacePointer, IntPtr.Zero);
+
+        /// <summary>
+        /// Gets the native X11 display (<c>Display*</c>) associated with this window.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <returns>
+        /// A pointer to the native X11 <c>Display</c>, or <see cref="IntPtr.Zero"/> if unavailable.
+        /// </returns>
+        public nint GetX11Display() => SDL.GetPointerProperty(_props, SDL.Props.WindowX11DisplayPointer, IntPtr.Zero);
+
+        /// <summary>
+        /// Gets the native X11 window identifier (<c>Window</c>) for this window.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <returns>
+        /// The native X11 window identifier, or <see cref="IntPtr.Zero"/> if unavailable.
+        /// </returns>
+        public nint GetX11Window() => SDL.GetPointerProperty(_props, SDL.Props.WindowX11WindowNumber, IntPtr.Zero);
+
+        /// <summary>
+        /// Gets the native Cocoa <c>NSWindow</c> associated with this window.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <returns>
+        /// A pointer to the native <c>NSWindow</c>, or <see cref="IntPtr.Zero"/> if unavailable.
+        /// </returns>
+        public nint GetCocoaWindow() => SDL.GetPointerProperty(_props, SDL.Props.WindowCocoaWindowPointer, IntPtr.Zero);
+
+        /// <summary>
+        /// Gets the OpenGL context associated with this window.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <returns>
+        /// The native OpenGL context handle.
+        /// </returns>
+        public nint GetGLContext()
+        {
+            if (_glContext == IntPtr.Zero) _glContext = SDL.GLCreateContext(WindowPtr);
+            
+            return _glContext;
+        }
+        /// <summary>
+        /// Gets the address of an OpenGL function.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <param name="name">The name of the OpenGL function.</param>
+        /// <returns>
+        /// A pointer to the requested function, or <see cref="IntPtr.Zero"/> if the function could not be found.
+        /// </returns>
+
+        public nint GetGLProcAddress(string name) => SDL.GLGetProcAddress(name);
+
+        /// <summary>
+        /// Makes the specified OpenGL context current for this window.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <param name="context">The native OpenGL context to make current.</param>
+        /// <exception cref="WindowingException">
+        /// Thrown if the OpenGL context could not be made current.
+        /// </exception>
+        public void MakeGLContextCurrent(nint context)
+        {
+            if (!SDL.GLMakeCurrent(WindowPtr, context))
+                throw new WindowingException(
+                    $"Failed to make OpenGL context current: {SDL.GetError()}");
+        }
+
+        /// <summary>
+        /// Gets the OpenGL context that is current on the calling thread.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <returns>
+        /// The current native OpenGL context, or <see cref="IntPtr.Zero"/> if no context is current.
+        /// </returns>
+        public nint GetCurrentGLContext() => SDL.GLGetCurrentContext();
+
+        /// <summary>
+        /// Clears the current OpenGL context from the calling thread.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <exception cref="WindowingException">
+        /// Thrown if the current OpenGL context could not be cleared.
+        /// </exception>
+        public void ClearCurrentGLContext()
+        {
+            if (!SDL.GLMakeCurrent(IntPtr.Zero, IntPtr.Zero))
+                throw new WindowingException(
+                    $"Failed to clear OpenGL context: {SDL.GetError()}");
+        }
+
+        /// <summary>
+        /// Destroys the specified OpenGL context.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <param name="context">The native OpenGL context to destroy.</param>
+        /// <exception cref="WindowingException">
+        /// Thrown if the OpenGL context could not be destroyed.
+        /// </exception>
+        public void DestroyGLContext(nint context)
+        {
+            if (!SDL.GLDestroyContext(context))
+                throw new WindowingException(
+                    $"Failed to destroy OpenGL context: {SDL.GetError()}");
+        }
+
+        /// <summary>
+        /// Swaps the front and back buffers of this window.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <exception cref="WindowingException">
+        /// Thrown if the window buffers could not be swapped.
+        /// </exception>
+        public void SwapGLBuffers()
+        {
+            if (!SDL.GLSwapWindow(WindowPtr))
+                throw new WindowingException(
+                    $"Failed to swap buffers: {SDL.GetError()}");
+        }
+
+        /// <summary>
+        /// Enables or disables vertical synchronization (VSync) for buffer swaps.
+        /// </summary>
+        /// <remarks>
+        /// This method is primarily intended for use with Veldrid and other native graphics libraries.
+        /// </remarks>
+        /// <param name="enabled">
+        /// <see langword="true"/> to enable VSync; otherwise, <see langword="false"/>.
+        /// </param>
+        /// <exception cref="WindowingException">
+        /// Thrown if the swap interval could not be changed.
+        /// </exception>
+        public void SetGLVSync(bool enabled)
+        {
+            if (!SDL.GLSetSwapInterval(enabled ? 1 : 0))
+                throw new WindowingException(
+                    $"Failed to set swap interval: {SDL.GetError()}");
+        }
+
+
         // IDisposable
 
         /// <summary>
-        /// Disposes the window and its resources.
+        /// Disposes the <see cref="VelvetWindow"/> and its resources.
         /// </summary>
         public void Dispose()
         {
@@ -265,8 +469,6 @@ namespace Velvet.Windowing
                 WindowPtr = IntPtr.Zero;
             }
 
-            _logger.Information("(Window-{WindowId}): Quitting SDL3...", WindowID);
-            SDL.Quit();
             _logger.Information("(Window-{WindowId}): Session ended.", WindowID);
         }
     }

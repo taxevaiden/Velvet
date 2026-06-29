@@ -17,7 +17,7 @@ namespace Velvet.Tests
         private VelvetTexture _usagi;
         private VelvetShader _testShader;
 
-        public ShaderTest(GraphicsAPI graphicsAPI, int width = 1600, int height = 900, string title = "Hello, world!")
+        public ShaderTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 720, string title = "Hello, world!")
             : base(width, height, title, graphicsAPI)
         { }
 

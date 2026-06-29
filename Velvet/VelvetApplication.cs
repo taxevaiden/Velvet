@@ -1,6 +1,10 @@
-﻿using SDL3;
+﻿using System.Runtime.InteropServices;
+
+using SDL3;
 
 using Serilog;
+
+using SixLabors.ImageSharp.Processing.Processors.Normalization;
 
 using Velvet.Graphics;
 using Velvet.Input;
@@ -112,7 +116,57 @@ namespace Velvet
         private SDL.AppResult InitCallback(nint appstate, int argc, string[] argv)
         {
             Window = new VelvetWindow(_title, _width, _height);
-            Renderer = new VelvetRenderer(Window, _graphicsAPI, _vsync);
+
+            VelvetOpenGLPlatform glPlatform = new(
+                Window.GetGLContext(),
+                Window.GetGLProcAddress,
+                Window.MakeGLContextCurrent,
+                Window.GetCurrentGLContext,
+                Window.ClearCurrentGLContext,
+                Window.DestroyGLContext,
+                Window.SwapGLBuffers,
+                Window.SetGLVSync
+            );
+
+            VelvetRendererEnvironment environment;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                environment = new(
+                    _width,
+                    _height,
+                    glPlatform,
+                    hwnd: Window.GetHwnd(),
+                    hInstance: Window.GetHInstance()
+                );
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || OperatingSystem.IsMacOS())
+            {
+                environment = new(
+                    _width,
+                    _height,
+                    glPlatform,
+                    cocoaWindow: Window.GetCocoaWindow()
+                );
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                environment = new(
+                    _width,
+                    _height,
+                    glPlatform,
+                    waylandDisplay: Window.GetWaylandDisplay(),
+                    waylandSurface: Window.GetWaylandSurface(),
+                    x11Display: Window.GetX11Display(),
+                    x11Window: Window.GetX11Window()
+                );
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("This platform is not supported.");
+            }
+
+            Renderer = new VelvetRenderer(environment, _graphicsAPI, _vsync);
 
             _lastCounter = SDL.GetPerformanceCounter();
 

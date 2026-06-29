@@ -31,7 +31,8 @@ namespace Velvet.Graphics.Textures
         /// </summary>
         public bool IsMultiSampled { get; private set; }
         /// <summary>
-        /// Whether this texture was created from a render texture. This is true for the backing texture of a render texture, and false for textures loaded from files or created from pixel data. This can be used to determine whether the texture can be used as a render target (false) or is already a render target (true).
+        /// Whether this texture was created from a render texture. This is true for the backing texture of a render texture, and false for textures loaded from files or created from pixel data.
+        /// This can be used to determine whether the texture is or isn't a render target.
         /// </summary>
         public bool FromRenderTexture { get; private set; }
 
@@ -60,10 +61,28 @@ namespace Velvet.Graphics.Textures
             InitFromPixels(renderer, pixels, Width, Height);
         }
 
-        /// <summary>Creates a texture from raw RGBA pixel data. Every pixel is represented as four items in an array: `[255, 255, 255, 255]`</summary>
+        /// <summary>Creates a texture from raw RGBA pixel data. Every pixel is represented as four items in an array:  
+        /// 
+        /// <code>
+        /// [
+        ///     255, // red 
+        ///     255, // green
+        ///     255, // blue
+        ///     255  // alpha
+        /// ]
+        /// </code>
+        /// </summary>
         public VelvetTexture(VelvetRenderer renderer, byte[] imageData, uint width, uint height)
         {
             InitFromPixels(renderer, imageData, width, height);
+        }
+
+        /// <summary>
+        /// Creates a texture from raw RGBA pixel data in an unmanaged memory location.
+        /// </summary>
+        public VelvetTexture(VelvetRenderer renderer, IntPtr imageData, uint bytesPerPixel, uint width, uint height)
+        {
+            InitFromPixels(renderer, imageData, bytesPerPixel, width, height);
         }
 
         /// <summary>Internal constructor for render-texture backing textures.</summary>
@@ -104,8 +123,42 @@ namespace Velvet.Graphics.Textures
             Sampler = CreateSampler(gd, mipLevels);
 
             _logger.Information(
-                "(Window-{WindowId}): Texture loaded: {W}x{H}, {Mips} mips, {Bytes} bytes",
-                renderer._window.WindowID, width, height, mipLevels, pixels.Length);
+                "Texture loaded: {W}x{H}, {Mips} mips, {Bytes} bytes",
+                width, height, mipLevels, pixels.Length);
+        }
+
+        private void InitFromPixels(VelvetRenderer renderer, IntPtr pixels, uint bytesPerPixel, uint width, uint height)
+        {
+            Width = width;
+            Height = height;
+            IsMultiSampled = false;
+            FromRenderTexture = false;
+            SupportsMipMaps = true;
+
+            uint mipLevels = CalcMipLevels(width, height);
+
+            var desc = TextureDescription.Texture2D(
+                width, height,
+                mipLevels: mipLevels,
+                arrayLayers: 1,
+                format: PixelFormat.R8G8B8A8UNorm,
+                usage: TextureUsage.RenderTarget | TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
+
+            var gd = renderer._graphicsDevice;
+            DeviceTexture = gd.ResourceFactory.CreateTexture(ref desc);
+
+            gd.UpdateTexture(
+                DeviceTexture, pixels, (byte)bytesPerPixel * width * height,
+                x: 0, y: 0, z: 0,
+                width: DeviceTexture.Width, height: DeviceTexture.Height, depth: DeviceTexture.Depth,
+                mipLevel: 0, arrayLayer: 0);
+
+            View = gd.ResourceFactory.CreateTextureView(DeviceTexture);
+            Sampler = CreateSampler(gd, mipLevels);
+
+            _logger.Information(
+                "Texture loaded: {W}x{H}, {Mips} mips, {Bytes} bytes",
+                width, height, mipLevels, (byte)bytesPerPixel * width * height);
         }
 
         private void InitForRenderTexture(VelvetRenderer renderer, uint width, uint height, SampleCount sampleCount)
@@ -137,8 +190,8 @@ namespace Velvet.Graphics.Textures
             Sampler = CreateSampler(gd, mipLevels);
 
             _logger.Information(
-                "(Window-{WindowId}): Render texture created: {W}x{H}, {Samples} samples, {Mips} mips",
-                renderer._window.WindowID, width, height, sampleCount, mipLevels);
+                "Render texture created: {W}x{H}, {Samples} samples, {Mips} mips",
+                width, height, sampleCount, mipLevels);
         }
 
         // Mip generation

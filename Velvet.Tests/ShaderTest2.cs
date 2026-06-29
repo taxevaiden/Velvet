@@ -21,7 +21,7 @@ namespace Velvet.Tests
         VelvetTexture usagi;
         VelvetShader testShader;
         Stopwatch stopwatch;
-        public ShaderTest2(GraphicsAPI graphicsAPI, int width = 1600, int height = 900, string title = "Hello, world!")
+        public ShaderTest2(GraphicsAPI graphicsAPI, int width = 1280, int height = 720, string title = "Hello, world!")
             : base(width, height, title, graphicsAPI)
         { }
 

@@ -65,33 +65,34 @@ namespace Velvet.Graphics
             return _cachedProjection;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static (Vector2 min, Vector2 max) GetVertexBounds(Vertex[] vertices)
+        {
+            Vector2 min = new Vector2(vertices[0].Position.X, vertices[0].Position.Y);
+            Vector2 max = min;
+            for (int i = 1; i < vertices.Length; i++)
+            {
+                Vector2 p = new Vector2(vertices[i].Position.X, vertices[i].Position.Y);
+                min = Vector2.Min(min, p);
+                max = Vector2.Max(max, p);
+            }
+            return (min, max);
+        }
+
         // Vertex translation
 
         // 3D methods
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Vector3 TranslateVertex(Vector3 pos)
+        private Vector3 Translate3DVertex(Vector3 pos)
             => new Vector3(pos.X, pos.Y, pos.Z);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Vector3 TranslateVertex(Vector3 pos, Vector2 anchor, float rotation)
-        {
-            Vector2 pos2D = new Vector2(pos.X, pos.Y) - anchor;
-
-            float c = MathF.Cos(rotation);
-            float s = MathF.Sin(rotation);
-            pos2D = new Vector2(pos2D.X * c - pos2D.Y * s, pos2D.X * s + pos2D.Y * c);
-
-            pos2D += anchor;
-            return new Vector3(pos2D, pos.Z);
-        }
 
         // 2D methods
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Vector3 TranslateVertex(Vector2 pos)
+        private Vector3 Translate2DVertex(Vector2 pos)
             => new Vector3(pos.X, pos.Y, 0.0f);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Vector3 TranslateVertex(Vector2 pos, Vector2 anchor, float rotation)
+        private Vector3 Translate2DVertex(Vector2 pos, Vector2 anchor, float rotation)
         {
             Vector2 pos2D = new Vector2(pos.X, pos.Y) - anchor;
 
@@ -105,7 +106,7 @@ namespace Velvet.Graphics
 
         // UV helpers
 
-        private (Vector2 uvPos, Vector2 uvSize) NormaliseUV(Rectangle uv, bool flipY)
+        private (Vector2 uvPos, Vector2 uvSize) NormalizeUV(Rectangle uv, bool flipY)
         {
             var texSize = new Vector2(CurrentTexture.Width, CurrentTexture.Height);
             Vector2 uvPos = new Vector2(uv.X, uv.Y) / texSize;
@@ -141,7 +142,7 @@ namespace Velvet.Graphics
             bool flipY = CurrentTexture.FromRenderTexture &&
                          _graphicsDevice.BackendType == GraphicsBackend.OpenGL;
 
-            var (uvPos, uvSize) = NormaliseUV(uv, flipY);
+            var (uvPos, uvSize) = NormalizeUV(uv, flipY);
 
             Vector2 anchorW = pos + GetAnchor(anchor) * size;
 
@@ -149,10 +150,10 @@ namespace Velvet.Graphics
 
             uint baseIndex = (uint)_vertexCount;
 
-            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos, anchorW, rotation), uvPos, color);
-            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size * Vector2.UnitY, anchorW, rotation), uvPos + Vector2.UnitY * uvSize, color);
-            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size, anchorW, rotation), uvPos + uvSize, color);
-            _vertices[_vertexCount++] = new Vertex(TranslateVertex(pos + size * Vector2.UnitX, anchorW, rotation), uvPos + Vector2.UnitX * uvSize, color);
+            _vertices[_vertexCount++] = new Vertex(Translate2DVertex(pos, anchorW, rotation), uvPos, color);
+            _vertices[_vertexCount++] = new Vertex(Translate2DVertex(pos + size * Vector2.UnitY, anchorW, rotation), uvPos + Vector2.UnitY * uvSize, color);
+            _vertices[_vertexCount++] = new Vertex(Translate2DVertex(pos + size, anchorW, rotation), uvPos + uvSize, color);
+            _vertices[_vertexCount++] = new Vertex(Translate2DVertex(pos + size * Vector2.UnitX, anchorW, rotation), uvPos + Vector2.UnitX * uvSize, color);
 
             _indices[_indexCount++] = baseIndex;
             _indices[_indexCount++] = baseIndex + 1;
@@ -179,7 +180,7 @@ namespace Velvet.Graphics
             uint baseIndex = (uint)_vertexCount;
 
             _vertices[_vertexCount++] = new Vertex(
-                TranslateVertex(pos), new Vector2(0.5f, 0.5f), color);
+                Translate2DVertex(pos), new Vector2(0.5f, 0.5f), color);
 
             float step = MathF.Tau / segments;
             for (int i = 0; i < segments; i++)
@@ -187,7 +188,7 @@ namespace Velvet.Graphics
                 float angle = step * i;
                 Vector2 dir = new(MathF.Cos(angle), MathF.Sin(angle));
                 _vertices[_vertexCount++] = new Vertex(
-                    TranslateVertex(pos + dir * radius),
+                    Translate2DVertex(pos + dir * radius),
                     new Vector2(0.5f, 0.5f) + dir * 0.5f,
                     color);
             }
@@ -198,20 +199,6 @@ namespace Velvet.Graphics
                 _indices[_indexCount++] = baseIndex + 1 + (uint)((i + 1) % segments);
                 _indices[_indexCount++] = baseIndex + 1 + (uint)i;
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static (Vector2 min, Vector2 max) GetVertexBounds(Vertex[] vertices)
-        {
-            Vector2 min = new Vector2(vertices[0].Position.X, vertices[0].Position.Y);
-            Vector2 max = min;
-            for (int i = 1; i < vertices.Length; i++)
-            {
-                Vector2 p = new Vector2(vertices[i].Position.X, vertices[i].Position.Y);
-                min = Vector2.Min(min, p);
-                max = Vector2.Max(max, p);
-            }
-            return (min, max);
         }
 
         /// <summary>Draws an arbitrary polygon.</summary>
@@ -239,7 +226,7 @@ namespace Velvet.Graphics
             {
                 Vector2 xy = new Vector2(vertices[i].Position.X, vertices[i].Position.Y);
                 _vertices[_vertexCount++] = new Vertex(
-                    TranslateVertex(new Vector3(pos2D + xy, pos.Z + vertices[i].Position.Z)),
+                    Translate3DVertex(new Vector3(pos2D + xy, pos.Z + vertices[i].Position.Z)),
                     vertices[i].UV,
                     colorOverride ?? vertices[i].Color
                 );
@@ -248,7 +235,7 @@ namespace Velvet.Graphics
             for (int i = 0; i < indices.Length; i++)
                 _indices[_indexCount++] = baseIndex + indices[i];
         }
-        
+
         /// <summary>Draws a thick line between two points.</summary>
         public void DrawLine(Vector2 a, Vector2 b, float thickness, RgbaColor color)
         {
@@ -262,6 +249,32 @@ namespace Velvet.Graphics
 
             float rot = MathF.Atan2(dir.Y, dir.X) - MathF.PI * 0.5f;
             DrawRectangle(a, new Vector2(thickness, length), rot, AnchorPosition.Top, color);
+        }
+
+        /// <summary>Draws a string using a <see cref="VelvetFont"/>.</summary>
+        public void DrawText(VelvetFont font, string text,Vector2 position, RgbaColor color)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+
+            VelvetTexture previousTex = CurrentTexture;
+            ApplyTexture(font.TextureAtlas);
+
+            float x = position.X;
+            float y = position.Y;
+
+            foreach (char c in text)
+            {
+                if (c < 0 || c >= 128) continue;
+                var glyph = font.glyphs[c];
+                var uv = new Rectangle(glyph.x0, glyph.y0, glyph.x1 - glyph.x0, glyph.y1 - glyph.y0);
+                DrawRectangle(
+                    new Vector2(x + glyph.x_off, y - glyph.y_off),
+                    new Vector2(uv.Width, uv.Height),
+                    uv, 0f, AnchorPosition.TopLeft, color);
+                x += glyph.advance;
+            }
+
+            ApplyTexture(previousTex);
         }
 
         /// <summary>Draws a string using a <see cref="VelvetFont"/>.</summary>
@@ -289,200 +302,6 @@ namespace Velvet.Graphics
             }
 
             ApplyTexture(previousTex);
-        }
-
-        // State management
-
-        /// <summary>Sets the current render target to a <see cref="VelvetRenderTexture"/>.</summary>
-        public void SetRenderTarget(VelvetRenderTexture rt)
-        {
-            if (CurrentRenderTarget == rt) return;
-            FlushIfPending();
-            CurrentRenderTarget = rt;
-        }
-
-        /// <summary>Sets the current render target to the screen.</summary>
-        public void SetRenderTargetToScreen()
-        {
-            if (CurrentRenderTarget == null) return;
-            FlushIfPending();
-            CurrentRenderTarget = null;
-        }
-
-        /// <summary>Applies a texture for subsequent draw calls. If null, the default white texture is used.</summary>
-        public void ApplyTexture(VelvetTexture? texture = null)
-        {
-            texture ??= DefaultTexture;
-            if (CurrentTexture == texture) return;
-            FlushIfPending();
-            CurrentTexture = texture;
-        }
-
-        /// <summary>Applies a shader for subsequent draw calls. If null, the default shader is used.</summary>
-        public void ApplyShader(VelvetShader? shader = null)
-        {
-            shader ??= DefaultShader;
-            if (CurrentShader == shader) return;
-            FlushIfPending();
-            CurrentShader = shader;
-        }
-
-        // Buffer / batch management
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void FlushIfPending()
-        {
-            if (_vertexCount - _lastFlushedVertexCount > 0 &&
-                _indexCount - _lastFlushedIndexCount > 0)
-                Flush(CurrentRenderTarget);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void EnsureSpaceFor(int verticesNeeded, int indicesNeeded, VelvetRenderTexture? renderTarget)
-        {
-            if (_vertexCount + verticesNeeded > _vertexCapacity ||
-                _indexCount + indicesNeeded > _indexCapacity)
-                Flush(renderTarget);
-        }
-
-        private void Flush(VelvetRenderTexture? renderTarget)
-        {
-            int vertexCount = _vertexCount - _lastFlushedVertexCount;
-            int indexCount = _indexCount - _lastFlushedIndexCount;
-            if (vertexCount <= 0 || indexCount <= 0) return;
-
-            if (_batches.Count > 0)
-            {
-                Batch last = _batches[_batches.Count - 1];
-                if (last.Texture == CurrentTexture &&
-                    last.Shader == CurrentShader &&
-                    last.RenderTarget == renderTarget)
-                {
-                    last.VertexCount += vertexCount;
-                    last.IndexCount += indexCount;
-                    _batches[_batches.Count - 1] = last;
-                    _lastFlushedVertexCount = _vertexCount;
-                    _lastFlushedIndexCount = _indexCount;
-                    return;
-                }
-            }
-
-            _batches.Add(new Batch(
-                _lastFlushedVertexCount, vertexCount,
-                _lastFlushedIndexCount, indexCount,
-                CurrentTexture, CurrentShader, renderTarget));
-
-            _lastFlushedVertexCount = _vertexCount;
-            _lastFlushedIndexCount = _indexCount;
-        }
-
-        // Frame lifecycle
-
-        /// <summary>
-        /// Begins a new frame. Must be called before any draw calls, and must be
-        /// paired with a call to <see cref="End"/> at the end of the frame.
-        /// </summary>
-        public void Begin()
-        {
-            CurrentTexture = DefaultTexture;
-            CurrentRenderTarget = null;
-            CurrentShader = DefaultShader;
-
-            _commandList.Begin();
-            _commandList.SetFramebuffer(_graphicsDevice.SwapchainFramebuffer);
-        }
-
-        /// <summary>Clears the current render target to a solid color.</summary>
-        public void ClearColor(RgbaColor color)
-        {
-            _commandList.SetFramebuffer(
-                CurrentRenderTarget?.Framebuffer ?? _graphicsDevice.SwapchainFramebuffer);
-            _commandList.ClearColorTarget(0, ToRgbaFloat(color));
-        }
-
-        /// <summary>
-        /// Ends the current frame, submitting all draw calls to the GPU. Must be
-        /// called once per frame, paired with <see cref="Begin"/>.
-        /// </summary>
-        public void End()
-        {
-            SubmitBatches();
-
-            _commandList.End();
-            _graphicsDevice.SubmitCommands(_commandList);
-            _graphicsDevice.SwapBuffers();
-
-            _vertexCount = 0;
-            _indexCount = 0;
-            _lastFlushedVertexCount = 0;
-            _lastFlushedIndexCount = 0;
-            _batches.Clear();
-        }
-
-        // Batch submission
-
-        private void SubmitBatches()
-        {
-            FlushIfPending();
-            if (_batches.Count == 0) return;
-
-            if (_vertexCount > 0)
-                _graphicsDevice.UpdateBuffer(
-                    _vertexBuffer, 0,
-                    ref _vertices[0],
-                    (uint)(_vertexCount * (int)Vertex.SizeInBytes));
-
-            if (_indexCount > 0)
-                _graphicsDevice.UpdateBuffer(
-                    _indexBuffer, 0,
-                    ref _indices[0],
-                    (uint)(_indexCount * sizeof(uint)));
-
-            _commandList.SetVertexBuffer(0, _vertexBuffer);
-            _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
-
-            for (int bi = 0; bi < _batches.Count; bi++)
-            {
-                Batch batch = _batches[bi];
-
-                batch.Texture.GenerateMipMapsIfNeeded(_commandList);
-
-                batch.Shader.SetTexture(batch.Texture);
-                batch.Shader.SetRenderTexture(batch.RenderTarget);
-                batch.Shader.SetProjection(GetProjection());
-                batch.Shader.Flush();
-
-                if (batch.RenderTarget != null)
-                {
-                    _commandList.SetFramebuffer(batch.RenderTarget.Framebuffer);
-                    _commandList.SetViewport(0, new Viewport(
-                        0, 0, batch.RenderTarget.Width, batch.RenderTarget.Height, 0, 1));
-                    _commandList.SetScissorRect(0, 0, 0,
-                        batch.RenderTarget.Width, batch.RenderTarget.Height);
-                }
-                else
-                {
-                    var fb = _graphicsDevice.SwapchainFramebuffer;
-                    _commandList.SetFramebuffer(fb);
-                    _commandList.SetViewport(0, new Viewport(0, 0, fb.Width, fb.Height, 0, 1));
-                    _commandList.SetScissorRect(0, 0, 0, fb.Width, fb.Height);
-                }
-
-                _commandList.SetPipeline(batch.Shader.Pipeline);
-                _commandList.SetGraphicsResourceSet(0, batch.Shader.ResourceSet);
-
-                _commandList.DrawIndexed(
-                    indexCount: (uint)batch.IndexCount,
-                    instanceCount: 1,
-                    indexStart: (uint)batch.IndexStart,
-                    vertexOffset: 0,
-                    instanceStart: 0);
-
-                if (batch.RenderTarget?.IsMultiSampled == true)
-                    batch.RenderTarget.Resolve(_commandList);
-
-                batch.Texture.MipMapsGenerated = false;
-            }
         }
     }
 }

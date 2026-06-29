@@ -14,7 +14,7 @@ namespace Velvet.Tests
     class TextTest : VelvetApplication
     {
         VelvetFont font = null!;
-        public TextTest(GraphicsAPI graphicsAPI, int width = 1600, int height = 900, string title = "Window")
+        public TextTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 720, string title = "Window")
             : base(width, height, title, graphicsAPI)
         { }
 

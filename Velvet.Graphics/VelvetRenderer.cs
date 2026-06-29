@@ -1,7 +1,5 @@
 ﻿using System.Runtime.InteropServices;
 
-using Velvet.Windowing;
-
 namespace Velvet.Graphics
 {
     /// <summary>
@@ -9,32 +7,37 @@ namespace Velvet.Graphics
     /// </summary>
     public partial class VelvetRenderer : IDisposable
     {
+        private int _width;
+        private int _height;
+
         // Constructors
 
         /// <summary>
         /// Initializes a VelvetRenderer with a VelvetWindow.
         /// </summary>
         /// <remarks>This chooses the GraphicsAPI depending on the platform you're on. If you're on Windows, the GraphicsAPI is D3D11. If you're on OSX, the GraphicsAPI is Metal. If you're on Linux, the GraphicsAPI is Vulkan.</remarks>
-        /// <param name="window">The VelvetWindow the VelvetRenderer will draw to.</param>
-        public VelvetRenderer(VelvetWindow window) { InitRenderer(window, GraphicsAPI.Default, true); }
+        /// <param name="environment">The VelvetRendererEnvironment required to initialize a <see cref="VelvetRenderer"/></param>
+        public VelvetRenderer(VelvetRendererEnvironment environment) { InitRenderer(environment, GraphicsAPI.Default, true); }
 
         /// <summary>
         /// Initializes a VelvetRenderer with a VelvetWindow.
         /// </summary>
-        /// <param name="window">The VelvetWindow the VelvetRenderer will draw to.</param>
+        /// <param name="environment">The VelvetRendererEnvironment required to initialize a <see cref="VelvetRenderer"/></param>
         /// <param name="graphicsAPI">The GraphicsAPI to use.</param>
-        public VelvetRenderer(VelvetWindow window, GraphicsAPI graphicsAPI) { InitRenderer(window, graphicsAPI, true); }
+        public VelvetRenderer(VelvetRendererEnvironment environment, GraphicsAPI graphicsAPI) { InitRenderer(environment, graphicsAPI, true); }
 
         /// <summary>
         /// Initializes a VelvetRenderer with the specified GraphicsAPI with a VelvetWindow.
         /// </summary>
-        /// <param name="window">The VelvetWindow the VelvetRenderer will draw to.</param>
+        /// <param name="environment">The VelvetRendererEnvironment required to initialize a <see cref="VelvetRenderer"/></param>
         /// <param name="graphicsAPI">The GraphicsAPI to use.</param>
         /// <param name="vsync">Whether VSync will be enabled or not.</param>
-        public VelvetRenderer(VelvetWindow window, GraphicsAPI graphicsAPI, bool vsync) { InitRenderer(window, graphicsAPI, vsync); }
+        public VelvetRenderer(VelvetRendererEnvironment environment, GraphicsAPI graphicsAPI, bool vsync) { InitRenderer(environment, graphicsAPI, vsync); }
 
-        private void InitRenderer(VelvetWindow window, GraphicsAPI graphicsAPI, bool vsync)
+        private void InitRenderer(VelvetRendererEnvironment environment, GraphicsAPI graphicsAPI, bool vsync)
         {
+            _width = environment.WindowWidth;
+            _height = environment.WindowHeight;
             GraphicsAPI resolvedAPI = graphicsAPI;
 
             if (graphicsAPI == GraphicsAPI.Default)
@@ -50,11 +53,11 @@ namespace Velvet.Graphics
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                InitVeldrid_WIN(resolvedAPI, window, vsync);
+                InitVeldrid_WIN(resolvedAPI, environment, vsync);
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || OperatingSystem.IsMacOS())
-                InitVeldrid_OSX(resolvedAPI, window, vsync);
+                InitVeldrid_OSX(resolvedAPI, environment, vsync);
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                InitVeldrid_LINUX(resolvedAPI, window, vsync);
+                InitVeldrid_LINUX(resolvedAPI, environment, vsync);
         }
 
         // IDisposable
@@ -64,16 +67,16 @@ namespace Velvet.Graphics
         /// </summary>
         public void Dispose()
         {
-            _logger.Information($"(Window-{_window.WindowID}): Disposing default texture...");
+            _logger.Information("Disposing default texture...");
             DefaultTexture.Dispose();
-            _logger.Information($"(Window-{_window.WindowID}): Disposing shaders...");
+            _logger.Information("Disposing shaders...");
             DefaultShader.Dispose();
-            _logger.Information($"(Window-{_window.WindowID}): Disposing command list...");
+            _logger.Information("Disposing command list...");
             _commandList.Dispose();
-            _logger.Information($"(Window-{_window.WindowID}): Disposing buffers...");
+            _logger.Information("Disposing buffers...");
             _vertexBuffer.Dispose();
             _indexBuffer.Dispose();
-            _logger.Information($"(Window-{_window.WindowID}): Disposing graphics device...");
+            _logger.Information("Disposing graphics device...");
             _graphicsDevice.Dispose();
 
         }

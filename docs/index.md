@@ -10,24 +10,28 @@ you can make games, tools, whatever
 
 there are better frameworks/libraries out there that can do a lot more than this library can, like [Bliss](https://github.com/MrScautHD/Bliss). this was only made for fun and to learn more about how graphics and rendering work.
 
-## features
+## What's done?
 
-- basic window
-- drawing rectangles, circles, any polygon you could think of, with color!
-- shaders
-  - uniforms supported
-- render textures
-  - multisampling supported (however, drawing a VelvetTexture to a multisampled VelvetRenderTexture does not do anything on the OpenGL backend. the Vulkan backend also doesn't render the multisampled VelvetRenderTexture smoothly. D3D11 however has no issues!)
-  - OpenGL behaves differently from all the other GraphicsAPIs when drawing to a VelvetRenderTexture. all texture samples are flipped across the x-axis. VelvetTextures will still work fine on OpenGL and behave like all the other GraphicsAPIs, however VelvetRenderTextures don't. **in order to compensate, Velvet flips the UVs of anything drawn across the x-axis when using OpenGL to render a VelvetRenderTexture. keep this in mind when writing shader code!**
-- textures
-- input from keyboard and mouse
-- support for all four major graphics APIs (if OpenGL counts)
+- Basic windowing
+- Drawing rectangles, circles, arbitrary polygons, and text with color
+- Textures
+- Shaders with uniform support
+- Render textures
+  - Multisampling supported
+- Keyboard and mouse input
+- All four major graphics APIs
   - D3D11
   - Vulkan
   - Metal
   - OpenGL
+- Audio (that can be 3D)
 
-## support
+## Known issues
+
+- (OpenGL) Drawing a rectangle (that has a `VelvetTexture` applied to it) on a multisampled `VelvetRenderTexture` results in the rectangle being invisible
+- (Kinda fixed I haven't found a better solution for this) OpenGL has its texture coordinate origin in the bottom-left, whereas D3D11, Vulkan, and Metal have it in the top-left. This results in `VelvetRenderTexture`s being flipped across the X-axis, so to compensate, **Velvet flips the UVs of any rectangle rendered with a `VelvetRenderTexture` applied.** Keep this in mind when writing custom shader code!
+
+## Support
 
 | Operating System | Direct3D 11 | Vulkan | Metal | OpenGL |
 | -                | -           | -      | -     | -      |
@@ -40,6 +44,6 @@ there are better frameworks/libraries out there that can do a lot more than this
 [^2]: OpenGL was deprecated in macOS 10.14 in favor of Metal.
 
 
-# license
+# License
 
-this framework is available under the [MIT license.](https://github.com/taxevaiden/Velvet/blob/main/LICENSE)
+This library is available under the [MIT license.](https://github.com/taxevaiden/Velvet/blob/main/LICENSE)

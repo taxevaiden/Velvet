@@ -13,7 +13,7 @@ namespace Velvet.Tests
     /// </summary>
     class BaseTest : VelvetApplication
     {
-        public BaseTest(GraphicsAPI graphicsAPI, int width = 1600, int height = 900, string title = "Window")
+        public BaseTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 800, string title = "Window")
             : base(width, height, title, graphicsAPI)
         { }
     }

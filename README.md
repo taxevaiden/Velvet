@@ -1,12 +1,12 @@
 # Velvet
 
-A heavily unfinished framework for .NET 10. you can make games, tools, whatever.
-
-There are better frameworks out there that are a lot more capable, like [Bliss](https://github.com/MrScautHD/Bliss). Velvet was purely made for fun and for learning.
+Heavily unfinished suite of libraries for .NET 10
 
 ---
 
 ## Getting started
+
+The examples below use the abstract `VelvetApplication` class, which manages a `VelvetWindow`, `VelvetRenderer` and the `InputManager` for you. You don't need to use it of course, as you can easily manage your resources. Just provided for convenience :)
 
 Getting a window open is as easy as doing...
 
@@ -162,5 +162,5 @@ dotnet run
 In `Program.cs`, you can change this line to run another test:
 
 ```csharp
-var test = new TextTest(resolvedAPI); // <-- You can change this to the other tests available
+var test = new ShapeTest(resolvedAPI); // <-- You can change this to the other tests available
 ```

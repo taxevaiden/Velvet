@@ -57,6 +57,10 @@ namespace Velvet.Input
         F4 = SDL.Scancode.F4, F5 = SDL.Scancode.F5, F6 = SDL.Scancode.F6,
         F7 = SDL.Scancode.F7, F8 = SDL.Scancode.F8, F9 = SDL.Scancode.F9,
         F10 = SDL.Scancode.F10, F11 = SDL.Scancode.F11, F12 = SDL.Scancode.F12,
+        F13 = SDL.Scancode.F13, F14 = SDL.Scancode.F14, F15 = SDL.Scancode.F15,
+        F16 = SDL.Scancode.F16, F17 = SDL.Scancode.F17, F18 = SDL.Scancode.F18,
+        F19 = SDL.Scancode.F19, F20 = SDL.Scancode.F20, F21 = SDL.Scancode.F21,
+        F22 = SDL.Scancode.F22, F23 = SDL.Scancode.F23, F24 = SDL.Scancode.F24,
 
         // Navigation
         Insert = SDL.Scancode.Insert, Home = SDL.Scancode.Home,
@@ -106,6 +110,89 @@ namespace Velvet.Input
     }
 
 #pragma warning restore CS1591
+
+    /// <summary>
+    /// A snapshot of the input state at a given moment, including keyboard keys, mouse buttons, mouse position, and scroll delta.
+    /// </summary>
+    public struct InputSnapshot
+    {
+        /// <summary>
+        /// An array indicating which keys are currently held down. Indexed by <see cref="KeyCode"/> values.
+        /// </summary>
+        public bool[] KeysDown;
+        /// <summary>
+        /// An array indicating which keys were not held down in the current frame. Indexed by <see cref="KeyCode"/> values.
+        /// </summary>
+        public bool[] KeysUp;
+        /// <summary>
+        /// An array indicating which keys were pressed in the current frame. Indexed by <see cref="KeyCode"/> values.
+        /// </summary>
+        public bool[] KeysPressed;
+        /// <summary>
+        /// An array indicating which keys were released in the current frame. Indexed by <see cref="KeyCode"/> values.
+        /// </summary>
+        public bool[] KeysReleased;
+        /// <summary>
+        /// An array indicating which mouse buttons are currently held down. Indexed by <see cref="MouseButton"/> values.
+        /// </summary>
+        public bool[] MouseButtonsDown;
+        /// <summary>
+        /// An array indicating which mouse buttons were not held down in the current frame. Indexed by <see cref="MouseButton"/> values.
+        /// </summary>
+        public bool[] MouseButtonsUp;
+        /// <summary>
+        /// An array indicating which mouse buttons were pressed in the current frame. Indexed by <see cref="MouseButton"/> values.
+        /// </summary>
+        public bool[] MouseButtonsPressed;
+        /// <summary>
+        /// An array indicating which mouse buttons were released in the current frame. Indexed by <see cref="MouseButton"/> values.
+        /// </summary>
+        public bool[] MouseButtonsReleased;
+        /// <summary>
+        /// The current mouse position in window coordinates as a <see cref="Vector2"/>.
+        /// </summary>
+        public Vector2 MousePosition;
+        /// <summary>
+        /// How far the mouse moved since the last frame in window coordinates as a <see cref="Vector2"/>.
+        /// </summary>
+        public Vector2 MouseDelta;
+        /// <summary>
+        /// How far the mouse wheel scrolled since the last frame in window coordinates as a <see cref="Vector2"/>.
+        /// </summary>
+        public Vector2 ScrollDelta;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InputSnapshot"/> struct with the specified input state.
+        /// </summary>
+        /// <param name="keysDown"></param>
+        /// <param name="keysUp"></param>
+        /// <param name="keysPressed"></param>
+        /// <param name="keysReleased"></param>
+        /// <param name="mouseButtonsDown"></param>
+        /// <param name="mouseButtonsUp"></param>
+        /// <param name="mouseButtonsPressed"></param>
+        /// <param name="mouseButtonsReleased"></param>
+        /// <param name="mousePosition"></param>
+        /// <param name="mouseDelta"></param>
+        /// <param name="scrollDelta"></param>
+        public InputSnapshot(bool[] keysDown, bool[] keysUp, bool[] keysPressed, bool[] keysReleased,
+                      bool[] mouseButtonsDown, bool[] mouseButtonsUp, bool[] mouseButtonsPressed, bool[] mouseButtonsReleased,
+                      Vector2 mousePosition, Vector2 mouseDelta, Vector2 scrollDelta)
+        {
+            KeysDown = keysDown;
+            KeysUp = keysUp;
+            KeysPressed = keysPressed;
+            KeysReleased = keysReleased;
+            MouseButtonsDown = mouseButtonsDown;
+            MouseButtonsUp = mouseButtonsUp;
+            MouseButtonsPressed = mouseButtonsPressed;
+            MouseButtonsReleased = mouseButtonsReleased;
+            MousePosition = mousePosition;
+            MouseDelta = mouseDelta;
+            ScrollDelta = scrollDelta;
+        }
+
+    }
 
     /// <summary>
     /// Provides access to keyboard and mouse input state.
@@ -261,5 +348,54 @@ namespace Velvet.Input
 
         /// <summary>Gets the mouse scroll delta for the current frame.</summary>
         public static void GetScrollDelta(out float x, out float y) { x = _scrollX; y = _scrollY; }
+
+        /// <summary>
+        /// Returns a snapshot of the current input state, including keyboard keys, mouse buttons, mouse position, and scroll delta.
+        /// </summary>
+        public static InputSnapshot GetSnapshot()
+        {
+            var keysDown = (bool[])_keyboardState.Clone();
+
+            var keysUp = new bool[keysDown.Length];
+            var keysPressed = new bool[keysDown.Length];
+            var keysReleased = new bool[keysDown.Length];
+
+            for (int i = 0; i < keysDown.Length; i++)
+            {
+                keysUp[i] = !keysDown[i];
+                keysPressed[i] = keysDown[i] && !_prevKeyboardState[i];
+                keysReleased[i] = !keysDown[i] && _prevKeyboardState[i];
+            }
+
+            const int mouseButtonCount = 6; // MouseButton values are 1-5
+
+            var mouseDown = new bool[mouseButtonCount];
+            var mouseUp = new bool[mouseButtonCount];
+            var mousePressed = new bool[mouseButtonCount];
+            var mouseReleased = new bool[mouseButtonCount];
+
+            foreach (MouseButton button in Enum.GetValues<MouseButton>())
+            {
+                int i = (int)button;
+
+                mouseDown[i] = IsMouseButtonDown(button);
+                mouseUp[i] = IsMouseButtonUp(button);
+                mousePressed[i] = IsMouseButtonPressed(button);
+                mouseReleased[i] = IsMouseButtonReleased(button);
+            }
+
+            return new InputSnapshot(
+                keysDown,
+                keysUp,
+                keysPressed,
+                keysReleased,
+                mouseDown,
+                mouseUp,
+                mousePressed,
+                mouseReleased,
+                MousePosition,
+                MouseDelta,
+                ScrollDelta);
+        }
     }
 }

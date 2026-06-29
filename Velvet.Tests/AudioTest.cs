@@ -35,8 +35,8 @@ namespace Velvet.Tests
         private const float MaxDistance = 500f;
         private VelvetFont font;
 
-        public AudioTest(GraphicsAPI graphicsAPI = GraphicsAPI.Default)
-            : base(1600, 900, "Audio Test", graphicsAPI) { }
+        public AudioTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 800, string title = "Audio Test")
+            : base(width, height, title, graphicsAPI) { }
 
         protected override void OnInit()
         {

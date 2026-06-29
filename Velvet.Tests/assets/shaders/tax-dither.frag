@@ -16,7 +16,7 @@ layout(set = 0, binding = 2) uniform Globals
 
 void main()
 {
-    const float pixel_size = 4.0;
+    const float pixel_size = 2.0;
     vec2 block_size = pixel_size / Resolution.xy;
 
     const int N = 4;

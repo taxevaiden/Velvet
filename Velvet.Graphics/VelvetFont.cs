@@ -6,11 +6,11 @@ using static FreeTypeSharp.FT;
 
 namespace Velvet.Graphics
 {
-    struct glyph_info
+    struct GlyphInfo
     {
-        public int x0, y0, x1, y1; // coords of glyph in the texture atlas
-        public int x_off, y_off;   // left & top bearing when rendering
-        public int advance;        // x advance when rendering
+        public int x0, y0, x1, y1; // Coords of glyph in the texture atlas
+        public int x_off, y_off;   // Left and top bearing when rendering
+        public int advance;        // X advance when rendering
     };
 
     /// <summary>
@@ -28,7 +28,7 @@ namespace Velvet.Graphics
         /// The font size in pixels. This is determined at initialization and cannot be changed. To use a different font size, create a new instance of VelvetFont with the desired size.
         /// </summary>
         public int FontSize { get; private set; }
-        internal glyph_info[] glyphs = new glyph_info[128];
+        internal GlyphInfo[] glyphs = new GlyphInfo[128];
 
         // Constructors
 

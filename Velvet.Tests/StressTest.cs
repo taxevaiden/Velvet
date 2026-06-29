@@ -19,7 +19,7 @@ namespace Velvet.Tests
         private List<Vector2> velocities;
         private Random random;
 
-        public StressTest(GraphicsAPI graphicsAPI, int width = 1600, int height = 900, string title = "Stress Test")
+        public StressTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 720, string title = "Stress Test")
             : base(width, height, title, graphicsAPI)
         {
             particles = new List<Vector2>();
