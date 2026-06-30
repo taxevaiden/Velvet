@@ -42,7 +42,7 @@ protected override void OnInit()
 {
     base.OnInit();
     stopwatch = new();
-    usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
+    usagi = new VelvetTexture(Renderer, "assets/image.png");
     testShader = new VelvetShader(
         Renderer,
         "assets/shaders/shader.vert",

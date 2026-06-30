@@ -31,7 +31,7 @@ namespace Velvet.Tests
         protected override void OnInit()
         {
             base.OnInit();
-            usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
+            usagi = new VelvetTexture(Renderer, "assets/image.png");
 
             // A render texture can be rendered to, and then drawn on-screen with a shader applied. This allows for post-processing effects.
             renderTexture = new VelvetRenderTexture(Renderer, 1280, 720, SampleCount.Count1);
@@ -100,12 +100,11 @@ namespace Velvet.Tests
             // Usagi textured
             Renderer.ApplyTexture(usagi);
             Renderer.DrawRectangle(new Vector2(200.0f, 50.0f), new Vector2(100.0f, 100.0f), -rot * VelvetRenderer.DEG2RAD, AnchorPosition.Top, Color.Red);
-            Renderer.DrawRectangle(new Vector2(50.0f, 350.0f), new Vector2(100.0f, 100.0f), Color.White);
+            Renderer.DrawRectangle(new Vector2(50.0f, 350.0f), new Vector2(300.0f, 300.0f), Color.White);
             Renderer.DrawCircle(new Vector2(250.0f, 250.0f), 50.0f, 32, Color.Green);
 
             // Plain textured
             Renderer.ApplyTexture();
-            Renderer.DrawRectangle(new Vector2(200.0f, 350.0f), new Vector2(100.0f, 100.0f), Color.Lavender);
 
             Input.GetMousePosition(out float x, out float y);
             Renderer.DrawCircle(new Vector2(x, y), 10.0f, Color.Blue);

@@ -31,7 +31,7 @@ namespace Velvet.Tests
 
             stopwatch = new();
 
-            usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
+            usagi = new VelvetTexture(Renderer, "assets/image.png");
             testShader = new VelvetShader(Renderer, null, "assets/shaders/jpeg.frag", [new UniformDescription("Resolution", UniformType.Vector2)]);
             testShader.Set("Resolution", new Vector2(usagi.Width, usagi.Height));
             testShader.Flush();

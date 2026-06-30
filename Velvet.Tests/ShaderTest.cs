@@ -23,7 +23,7 @@ namespace Velvet.Tests
 
         protected override void OnInit()
         {
-            _usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
+            _usagi = new VelvetTexture(Renderer, "assets/image.png");
             _testShader = new VelvetShader(Renderer, null, "assets/shaders/test.frag");
         }
 
