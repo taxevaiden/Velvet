@@ -17,15 +17,13 @@ namespace Velvet.Graphics
         private DeviceBuffer _vertexBuffer = null!;
         private DeviceBuffer _indexBuffer = null!;
 
-        private const uint VertexBufferSize = 1024 * 1024 * 32; // 32 MB
-        private const uint IndexBufferSize = 1024 * 1024 * 48; // 48 MB
+        private const uint VertexBufferSize = 1024 * 1024 * 4; // 4 MB
+        private const uint IndexBufferSize = 1024 * 1024 * 6; // 6 MB
 
         private int _vertexCount = 0;
         private int _indexCount = 0;
-        private int _vertexCapacity = 0;
-        private int _indexCapacity = 0;
-
-
+        private uint _vertexCapacity = VertexBufferSize / Vertex.SizeInBytes;
+        private uint _indexCapacity = IndexBufferSize / sizeof(uint);
 
         /// <summary>Initializes Veldrid for Windows.</summary>
         private void InitVeldrid_WIN(GraphicsAPI api, VelvetRendererEnvironment environment, bool vsync)
@@ -165,8 +163,6 @@ namespace Velvet.Graphics
         {
             _logger.Information("Creating resources...");
 
-            _vertexCapacity = (int)(VertexBufferSize / Vertex.SizeInBytes);
-            _indexCapacity = (int)(IndexBufferSize / sizeof(uint));
             _vertexCount = 0;
             _indexCount = 0;
             _batches = new List<Batch>();

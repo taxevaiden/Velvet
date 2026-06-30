@@ -13,7 +13,6 @@ namespace Velvet.Graphics
         public void SetRenderTarget(VelvetRenderTexture rt)
         {
             if (CurrentRenderTarget == rt) return;
-            FlushIfPending();
             CurrentRenderTarget = rt;
         }
 
@@ -21,7 +20,6 @@ namespace Velvet.Graphics
         public void SetRenderTargetToScreen()
         {
             if (CurrentRenderTarget == null) return;
-            FlushIfPending();
             CurrentRenderTarget = null;
         }
 
@@ -30,7 +28,6 @@ namespace Velvet.Graphics
         {
             texture ??= DefaultTexture;
             if (CurrentTexture == texture) return;
-            FlushIfPending();
             CurrentTexture = texture;
         }
 
@@ -39,25 +36,30 @@ namespace Velvet.Graphics
         {
             shader ??= DefaultShader;
             if (CurrentShader == shader) return;
-            FlushIfPending();
             CurrentShader = shader;
         }
 
         // Buffer / batch management
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void FlushIfPending()
+        private Batch Flush()
         {
-            // State changes are resolved by creating a new batch for the next draw command.
-            // No additional action is required in the new per-batch data model.
+            var batch = new Batch(CurrentTexture, CurrentShader, CurrentRenderTarget);
+            _batches.Add(batch);
+            
+            _vertexCount = 0;
+            _indexCount = 0;
+            return batch;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void EnsureSpaceFor(int verticesNeeded, int indicesNeeded, VelvetRenderTexture? renderTarget)
+        private void EnsureSpaceFor(int verticesNeeded, int indicesNeeded)
         {
-            if (_vertexCount + verticesNeeded > _vertexCapacity ||
-                _indexCount + indicesNeeded > _indexCapacity)
-                throw new InvalidOperationException("Frame vertex/index data exceeds buffer capacity.");
+            // Automatically flush the current batch if adding the new vertices and indices would eventually exceed the buffer size.
+            // This allows for what would be a very large batch to be split into multiple smaller batches, which can then be submitted to the GPU without exceeding the buffer size.
+            if ((_vertexCount + verticesNeeded) * Vertex.SizeInBytes > VertexBufferSize - 1024 * 1024 ||
+                (_indexCount + indicesNeeded) * sizeof(uint) > IndexBufferSize - 1024 * 1024)
+                Flush();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -73,10 +75,8 @@ namespace Velvet.Graphics
                     return last;
                 }
             }
-
-            var batch = new Batch(CurrentTexture, CurrentShader, renderTarget);
-            _batches.Add(batch);
-            return batch;
+            
+            return Flush();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

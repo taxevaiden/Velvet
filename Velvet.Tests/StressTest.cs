@@ -18,8 +18,10 @@ namespace Velvet.Tests
         private List<Vector2> particles;
         private List<Vector2> velocities;
         private Random random;
+        private uint _vertexCapacity = 1024 * 1024 * 4 / Vertex.SizeInBytes;
+        private uint _indexCapacity = 1024 * 1024 * 6 / sizeof(uint);
 
-        public StressTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 720, string title = "Stress Test")
+        public StressTest(GraphicsAPI graphicsAPI, int width = 1600, int height = 900, string title = "Stress Test")
             : base(width, height, title, graphicsAPI)
         {
             particles = new List<Vector2>();
@@ -53,7 +55,7 @@ namespace Velvet.Tests
                 ClampParticle(i);
             });
 
-            Console.WriteLine($"{1 / DeltaTime:F1} FPS : {particles.Count}");
+            Console.WriteLine($"Frame Data:\n\t{1 / DeltaTime:F1} FPS\n\tParticle count: {particles.Count}\n\tVertices: {particles.Count * 4}\n\tIndices: {particles.Count * 6}\n\tVertex Data Size: {particles.Count * 4 * 4} bytes ( {(particles.Count * 4 * 4) / (1024.0f * 1024.0f):F2} MB )\n\tIndex Data Size: {particles.Count * 6 * 4} bytes ( {(particles.Count * 6 * 4) / (1024.0f * 1024.0f):F2} MB )\n\tTotal Data Size: {(particles.Count * 4 * 4) + (particles.Count * 6 * 4)} bytes ( {((particles.Count * 4 * 4) + (particles.Count * 6 * 4)) / (1024.0f * 1024.0f):F2} MB )\n\n\tVertex Buffer Capacity: {_vertexCapacity} vertices ( {(_vertexCapacity * Vertex.SizeInBytes) / (1024.0f * 1024.0f):F2} MB )\n\tIndex Buffer Capacity: {_indexCapacity} indices ( {(_indexCapacity * sizeof(uint)) / (1024.0f * 1024.0f):F2} MB )");
         }
 
         private void ClampParticle(int i)
@@ -78,10 +80,10 @@ namespace Velvet.Tests
             // Draw particles
             for (int i = 0; i < particles.Count; i++)
             {
-                Renderer.DrawRectangle(
+                Renderer.DrawCircle(
                     particles[i],
-                    Vector2.One * 20.0f,
-                    0.0f,
+                    20.0f,
+                    3,
                     Color.FromArgb(255, i * 325 % 255, i * 412 % 255, i * 176 % 255)
                 );
             }

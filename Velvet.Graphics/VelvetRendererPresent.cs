@@ -47,7 +47,6 @@ namespace Velvet.Graphics
         // Batch submission
         private void SubmitBatches()
         {
-            FlushIfPending();
             if (_batches.Count == 0) return;
 
             _commandList.SetVertexBuffer(0, _vertexBuffer);
@@ -66,15 +65,11 @@ namespace Velvet.Graphics
 
                 _commandList.UpdateBuffer(
                     _vertexBuffer,
-                    (uint)(currentVertexOffset * Vertex.SizeInBytes),
-                    ref batch.Vertices[0],
-                    (uint)(batch.VertexCount * Vertex.SizeInBytes));
+                    0, ref batch.Vertices[0], (uint)(batch.VertexCount * Vertex.SizeInBytes));
 
                 _commandList.UpdateBuffer(
                     _indexBuffer,
-                    (uint)(currentIndexOffset * sizeof(uint)),
-                    ref batch.Indices[0],
-                    (uint)(batch.IndexCount * sizeof(uint)));
+                    0, ref batch.Indices[0], (uint)(batch.IndexCount * sizeof(uint)));
 
                 batch.Texture.GenerateMipMapsIfNeeded(_commandList);
 
@@ -105,8 +100,8 @@ namespace Velvet.Graphics
                 _commandList.DrawIndexed(
                     indexCount: (uint)batch.IndexCount,
                     instanceCount: 1,
-                    indexStart: (uint)currentIndexOffset,
-                    vertexOffset: currentVertexOffset,
+                    indexStart: 0,
+                    vertexOffset: 0,
                     instanceStart: 0);
 
                 if (batch.RenderTarget?.IsMultiSampled == true)

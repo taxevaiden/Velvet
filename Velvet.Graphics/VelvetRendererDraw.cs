@@ -146,7 +146,7 @@ namespace Velvet.Graphics
 
             Vector2 anchorW = pos + GetAnchor(anchor) * size;
 
-            EnsureSpaceFor(4, 6, CurrentRenderTarget);
+            EnsureSpaceFor(4, 6);
             var batch = GetCurrentBatch(CurrentRenderTarget);
             batch.EnsureCapacity(4, 6);
 
@@ -177,7 +177,7 @@ namespace Velvet.Graphics
         {
             if (segments < 3) segments = 3;
 
-            EnsureSpaceFor(segments + 1, segments * 3, CurrentRenderTarget);
+            EnsureSpaceFor(segments + 1, segments * 3);
             var batch = GetCurrentBatch(CurrentRenderTarget);
             batch.EnsureCapacity(segments + 1, segments * 3);
 
@@ -222,7 +222,7 @@ namespace Velvet.Graphics
             var (min, max) = GetVertexBounds(vertices);
             if (!IsRectangleVisible(pos2D + min, max - min)) return;
 
-            EnsureSpaceFor(vertices.Length, indices.Length, CurrentRenderTarget);
+            EnsureSpaceFor(vertices.Length, indices.Length);
             var batch = GetCurrentBatch(CurrentRenderTarget);
             batch.EnsureCapacity(vertices.Length, indices.Length);
 
@@ -263,7 +263,6 @@ namespace Velvet.Graphics
             if (string.IsNullOrEmpty(text)) return;
 
             VelvetTexture previousTex = CurrentTexture;
-            FlushIfPending();
             ApplyTexture(font.TextureAtlas);
 
             float x = position.X;
@@ -281,7 +280,6 @@ namespace Velvet.Graphics
                 x += glyph.advance;
             }
 
-            FlushIfPending();
             ApplyTexture(previousTex);
         }
 
@@ -291,7 +289,6 @@ namespace Velvet.Graphics
             if (string.IsNullOrEmpty(text)) return;
 
             VelvetTexture previousTex = CurrentTexture;
-            FlushIfPending();
             ApplyTexture(font.TextureAtlas);
 
             float scale = pxSize / (float)font.FontSize;
@@ -310,7 +307,6 @@ namespace Velvet.Graphics
                 x += glyph.advance * scale;
             }
 
-            FlushIfPending();
             ApplyTexture(previousTex);
         }
     }
