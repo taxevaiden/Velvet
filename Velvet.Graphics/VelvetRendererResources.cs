@@ -20,13 +20,8 @@ namespace Velvet.Graphics
         private const uint VertexBufferSize = 1024 * 1024 * 32; // 32 MB
         private const uint IndexBufferSize = 1024 * 1024 * 48; // 48 MB
 
-        private Vertex[] _vertices = null!;
-        private uint[] _indices = null!;
-
         private int _vertexCount = 0;
         private int _indexCount = 0;
-        private int _lastFlushedVertexCount = 0;
-        private int _lastFlushedIndexCount = 0;
         private int _vertexCapacity = 0;
         private int _indexCapacity = 0;
 
@@ -172,8 +167,6 @@ namespace Velvet.Graphics
 
             _vertexCapacity = (int)(VertexBufferSize / Vertex.SizeInBytes);
             _indexCapacity = (int)(IndexBufferSize / sizeof(uint));
-            _vertices = new Vertex[_vertexCapacity];
-            _indices = new uint[_indexCapacity];
             _vertexCount = 0;
             _indexCount = 0;
             _batches = new List<Batch>();

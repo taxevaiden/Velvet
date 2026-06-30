@@ -147,20 +147,22 @@ namespace Velvet.Graphics
             Vector2 anchorW = pos + GetAnchor(anchor) * size;
 
             EnsureSpaceFor(4, 6, CurrentRenderTarget);
+            var batch = GetCurrentBatch(CurrentRenderTarget);
+            batch.EnsureCapacity(4, 6);
 
-            uint baseIndex = (uint)_vertexCount;
+            uint baseIndex = (uint)batch.VertexCount;
 
-            _vertices[_vertexCount++] = new Vertex(Translate2DVertex(pos, anchorW, rotation), uvPos, color);
-            _vertices[_vertexCount++] = new Vertex(Translate2DVertex(pos + size * Vector2.UnitY, anchorW, rotation), uvPos + Vector2.UnitY * uvSize, color);
-            _vertices[_vertexCount++] = new Vertex(Translate2DVertex(pos + size, anchorW, rotation), uvPos + uvSize, color);
-            _vertices[_vertexCount++] = new Vertex(Translate2DVertex(pos + size * Vector2.UnitX, anchorW, rotation), uvPos + Vector2.UnitX * uvSize, color);
+            AppendVertex(batch, new Vertex(Translate2DVertex(pos, anchorW, rotation), uvPos, color));
+            AppendVertex(batch, new Vertex(Translate2DVertex(pos + size * Vector2.UnitY, anchorW, rotation), uvPos + Vector2.UnitY * uvSize, color));
+            AppendVertex(batch, new Vertex(Translate2DVertex(pos + size, anchorW, rotation), uvPos + uvSize, color));
+            AppendVertex(batch, new Vertex(Translate2DVertex(pos + size * Vector2.UnitX, anchorW, rotation), uvPos + Vector2.UnitX * uvSize, color));
 
-            _indices[_indexCount++] = baseIndex;
-            _indices[_indexCount++] = baseIndex + 1;
-            _indices[_indexCount++] = baseIndex + 2;
-            _indices[_indexCount++] = baseIndex + 2;
-            _indices[_indexCount++] = baseIndex + 3;
-            _indices[_indexCount++] = baseIndex;
+            AppendIndex(batch, baseIndex);
+            AppendIndex(batch, baseIndex + 1);
+            AppendIndex(batch, baseIndex + 2);
+            AppendIndex(batch, baseIndex + 2);
+            AppendIndex(batch, baseIndex + 3);
+            AppendIndex(batch, baseIndex);
         }
 
         /// <summary>Draws a circle with an automatic segment count based on radius.</summary>
@@ -176,28 +178,30 @@ namespace Velvet.Graphics
             if (segments < 3) segments = 3;
 
             EnsureSpaceFor(segments + 1, segments * 3, CurrentRenderTarget);
+            var batch = GetCurrentBatch(CurrentRenderTarget);
+            batch.EnsureCapacity(segments + 1, segments * 3);
 
-            uint baseIndex = (uint)_vertexCount;
+            uint baseIndex = (uint)batch.VertexCount;
 
-            _vertices[_vertexCount++] = new Vertex(
-                Translate2DVertex(pos), new Vector2(0.5f, 0.5f), color);
+            AppendVertex(batch, new Vertex(
+                Translate2DVertex(pos), new Vector2(0.5f, 0.5f), color));
 
             float step = MathF.Tau / segments;
             for (int i = 0; i < segments; i++)
             {
                 float angle = step * i;
                 Vector2 dir = new(MathF.Cos(angle), MathF.Sin(angle));
-                _vertices[_vertexCount++] = new Vertex(
+                AppendVertex(batch, new Vertex(
                     Translate2DVertex(pos + dir * radius),
                     new Vector2(0.5f, 0.5f) + dir * 0.5f,
-                    color);
+                    color));
             }
 
             for (int i = 0; i < segments; i++)
             {
-                _indices[_indexCount++] = baseIndex;
-                _indices[_indexCount++] = baseIndex + 1 + (uint)((i + 1) % segments);
-                _indices[_indexCount++] = baseIndex + 1 + (uint)i;
+                AppendIndex(batch, baseIndex);
+                AppendIndex(batch, baseIndex + 1 + (uint)((i + 1) % segments));
+                AppendIndex(batch, baseIndex + 1 + (uint)i);
             }
         }
 
@@ -218,22 +222,24 @@ namespace Velvet.Graphics
             var (min, max) = GetVertexBounds(vertices);
             if (!IsRectangleVisible(pos2D + min, max - min)) return;
 
-            uint baseIndex = (uint)_vertexCount;
-
             EnsureSpaceFor(vertices.Length, indices.Length, CurrentRenderTarget);
+            var batch = GetCurrentBatch(CurrentRenderTarget);
+            batch.EnsureCapacity(vertices.Length, indices.Length);
+
+            uint baseIndex = (uint)batch.VertexCount;
 
             for (int i = 0; i < vertices.Length; i++)
             {
                 Vector2 xy = new Vector2(vertices[i].Position.X, vertices[i].Position.Y);
-                _vertices[_vertexCount++] = new Vertex(
+                AppendVertex(batch, new Vertex(
                     Translate3DVertex(new Vector3(pos2D + xy, pos.Z + vertices[i].Position.Z)),
                     vertices[i].UV,
                     colorOverride ?? vertices[i].Color
-                );
+                ));
             }
 
             for (int i = 0; i < indices.Length; i++)
-                _indices[_indexCount++] = baseIndex + indices[i];
+                AppendIndex(batch, baseIndex + indices[i]);
         }
 
         /// <summary>Draws a thick line between two points.</summary>

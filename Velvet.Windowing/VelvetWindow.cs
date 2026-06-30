@@ -196,16 +196,21 @@ namespace Velvet.Windowing
             _logger.Information("Creating window...");
             WindowPtr = SDL.CreateWindow(
                 title, width, height,
-                SDL.WindowFlags.MouseFocus | SDL.WindowFlags.OpenGL
+                SDL.WindowFlags.MouseFocus | SDL.WindowFlags.Vulkan
             );
-
-            _props = SDL.GetWindowProperties(WindowPtr);
 
             if (WindowPtr == IntPtr.Zero)
             {
                 SDL.Quit();
                 throw new WindowingException($"Window creation failed: {SDL.GetError()}");
             }
+
+            SDL.GLSetAttribute(SDL.GLAttr.ContextProfileMask, (int)SDL.GLProfile.Core);
+            SDL.GLSetAttribute(SDL.GLAttr.ContextMajorVersion, 3);
+            SDL.GLSetAttribute(SDL.GLAttr.ContextMinorVersion, 3);
+            SDL.GLSetAttribute(SDL.GLAttr.DoubleBuffer, 1);
+
+            _props = SDL.GetWindowProperties(WindowPtr);
 
             WindowID = SDL.GetWindowID(WindowPtr);
 
@@ -340,6 +345,7 @@ namespace Velvet.Windowing
         public nint GetGLContext()
         {
             if (_glContext == IntPtr.Zero) _glContext = SDL.GLCreateContext(WindowPtr);
+            Console.WriteLine($"(Window-{WindowID}): Getting GL context: {_glContext}");
 
             return _glContext;
         }

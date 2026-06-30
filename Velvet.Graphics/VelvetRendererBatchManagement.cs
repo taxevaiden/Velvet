@@ -48,9 +48,8 @@ namespace Velvet.Graphics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void FlushIfPending()
         {
-            if (_vertexCount - _lastFlushedVertexCount > 0 &&
-                _indexCount - _lastFlushedIndexCount > 0)
-                Flush(CurrentRenderTarget);
+            // State changes are resolved by creating a new batch for the next draw command.
+            // No additional action is required in the new per-batch data model.
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -58,38 +57,42 @@ namespace Velvet.Graphics
         {
             if (_vertexCount + verticesNeeded > _vertexCapacity ||
                 _indexCount + indicesNeeded > _indexCapacity)
-                Flush(renderTarget);
+                throw new InvalidOperationException("Frame vertex/index data exceeds buffer capacity.");
         }
 
-        private void Flush(VelvetRenderTexture? renderTarget)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Batch GetCurrentBatch(VelvetRenderTexture? renderTarget)
         {
-            int vertexCount = _vertexCount - _lastFlushedVertexCount;
-            int indexCount = _indexCount - _lastFlushedIndexCount;
-            if (vertexCount <= 0 || indexCount <= 0) return;
-
             if (_batches.Count > 0)
             {
-                Batch last = _batches[_batches.Count - 1];
+                Batch last = _batches[^1];
                 if (last.Texture == CurrentTexture &&
                     last.Shader == CurrentShader &&
                     last.RenderTarget == renderTarget)
                 {
-                    last.VertexCount += vertexCount;
-                    last.IndexCount += indexCount;
-                    _batches[_batches.Count - 1] = last;
-                    _lastFlushedVertexCount = _vertexCount;
-                    _lastFlushedIndexCount = _indexCount;
-                    return;
+                    return last;
                 }
             }
 
-            _batches.Add(new Batch(
-                _lastFlushedVertexCount, vertexCount,
-                _lastFlushedIndexCount, indexCount,
-                CurrentTexture, CurrentShader, renderTarget));
+            var batch = new Batch(CurrentTexture, CurrentShader, renderTarget);
+            _batches.Add(batch);
+            return batch;
+        }
 
-            _lastFlushedVertexCount = _vertexCount;
-            _lastFlushedIndexCount = _indexCount;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void AppendVertex(Batch batch, Vertex vertex)
+        {
+            batch.EnsureCapacity(1, 0);
+            batch.Vertices[batch.VertexCount++] = vertex;
+            _vertexCount++;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void AppendIndex(Batch batch, uint index)
+        {
+            batch.EnsureCapacity(0, 1);
+            batch.Indices[batch.IndexCount++] = index;
+            _indexCount++;
         }
     }
 }

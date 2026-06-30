@@ -41,8 +41,6 @@ namespace Velvet.Graphics
 
             _vertexCount = 0;
             _indexCount = 0;
-            _lastFlushedVertexCount = 0;
-            _lastFlushedIndexCount = 0;
             _batches.Clear();
         }
 
@@ -52,24 +50,31 @@ namespace Velvet.Graphics
             FlushIfPending();
             if (_batches.Count == 0) return;
 
-            if (_vertexCount > 0)
-                _graphicsDevice.UpdateBuffer(
-                    _vertexBuffer, 0,
-                    ref _vertices[0],
-                    (uint)(_vertexCount * (int)Vertex.SizeInBytes));
-
-            if (_indexCount > 0)
-                _graphicsDevice.UpdateBuffer(
-                    _indexBuffer, 0,
-                    ref _indices[0],
-                    (uint)(_indexCount * sizeof(uint)));
-
             _commandList.SetVertexBuffer(0, _vertexBuffer);
             _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
+
+            int currentVertexOffset = 0;
+            int currentIndexOffset = 0;
 
             for (int bi = 0; bi < _batches.Count; bi++)
             {
                 Batch batch = _batches[bi];
+                if (batch.VertexCount == 0 || batch.IndexCount == 0)
+                {
+                    continue;
+                }
+
+                _commandList.UpdateBuffer(
+                    _vertexBuffer,
+                    (uint)(currentVertexOffset * Vertex.SizeInBytes),
+                    ref batch.Vertices[0],
+                    (uint)(batch.VertexCount * Vertex.SizeInBytes));
+
+                _commandList.UpdateBuffer(
+                    _indexBuffer,
+                    (uint)(currentIndexOffset * sizeof(uint)),
+                    ref batch.Indices[0],
+                    (uint)(batch.IndexCount * sizeof(uint)));
 
                 batch.Texture.GenerateMipMapsIfNeeded(_commandList);
 
@@ -100,14 +105,16 @@ namespace Velvet.Graphics
                 _commandList.DrawIndexed(
                     indexCount: (uint)batch.IndexCount,
                     instanceCount: 1,
-                    indexStart: (uint)batch.IndexStart,
-                    vertexOffset: 0,
+                    indexStart: (uint)currentIndexOffset,
+                    vertexOffset: currentVertexOffset,
                     instanceStart: 0);
 
                 if (batch.RenderTarget?.IsMultiSampled == true)
                     batch.RenderTarget.Resolve(_commandList);
 
                 batch.Texture.MipMapsGenerated = false;
+                currentVertexOffset += batch.VertexCount;
+                currentIndexOffset += batch.IndexCount;
             }
         }
     }

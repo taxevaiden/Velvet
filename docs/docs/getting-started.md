@@ -1,6 +1,8 @@
-# Getting started
+## Getting started
 
-Getting a window open is as easy as doing:
+The examples below use the abstract `VelvetApplication` class, which manages a `VelvetWindow`, `VelvetRenderer` and the `InputManager` for you. You don't need to use it of course, as you can easily manage your resources. Just provided for convenience :)
+
+Getting a window open is as easy as doing...
 
 ```csharp
 // Game.cs
@@ -30,7 +32,7 @@ namespace MyGame
 }
 ```
 
-And you have a window!  `Window` and `Renderer` are exposed to whatever class you derive from `VelvetApplication`, so you can do whatever you want with them.
+...and you have a window! `Window` and `Renderer` are exposed to whatever class you derive from `VelvetApplication`, so you can do whatever you want with them.
 
 Here's a more complete example using a texture, a custom shader, and uniforms:
 
@@ -40,12 +42,12 @@ protected override void OnInit()
 {
     base.OnInit();
     stopwatch = new();
-    usagi     = new VelvetTexture(Renderer, "assets/usagi.jpg");
+    usagi = new VelvetTexture(Renderer, "assets/usagi.jpg");
     testShader = new VelvetShader(
         Renderer,
         "assets/shaders/shader.vert",
         null,
-        [new UniformDescription("time", UniformType.Float, UniformStage.Vertex)]
+        [new UniformDescription("time", UniformType.Float)]
     );
     testShader.Set("time", 0.0f);
     testShader.Flush();
@@ -62,6 +64,7 @@ protected override void Draw()
 {
     Renderer.Begin();
     Renderer.ClearColor(Color.White);
+
     Renderer.ApplyTexture(usagi);
     Renderer.ApplyShader(testShader);
     Renderer.DrawRectangle(
@@ -69,6 +72,7 @@ protected override void Draw()
         new Vector2(Window.Width - 100.0f, Window.Height - 100.0f),
         Color.White
     );
+    
     Renderer.End();
 }
 
@@ -94,14 +98,19 @@ layout(location = 1) out vec4 fsin_Color;
 
 layout(set = 0, binding = 2) uniform Globals
 {
+    mat4x4 Projection;
+};
+
+layout(set = 0, binding = 3) uniform Uniforms
+{
     float time;
 };
 
 void main()
 {
     vec2 pos = vec2(Position.x, Position.y + sin(Position.x * 100.0f + time) * 0.1f);
-    gl_Position = vec4(pos, 0.0, 1.0);
-    fsin_UV    = UV;
+    gl_Position = Projection * vec4(pos, 0.0, 1.0);
+    fsin_UV = UV;
     fsin_Color = Color;
 }
 ```

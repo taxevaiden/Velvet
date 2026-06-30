@@ -62,27 +62,27 @@ namespace Velvet.Tests
 
         protected override void Update()
         {
-            if (InputManager.IsKeyPressed(KeyCode.Space))
+            if (Input.IsKeyPressed(KeyCode.Space))
                 PlayOneShot();
 
-            if (InputManager.IsKeyDown(KeyCode.Left))
+            if (Input.IsKeyDown(KeyCode.Left))
                 _spatialX -= MoveSpeed * DeltaTime;
 
-            if (InputManager.IsKeyDown(KeyCode.Right))
+            if (Input.IsKeyDown(KeyCode.Right))
                 _spatialX += MoveSpeed * DeltaTime;
 
             _spatialX = Math.Clamp(_spatialX, -MaxDistance, MaxDistance);
             _spatialSound.SetPosition(new Vector3(_spatialX, 0f, -10f));
 
-            if (InputManager.IsKeyDown(KeyCode.Up))
+            if (Input.IsKeyDown(KeyCode.Up))
                 _spatialSound.Volume = Math.Min(2f, _spatialSound.Volume + DeltaTime);
 
-            if (InputManager.IsKeyDown(KeyCode.Down))
+            if (Input.IsKeyDown(KeyCode.Down))
                 _spatialSound.Volume = Math.Max(0f, _spatialSound.Volume - DeltaTime);
 
-            if (InputManager.IsKeyPressed(KeyCode.P)) _spatialSound.Play();
-            if (InputManager.IsKeyPressed(KeyCode.S)) _spatialSound.Stop();
-            if (InputManager.IsKeyPressed(KeyCode.L)) _spatialSound.Loop = !_spatialSound.Loop;
+            if (Input.IsKeyPressed(KeyCode.P)) _spatialSound.Play();
+            if (Input.IsKeyPressed(KeyCode.S)) _spatialSound.Stop();
+            if (Input.IsKeyPressed(KeyCode.L)) _spatialSound.Loop = !_spatialSound.Loop;
         }
 
         protected override void Draw()

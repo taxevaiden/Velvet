@@ -24,8 +24,7 @@ namespace Velvet.Tests
         VelvetShader shader;
         VelvetFont font;
         float fps = 60;
-        float accumFps = 60;
-        int fpsSamples = 1;
+        List<float> fpsSamples = new();
         public ShapeTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 720, string title = "Hello, world!")
             : base(width, height, title, graphicsAPI) { }
 
@@ -42,7 +41,7 @@ namespace Velvet.Tests
                 null, // No vertex shader, we'll use the default one
                 "assets/shaders/tax-dither.frag", // A simple shader
                 [
-                    new UniformDescription("Resolution", UniformType.Vector2, UniformStage.Fragment)
+                    new UniformDescription("Resolution", UniformType.Vector2)
                 ]
             );
 
@@ -60,28 +59,30 @@ namespace Velvet.Tests
         protected override void Update()
         {
             // Basic movement
-            if (InputManager.IsKeyDown(KeyCode.W)) { pos -= Vector2.UnitY * 500f * DeltaTime; }
-            if (InputManager.IsKeyDown(KeyCode.S)) { pos += Vector2.UnitY * 500f * DeltaTime; }
-            if (InputManager.IsKeyDown(KeyCode.A)) { pos -= Vector2.UnitX * 500f * DeltaTime; }
-            if (InputManager.IsKeyDown(KeyCode.D)) { pos += Vector2.UnitX * 500f * DeltaTime; }
+            if (Input.IsKeyDown(KeyCode.W)) { pos -= Vector2.UnitY * 500f * DeltaTime; }
+            if (Input.IsKeyDown(KeyCode.S)) { pos += Vector2.UnitY * 500f * DeltaTime; }
+            if (Input.IsKeyDown(KeyCode.A)) { pos -= Vector2.UnitX * 500f * DeltaTime; }
+            if (Input.IsKeyDown(KeyCode.D)) { pos += Vector2.UnitX * 500f * DeltaTime; }
 
             // Rotate with mouse buttons
-            if (InputManager.IsMouseButtonDown(MouseButton.Left)) { rot -= 500f * DeltaTime; } // Rotates counter-clockwise
-            if (InputManager.IsMouseButtonDown(MouseButton.Middle)) { rot += 1000f * DeltaTime; } // Rotates clockwise but faster
-            if (InputManager.IsMouseButtonDown(MouseButton.Right)) { rot += 500f * DeltaTime; } // Rotates clockwise
+            if (Input.IsMouseButtonDown(MouseButton.Left)) { rot -= 500f * DeltaTime; } // Rotates counter-clockwise
+            if (Input.IsMouseButtonDown(MouseButton.Middle)) { rot += 1000f * DeltaTime; } // Rotates clockwise but faster
+            if (Input.IsMouseButtonDown(MouseButton.Right)) { rot += 500f * DeltaTime; } // Rotates clockwise
 
-            if (InputManager.IsMouseButtonDown(MouseButton.Side1)) { rot += 250f * DeltaTime; } // Rotates clockwise but slower
-            if (InputManager.IsMouseButtonDown(MouseButton.Side2)) { rot -= 250f * DeltaTime; } // Rotates counter-clockwise but slower
+            if (Input.IsMouseButtonDown(MouseButton.Side1)) { rot += 250f * DeltaTime; } // Rotates clockwise but slower
+            if (Input.IsMouseButtonDown(MouseButton.Side2)) { rot -= 250f * DeltaTime; } // Rotates counter-clockwise but slower
 
             // Scroll wheel adds to velocity
-            InputManager.GetScrollDelta(out float x, out float y);
+            Input.GetScrollDelta(out float x, out float y);
             vel += new Vector2(-x, -y);
             vel *= MathF.Max(0, 1 - DeltaTime * 5);
             pos2 += vel;
 
             fps = 1.0f / DeltaTime;
-            accumFps += fps;
-            fpsSamples += 1;
+            fpsSamples.Add(fps);
+
+            while (fpsSamples.Count > fps*2)
+                fpsSamples.RemoveAt(0);
         }
 
         protected override void Draw()
@@ -106,13 +107,10 @@ namespace Velvet.Tests
             Renderer.ApplyTexture();
             Renderer.DrawRectangle(new Vector2(200.0f, 350.0f), new Vector2(100.0f, 100.0f), Color.Lavender);
 
-            InputManager.GetMousePosition(out float x, out float y);
+            Input.GetMousePosition(out float x, out float y);
             Renderer.DrawCircle(new Vector2(x, y), 10.0f, Color.Blue);
             Renderer.DrawCircle(pos, 20.0f, Color.Blue);
             Renderer.DrawRectangle(pos2, new Vector2(20.0f, 20.0f), Color.Blue);
-
-            Renderer.DrawText(font, $"FPS: {fps:F3} ", 16, new Vector2(16, 16), Color.Black);
-            Renderer.DrawText(font, $"Average FPS: {accumFps/fpsSamples:F3}", 16, new Vector2(16, 32), Color.Black);
 
             Renderer.SetRenderTargetToScreen(); // Set the render target back to the screen
             Renderer.ClearColor(Color.White); // Clear the SCREEN to white
@@ -120,7 +118,9 @@ namespace Velvet.Tests
             Renderer.ApplyShader(shader);
             Renderer.ApplyTexture(renderTexture.Texture);
             Renderer.DrawRectangle(new Vector2(0, 0), new Vector2(1280, 720), Color.White); // Draw the render texture with a shader applied
-
+            Renderer.ApplyShader(); // Reset the shader to the default shader
+            Renderer.DrawText(font, $"FPS: {fps:F3} ", 16, new Vector2(16, 16), Color.Black);
+            Renderer.DrawText(font, $"Average FPS: {fpsSamples.Average():F3}", 16, new Vector2(16, 32), Color.Black);
 
             Renderer.End();
         }

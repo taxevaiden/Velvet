@@ -4,11 +4,7 @@ _layout: landing
 
 # Velvet
 
-heavily unfinished framework for .net 10
-
-you can make games, tools, whatever
-
-there are better frameworks/libraries out there that can do a lot more than this library can, like [Bliss](https://github.com/MrScautHD/Bliss). this was only made for fun and to learn more about how graphics and rendering work.
+Heavily unfinished suite of libraries for .NET 10 inspired by [raylib](https://github.com/raysan5/raylib) and [LOVE2D](https://github.com/love2d/love)
 
 ## What's done?
 

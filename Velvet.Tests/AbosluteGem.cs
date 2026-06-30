@@ -26,10 +26,10 @@ public class GeminiApp : VelvetApplication
 
     protected override void Update()
     {
-        if (InputManager.IsKeyDown(KeyCode.W)) _playerPosition.Y -= _moveSpeed * DeltaTime;
-        if (InputManager.IsKeyDown(KeyCode.S)) _playerPosition.Y += _moveSpeed * DeltaTime;
-        if (InputManager.IsKeyDown(KeyCode.A)) _playerPosition.X -= _moveSpeed * DeltaTime;
-        if (InputManager.IsKeyDown(KeyCode.D)) _playerPosition.X += _moveSpeed * DeltaTime;
+        if (Input.IsKeyDown(KeyCode.W)) _playerPosition.Y -= _moveSpeed * DeltaTime;
+        if (Input.IsKeyDown(KeyCode.S)) _playerPosition.Y += _moveSpeed * DeltaTime;
+        if (Input.IsKeyDown(KeyCode.A)) _playerPosition.X -= _moveSpeed * DeltaTime;
+        if (Input.IsKeyDown(KeyCode.D)) _playerPosition.X += _moveSpeed * DeltaTime;
     }
 
     protected override void Draw()

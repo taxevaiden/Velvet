@@ -25,6 +25,10 @@ namespace Velvet
 
         /// <summary>The renderer bound to <see cref="Window"/>.</summary>
         protected VelvetRenderer Renderer { get; private set; } = null!;
+        /// <summary>
+        /// The input manager for handling keyboard and mouse input.
+        /// </summary>
+        protected InputManager Input { get; private set; } = new();
 
         /// <summary>Seconds elapsed between the previous frame and the current one.</summary>
         public float DeltaTime { get; private set; }
@@ -104,18 +108,20 @@ namespace Velvet
         // Entry point
 
         /// <summary>Starts the application and blocks until it exits.</summary>
-        public int Run(int argc, string[] argv)
+        public int Run(int argc, string[]? argv)
             => SDL.RunApp(argc, argv, _runCallback, nint.Zero);
 
         // SDL callbacks
 
-        private int RunCallback(int argc, string[] argv)
+        private int RunCallback(int argc, string[]? argv)
             => SDL.EnterAppMainCallbacks(argc, argv,
                 _initCallback, _iterateCallback, _eventCallback, _quitCallback);
 
-        private SDL.AppResult InitCallback(ref nint appstate, int argc, string[] argv)
+        private SDL.AppResult InitCallback(ref nint appstate, int argc, string[]? argv)
         {
             Window = new VelvetWindow(_title, _width, _height);
+
+            VelvetRendererEnvironment environment;
 
             VelvetOpenGLPlatform glPlatform = new(
                 Window.GetGLContext(),
@@ -127,8 +133,6 @@ namespace Velvet
                 Window.SwapGLBuffers,
                 Window.SetGLVSync
             );
-
-            VelvetRendererEnvironment environment;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -182,17 +186,17 @@ namespace Velvet
             FrameCount++;
             _lastCounter = currentCounter;
 
-            InputManager.Update();
+            Input.Update();
             Update();
             Draw();
-            InputManager.EndFrame();
+            Input.EndFrame();
 
             return SDL.AppResult.Continue;
         }
 
         private SDL.AppResult EventCallback(nint appstate, ref SDL.Event @event)
         {
-            InputManager.ProcessEvent(@event);
+            Input.ProcessEvent(@event);
 
             switch ((SDL.EventType)@event.Type)
             {

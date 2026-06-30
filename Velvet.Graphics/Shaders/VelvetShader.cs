@@ -46,34 +46,13 @@ namespace Velvet.Graphics.Shaders
     }
 
     /// <summary>
-    /// The shader stage(s) that a uniform is used in. This is used to determine which shader stages the uniform buffer will be bound to.
-    /// </summary>
-    public enum UniformStage
-    {
-        /// <summary>
-        /// The uniform is used in the vertex shader stage.
-        /// </summary>
-        Vertex = ShaderStages.Vertex,
-        /// <summary>
-        /// The uniform is used in the fragment shader stage.
-        /// </summary>
-        Fragment = ShaderStages.Fragment,
-        /// <summary>
-        /// The uniform is used in both the vertex and fragment shader stages.
-        /// </summary>
-        Both = ShaderStages.Vertex | ShaderStages.Fragment
-    }
-
-    /// <summary>
-    /// A description of a shader uniform, including its name, type, and the shader stage(s) it is used in. This is used to define the layout of the shader's uniform buffer.
+    /// A description of a shader uniform, including its name and type.
     /// </summary>
     /// <param name="Name">The name of the uniform.</param>
     /// <param name="Type">The type of the uniform.</param>
-    /// <param name="Stage">The shader stage(s) the uniform is used in.</param>
     public readonly record struct UniformDescription(
         string Name,
-        UniformType Type,
-        UniformStage Stage);
+        UniformType Type);
 
     // Internal layout type
 
@@ -140,6 +119,7 @@ namespace Velvet.Graphics.Shaders
         internal Pipeline Pipeline = null!;
         internal Shader[] Shaders = null!;
         internal ResourceSet ResourceSet = null!;
+        internal DeviceBuffer? GlobalsBuffer;
         internal DeviceBuffer? UniformBuffer;
 
         private readonly GraphicsDevice _gd;
@@ -149,10 +129,12 @@ namespace Velvet.Graphics.Shaders
         private ResourceLayout _resourceLayout = null!;
         private VelvetTexture _texture = null!;
 
+        private byte[] _cpuGlobalsBuffer = Array.Empty<byte>();
         private byte[] _cpuUniformBuffer = Array.Empty<byte>();
         private OutputDescription _currentOutputs;
         private VelvetRenderTexture? _currentRenderTarget;
 
+        private bool _globalsDirty;
         private bool _uniformsDirty;
         private bool _resourceSetDirty;
         private bool _pipelineDirty;
@@ -194,6 +176,94 @@ namespace Velvet.Graphics.Shaders
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
 
+        private static string GetGlslType(UniformType type) => type switch
+        {
+            UniformType.Float => "float",
+            UniformType.Int => "int",
+            UniformType.UInt => "uint",
+            UniformType.Vector2 => "vec2",
+            UniformType.Vector3 => "vec3",
+            UniformType.Vector4 => "vec4",
+            UniformType.Matrix4x4 => "mat4",
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
+
+        private static string BuildUniformBlock(string blockName, uint binding, IEnumerable<PackedUniform> uniforms)
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine($"layout(set = 0, binding = {binding}) uniform {blockName}");
+            builder.AppendLine("{");
+            bool hasMembers = false;
+            foreach (var u in uniforms)
+            {
+                builder.AppendLine($"    {GetGlslType(u.Type)} {u.Name};");
+                hasMembers = true;
+            }
+
+            if (!hasMembers)
+            {
+                builder.AppendLine("    vec4 _Dummy;");
+            }
+
+            builder.AppendLine("};");
+            return builder.ToString();
+        }
+
+        private static string BuildDefaultVertexCode(string vertexUniformBlock)
+        {
+            return $$"""
+            #version 450
+
+            layout(location = 0) in vec3 Position;
+            layout(location = 1) in vec2 UV;
+            layout(location = 2) in vec4 Color;
+
+            layout(location = 0) out vec2 fsin_UV;
+            layout(location = 1) out vec4 fsin_Color;
+
+            layout(set = 0, binding = 2) uniform Globals
+            {
+                mat4 Projection;
+            };
+
+            {{vertexUniformBlock}}
+
+            void main()
+            {
+                gl_Position = Projection * vec4(Position, 1.0);
+                fsin_UV = UV;
+                fsin_Color = Color;
+            }
+            """;
+        }
+
+        private static string BuildDefaultFragmentCode(string fragmentUniformBlock)
+        {
+            return $$"""
+            #version 450
+
+            layout(location = 0) in vec2 fsin_UV;
+            layout(location = 1) in vec4 fsin_Color;
+
+            layout(location = 0) out vec4 fsout_Color;
+
+            layout(set = 0, binding = 0) uniform texture2D Texture0;
+            layout(set = 0, binding = 1) uniform sampler Sampler0;
+
+            layout(set = 0, binding = 2) uniform Globals
+            {
+                mat4 Projection;
+            };
+
+            {{fragmentUniformBlock}}
+
+            void main()
+            {
+                fsout_Color = texture(sampler2D(Texture0, Sampler0), fsin_UV) * fsin_Color;
+            }
+            """;
+        }
+
         // Initialization
 
         private void Init(
@@ -201,46 +271,85 @@ namespace Velvet.Graphics.Shaders
             string? fragPath,
             UniformDescription[]? uniformDescriptions)
         {
-            // Build resource layout elements (texture + sampler always present).
+            // Build resource layout elements (texture + sampler always present)
             var layoutElements = new List<ResourceLayoutElementDescription>
             {
                 new("Texture0", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
                 new("Sampler0", ResourceKind.Sampler,         ShaderStages.Fragment),
             };
 
-            // Reserve the first 64 bytes for the built-in Globals.Projection matrix.
-            uint offset = 64;
+            // Reserve the first 64 bytes for the built-in Globals.Projection matrix
+            uint globalsSize = 64;
+            uint uniformTotalSize = 0;
+            var userUniforms = new List<PackedUniform>();
+
             foreach (var u in uniformDescriptions ?? Array.Empty<UniformDescription>())
             {
                 uint size = GetUniformSize(u.Type);
-                offset = Align(offset, size);
-
-                _uniforms[u.Name] = new PackedUniform(u.Name, u.Type, offset, size);
-                offset += size;
+                uint offset = Align(uniformTotalSize, size);
+                var packed = new PackedUniform(u.Name, u.Type, offset, size);
+                _uniforms[u.Name] = packed;
+                userUniforms.Add(packed);
+                uniformTotalSize = offset + size;
             }
 
-            uint totalSize = Align(offset, 16);
-            _cpuUniformBuffer = new byte[totalSize];
+            uint uniformBufferSize = Math.Max(Align(uniformTotalSize, 16), 16u);
 
-            UniformBuffer = _gd.ResourceFactory.CreateBuffer(
-                new BufferDescription(totalSize, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+            _cpuGlobalsBuffer = new byte[globalsSize];
+            _cpuUniformBuffer = new byte[uniformBufferSize];
+
+            GlobalsBuffer = _gd.ResourceFactory.CreateBuffer(
+                new BufferDescription(globalsSize, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+
+            if (userUniforms.Count > 0)
+            {
+                UniformBuffer = _gd.ResourceFactory.CreateBuffer(
+                    new BufferDescription(uniformBufferSize, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+            }
 
             layoutElements.Add(new ResourceLayoutElementDescription(
                 "Globals",
                 ResourceKind.UniformBuffer,
                 ShaderStages.Vertex | ShaderStages.Fragment));
 
+            if (userUniforms.Count > 0)
+            {
+                layoutElements.Add(new ResourceLayoutElementDescription(
+                    "Uniforms",
+                    ResourceKind.UniformBuffer,
+                    ShaderStages.Vertex | ShaderStages.Fragment));
+            }
+
             _resourceLayout = _gd.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(layoutElements.ToArray()));
 
             // Compile shaders
-            byte[] vertBytes = vertPath is null
-                ? Encoding.UTF8.GetBytes(DefaultVertexCode)
-                : File.ReadAllBytes(vertPath);
+            byte[] vertBytes;
+            byte[] fragBytes;
 
-            byte[] fragBytes = fragPath is null
-                ? Encoding.UTF8.GetBytes(DefaultFragmentCode)
-                : File.ReadAllBytes(fragPath);
+            if (vertPath is null)
+            {
+                string uniformBlock = userUniforms.Count > 0
+                    ? BuildUniformBlock("Uniforms", 3, userUniforms)
+                    : string.Empty;
+                vertBytes = Encoding.UTF8.GetBytes(BuildDefaultVertexCode(uniformBlock));
+            }
+            else
+            {
+                vertBytes = File.ReadAllBytes(vertPath);
+            }
+
+            if (fragPath is null)
+            {
+                string uniformBlock = userUniforms.Count > 0
+                    ? BuildUniformBlock("Uniforms", 3, userUniforms)
+                    : string.Empty;
+                fragBytes = Encoding.UTF8.GetBytes(BuildDefaultFragmentCode(uniformBlock));
+            }
+            else
+            {
+                fragBytes = File.ReadAllBytes(fragPath);
+            }
 
             Shaders = _gd.ResourceFactory.CreateFromSpirv(
                 new ShaderDescription(ShaderStages.Vertex, vertBytes, "main"),
@@ -258,11 +367,12 @@ namespace Velvet.Graphics.Shaders
         {
             ResourceSet?.Dispose();
 
-            ResourceSet = UniformBuffer is not null
-                ? _gd.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
-                    _resourceLayout, _texture.View, _texture.Sampler, UniformBuffer))
-                : _gd.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
-                    _resourceLayout, _texture.View, _texture.Sampler));
+            var resources = new List<IBindableResource> { _texture.View, _texture.Sampler, GlobalsBuffer! };
+            if (UniformBuffer is not null)
+                resources.Add(UniformBuffer);
+
+            ResourceSet = _gd.ResourceFactory.CreateResourceSet(
+                new ResourceSetDescription(_resourceLayout, resources.ToArray()));
 
             _resourceSetDirty = false;
         }
@@ -340,13 +450,13 @@ namespace Velvet.Graphics.Shaders
 
         internal unsafe void SetProjection(Matrix4x4 projection)
         {
-            if (UniformBuffer is null)
+            if (GlobalsBuffer is null)
                 return;
 
-            fixed (byte* dst = &_cpuUniformBuffer[0])
+            fixed (byte* dst = &_cpuGlobalsBuffer[0])
                 *(Matrix4x4*)dst = projection;
 
-            _uniformsDirty = true;
+            _globalsDirty = true;
         }
 
         // Write / flush
@@ -355,6 +465,9 @@ namespace Velvet.Graphics.Shaders
         {
             if (!_uniforms.TryGetValue(name, out var u))
                 throw new InvalidOperationException($"Uniform '{name}' is not defined in this shader.");
+
+            if (UniformBuffer is null)
+                throw new InvalidOperationException("Uniform buffer is not available for this shader.");
 
             fixed (byte* dst = &_cpuUniformBuffer[u.Offset])
                 *(T*)dst = value;
@@ -370,6 +483,12 @@ namespace Velvet.Graphics.Shaders
         {
             if (_pipelineDirty)
                 RebuildPipeline();
+
+            if (_globalsDirty && GlobalsBuffer is not null)
+            {
+                _gd.UpdateBuffer(GlobalsBuffer, 0, _cpuGlobalsBuffer);
+                _globalsDirty = false;
+            }
 
             if (_uniformsDirty && UniformBuffer is not null)
             {
@@ -389,6 +508,7 @@ namespace Velvet.Graphics.Shaders
         public void Dispose()
         {
             ResourceSet?.Dispose();
+            GlobalsBuffer?.Dispose();
             UniformBuffer?.Dispose();
             _resourceLayout?.Dispose();
 

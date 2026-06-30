@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 
 using Velvet.Graphics.Shaders;
@@ -265,27 +266,50 @@ namespace Velvet.Graphics
     }
 
     /// <summary>
-    /// Represents a batch to be submitted for rendering. This struct does not store actual vertices and indices.
+    /// Represents a batch to be submitted for rendering. This class stores its own vertex and index data.
     /// </summary>
-    struct Batch
+    sealed class Batch
     {
-        public int VertexStart;
+        public Vertex[] Vertices;
+        public uint[] Indices;
         public int VertexCount;
-        public int IndexStart;
         public int IndexCount;
         public VelvetTexture Texture;
         public VelvetRenderTexture? RenderTarget;
         public VelvetShader Shader;
 
-        public Batch(int vertexStart, int vertexCount, int indexStart, int indexCount, VelvetTexture texture, VelvetShader shader, VelvetRenderTexture? renderTarget = null)
+        public Batch(VelvetTexture texture, VelvetShader shader, VelvetRenderTexture? renderTarget = null, int vertexCapacity = 256, int indexCapacity = 384)
         {
-            VertexStart = vertexStart;
-            VertexCount = vertexCount;
-            IndexStart = indexStart;
-            IndexCount = indexCount;
             Texture = texture;
-            RenderTarget = renderTarget;
             Shader = shader;
+            RenderTarget = renderTarget;
+            VertexCount = 0;
+            IndexCount = 0;
+            Vertices = new Vertex[vertexCapacity];
+            Indices = new uint[indexCapacity];
+        }
+
+        public void EnsureCapacity(int verticesNeeded, int indicesNeeded)
+        {
+            if (verticesNeeded > 0)
+            {
+                int requiredVertexCapacity = VertexCount + verticesNeeded;
+                if (requiredVertexCapacity > Vertices.Length)
+                {
+                    int newVertexCapacity = Math.Max(Vertices.Length * 2, Math.Max(requiredVertexCapacity, 16));
+                    Array.Resize(ref Vertices, newVertexCapacity);
+                }
+            }
+
+            if (indicesNeeded > 0)
+            {
+                int requiredIndexCapacity = IndexCount + indicesNeeded;
+                if (requiredIndexCapacity > Indices.Length)
+                {
+                    int newIndexCapacity = Math.Max(Indices.Length * 2, Math.Max(requiredIndexCapacity, 16));
+                    Array.Resize(ref Indices, newIndexCapacity);
+                }
+            }
         }
     }
 

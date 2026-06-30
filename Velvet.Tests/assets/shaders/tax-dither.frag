@@ -11,6 +11,10 @@ layout(set = 0, binding = 1) uniform sampler Sampler;
 layout(set = 0, binding = 2) uniform Globals
 {
     mat4 Projection;
+};
+
+layout(set = 0, binding = 3) uniform Uniforms
+{
     vec2 Resolution;
 };
 

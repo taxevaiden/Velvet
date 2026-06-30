@@ -1,6 +1,6 @@
 # Velvet
 
-Heavily unfinished suite of libraries for .NET 10
+Heavily unfinished suite of libraries for .NET 10 inspired by [raylib](https://github.com/raysan5/raylib) and [LOVE2D](https://github.com/love2d/love)
 
 ---
 
@@ -53,7 +53,7 @@ protected override void OnInit()
         Renderer,
         "assets/shaders/shader.vert",
         null,
-        [new UniformDescription("time", UniformType.Float, UniformStage.Vertex)]
+        [new UniformDescription("time", UniformType.Float)]
     );
     testShader.Set("time", 0.0f);
     testShader.Flush();
@@ -104,7 +104,11 @@ layout(location = 1) out vec4 fsin_Color;
 
 layout(set = 0, binding = 2) uniform Globals
 {
-    mat4x4 Projection; // Automatically passed to the shader by Velvet
+    mat4x4 Projection;
+};
+
+layout(set = 0, binding = 3) uniform Uniforms
+{
     float time;
 };
 
