@@ -4,7 +4,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <PackageId>Velvet</PackageId>
+    <PackageId>taxevaiden.Velvet</PackageId>
     <Description>A suite of cross-platform libraries for building modern applications.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>

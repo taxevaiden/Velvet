@@ -5,7 +5,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <PackageId>Velvet.Audio</PackageId>
+    <PackageId>taxevaiden.Velvet.Audio</PackageId>
     <Description>A library providing cross-platform spatialized audio playback, built with MiniAudio.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>

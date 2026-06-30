@@ -4,7 +4,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <PackageId>Velvet.Input</PackageId>
+    <PackageId>taxevaiden.Velvet.Input</PackageId>
     <Description>A library providing cross-platform input handling, built with SDL3.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>

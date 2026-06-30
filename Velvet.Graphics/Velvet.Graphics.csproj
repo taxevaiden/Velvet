@@ -5,7 +5,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <PackageId>Velvet.Graphics</PackageId>
+    <PackageId>taxevaiden.Velvet.Graphics</PackageId>
     <Description>A simple cross-platform graphics library supporting Direct3D 11, Vulkan, Metal, and OpenGL.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
