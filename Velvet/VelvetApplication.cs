@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Numerics;
+using System.Runtime.InteropServices;
 
 using SDL3;
 
@@ -194,7 +195,7 @@ namespace Velvet
 
         private SDL.AppResult EventCallback(nint appstate, ref SDL.Event @event)
         {
-            Input.ProcessEvent(@event);
+            InputEvent inputEvent = new();
 
             switch ((SDL.EventType)@event.Type)
             {
@@ -214,7 +215,40 @@ namespace Velvet
                 case SDL.EventType.Quit:
                     _logger.Information("SDL quit event received.");
                     return SDL.AppResult.Success;
+                case SDL.EventType.MouseMotion:
+                    inputEvent.MousePosition = new Vector2(@event.Motion.X, @event.Motion.Y);
+                    inputEvent.Type = InputEventType.MouseMotion;
+                    break;
+
+                case SDL.EventType.MouseWheel:
+                    inputEvent.MouseScroll = new Vector2(@event.Wheel.X, @event.Wheel.Y);
+                    if (@event.Wheel.Direction == SDL.MouseWheelDirection.Flipped)
+                    {
+                        inputEvent.MouseScroll = -inputEvent.MouseScroll;
+                    }
+                    inputEvent.Type = InputEventType.MouseWheel;
+                    break;
+
+                case SDL.EventType.MouseButtonDown:
+                    inputEvent.MouseButton = (uint)@event.Button.Button - 1;
+                    inputEvent.Type = InputEventType.MouseButtonDown;
+                    break;
+
+                case SDL.EventType.MouseButtonUp:
+                    inputEvent.MouseButton = (uint)@event.Button.Button - 1;
+                    inputEvent.Type = InputEventType.MouseButtonUp;
+                    break;
+                case SDL.EventType.KeyDown:
+                    inputEvent.Key = (uint)@event.Key.Scancode;
+                    inputEvent.Type = InputEventType.KeyDown;
+                    break;
+                case SDL.EventType.KeyUp:
+                    inputEvent.Key = (uint)@event.Key.Scancode;
+                    inputEvent.Type = InputEventType.KeyUp;
+                    break;
             }
+
+            Input.ProcessEvent(inputEvent);
 
             return SDL.AppResult.Continue;
         }

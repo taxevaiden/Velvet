@@ -5,7 +5,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <PackageId>taxevaiden.Velvet.Windowing</PackageId>
-    <Description>A library providing cross-platform window management and event-processing, built with SDL3.</Description>
+    <Description>A library providing cross-platform window management, built with SDL3.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

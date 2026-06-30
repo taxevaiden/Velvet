@@ -99,7 +99,7 @@ namespace Velvet.Tests
 
             // Usagi textured
             Renderer.ApplyTexture(usagi);
-            Renderer.DrawRectangle(new Vector2(200.0f, 50.0f), new Vector2(100.0f, 100.0f), -rot * VelvetRenderer.DEG2RAD, AnchorPosition.Top, Color.Red);
+            Renderer.DrawRectangle(new Vector2(200.0f, 50.0f), new Vector2(100.0f, 100.0f), -rot * VelvetRenderer.DEG2RAD, AnchorPosition.Center, Color.Red);
             Renderer.DrawRectangle(new Vector2(50.0f, 350.0f), new Vector2(300.0f, 300.0f), Color.White);
             Renderer.DrawCircle(new Vector2(250.0f, 250.0f), 50.0f, 32, Color.Green);
 

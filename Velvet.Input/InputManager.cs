@@ -1,8 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 
-using SDL3;
-
 namespace Velvet.Input
 {
 
@@ -13,8 +11,8 @@ namespace Velvet.Input
     /// </summary>
     public class InputManager
     {
-        private readonly bool[] _keyboardState = new bool[(uint)SDL.Scancode.Count];
-        private readonly bool[] _prevKeyboardState = new bool[(uint)SDL.Scancode.Count];
+        private readonly bool[] _keyboardState = new bool[512];
+        private readonly bool[] _prevKeyboardState = new bool[512];
 
         private readonly bool[] _buttonState = new bool[5];
         private readonly bool[] _prevButtonState = new bool[5];
@@ -25,36 +23,36 @@ namespace Velvet.Input
 
         // Internal event / frame hooks
 
-        // TODO: Abstract this so that it can be used with other windowing systems besides SDL
         /// <summary>
-        /// Processes an SDL event
+        /// Processes an <see cref="InputEvent"/>.
         /// </summary>
         /// <param name="e"></param>
-        public void ProcessEvent(SDL.Event e)
+        public void ProcessEvent(InputEvent e)
         {
-            switch ((SDL.EventType)e.Type)
+            switch (e.Type)
             {
-                case SDL.EventType.MouseMotion:
-                    _mouseX = e.Motion.X;
-                    _mouseY = e.Motion.Y;
+                case InputEventType.MouseMotion:
+                    _mouseX = e.MousePosition.X;
+                    _mouseY = e.MousePosition.Y;
                     break;
 
-                case SDL.EventType.MouseWheel:
-                    _scrollX = e.Wheel.X;
-                    _scrollY = e.Wheel.Y;
-                    if (e.Wheel.Direction == SDL.MouseWheelDirection.Flipped)
-                    {
-                        _scrollX = -_scrollX;
-                        _scrollY = -_scrollY;
-                    }
+                case InputEventType.MouseWheel:
+                    _scrollX = e.MouseScroll.X;
+                    _scrollY = e.MouseScroll.Y;
                     break;
 
-                case SDL.EventType.MouseButtonDown:
-                    _buttonState[e.Button.Button - 1] = true;
+                case InputEventType.MouseButtonDown:
+                    _buttonState[e.MouseButton] = true;
                     break;
 
-                case SDL.EventType.MouseButtonUp:
-                    _buttonState[e.Button.Button - 1] = false;
+                case InputEventType.MouseButtonUp:
+                    _buttonState[e.MouseButton] = false;
+                    break;
+                case InputEventType.KeyDown:
+                    _keyboardState[e.Key] = true;
+                    break;
+                case InputEventType.KeyUp:
+                    _keyboardState[e.Key] = false;
                     break;
             }
         }
@@ -67,10 +65,6 @@ namespace Velvet.Input
             // Snapshot previous input state.
             Array.Copy(_keyboardState, _prevKeyboardState, _keyboardState.Length);
             Array.Copy(_buttonState, _prevButtonState, _buttonState.Length);
-
-            ReadOnlySpan<bool> keys = SDL.GetKeyboardState(out _);
-            for (int i = 0; i < _keyboardState.Length; i++)
-                _keyboardState[i] = keys[i];
         }
 
         /// <summary>

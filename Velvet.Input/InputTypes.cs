@@ -1,97 +1,152 @@
-using SDL3;
+using System.Numerics;
 
 namespace Velvet.Input
 {
+    /// <summary>
+    /// The types of events that can be processed.
+    /// </summary>
+    public enum InputEventType
+    {
+        /// <summary>
+        /// Mouse moved.
+        /// </summary>
+        MouseMotion,
+        /// <summary>
+        /// Mouse wheel motion.
+        /// </summary>
+        MouseWheel,
+        /// <summary>
+        /// Mouse button pressed.
+        /// </summary>
+        MouseButtonDown,
+        /// <summary>
+        /// Mouse button released.
+        /// </summary>
+        MouseButtonUp,
+        /// <summary>
+        /// Key pressed.
+        /// </summary>
+        KeyDown,
+        /// <summary>
+        /// Key released.
+        /// </summary>
+        KeyUp,
+    }
+    /// <summary>
+    /// An event that can be processed by an <see cref="InputManager"/> to update its input state.
+    /// </summary>
+    public struct InputEvent
+    {
+        /// <summary>
+        /// The type of event.
+        /// </summary>
+        public InputEventType Type;
+        /// <summary>
+        /// The key that was pressed.
+        /// </summary>
+        public uint Key;
+        /// <summary>
+        /// The mouse button that was pressed.
+        /// </summary>
+        public uint MouseButton;
+        /// <summary>
+        /// The position of the mouse relative to the window.
+        /// </summary>
+        public Vector2 MousePosition;
+        /// <summary>
+        /// The scroll delta.
+        /// </summary>
+        public Vector2 MouseScroll;
+    }
 #pragma warning disable CS1591
 
     /// <summary>
     /// Represents keyboard keys.
-    /// Values correspond to physical key positions rather than character input.
     /// </summary>
     public enum KeyCode
     {
         // Letters
-        A = SDL.Scancode.A, B = SDL.Scancode.B, C = SDL.Scancode.C,
-        D = SDL.Scancode.D, E = SDL.Scancode.E, F = SDL.Scancode.F,
-        G = SDL.Scancode.G, H = SDL.Scancode.H, I = SDL.Scancode.I,
-        J = SDL.Scancode.J, K = SDL.Scancode.K, L = SDL.Scancode.L,
-        M = SDL.Scancode.M, N = SDL.Scancode.N, O = SDL.Scancode.O,
-        P = SDL.Scancode.P, Q = SDL.Scancode.Q, R = SDL.Scancode.R,
-        S = SDL.Scancode.S, T = SDL.Scancode.T, U = SDL.Scancode.U,
-        V = SDL.Scancode.V, W = SDL.Scancode.W, X = SDL.Scancode.X,
-        Y = SDL.Scancode.Y, Z = SDL.Scancode.Z,
+        A = 4, B = 5, C = 6,
+        D = 7, E = 8, F = 9,
+        G = 10, H = 11, I = 12,
+        J = 13, K = 14, L = 15,
+        M = 16, N = 17, O = 18,
+        P = 19, Q = 20, R = 21,
+        S = 22, T = 23, U = 24,
+        V = 25, W = 26, X = 27,
+        Y = 28, Z = 29,
 
         // Numbers (top row)
-        D0 = SDL.Scancode.Alpha0, D1 = SDL.Scancode.Alpha1, D2 = SDL.Scancode.Alpha2,
-        D3 = SDL.Scancode.Alpha3, D4 = SDL.Scancode.Alpha4, D5 = SDL.Scancode.Alpha5,
-        D6 = SDL.Scancode.Alpha6, D7 = SDL.Scancode.Alpha7, D8 = SDL.Scancode.Alpha8,
-        D9 = SDL.Scancode.Alpha9,
+        D0 = 39, D1 = 30, D2 = 31,
+        D3 = 32, D4 = 33, D5 = 34,
+        D6 = 35, D7 = 36, D8 = 37,
+        D9 = 38,
 
         // Whitespace / control
-        Return = SDL.Scancode.Return,
-        Escape = SDL.Scancode.Escape,
-        Backspace = SDL.Scancode.Backspace,
-        Tab = SDL.Scancode.Tab,
-        Space = SDL.Scancode.Space,
+        Return = 40,
+        Escape = 41,
+        Backspace = 42,
+        Tab = 43,
+        Space = 44,
 
         // Punctuation
-        Minus = SDL.Scancode.Minus,
-        Equals = SDL.Scancode.Equals,
-        LeftBracket = SDL.Scancode.Leftbracket,
-        RightBracket = SDL.Scancode.Rightbracket,
-        Backslash = SDL.Scancode.Backslash,
-        Semicolon = SDL.Scancode.Semicolon,
-        Quote = SDL.Scancode.Apostrophe,
-        Grave = SDL.Scancode.Grave,
-        Comma = SDL.Scancode.Comma,
-        Period = SDL.Scancode.Period,
-        Slash = SDL.Scancode.Slash,
+        Minus = 45,
+        Equals = 46,
+        LeftBracket = 47,
+        RightBracket = 48,
+        Backslash = 49,
+        Semicolon = 51,
+        Quote = 52,
+        Grave = 53,
+        Comma = 54,
+        Period = 55,
+        Slash = 56,
 
         // Function keys
-        F1 = SDL.Scancode.F1, F2 = SDL.Scancode.F2, F3 = SDL.Scancode.F3,
-        F4 = SDL.Scancode.F4, F5 = SDL.Scancode.F5, F6 = SDL.Scancode.F6,
-        F7 = SDL.Scancode.F7, F8 = SDL.Scancode.F8, F9 = SDL.Scancode.F9,
-        F10 = SDL.Scancode.F10, F11 = SDL.Scancode.F11, F12 = SDL.Scancode.F12,
-        F13 = SDL.Scancode.F13, F14 = SDL.Scancode.F14, F15 = SDL.Scancode.F15,
-        F16 = SDL.Scancode.F16, F17 = SDL.Scancode.F17, F18 = SDL.Scancode.F18,
-        F19 = SDL.Scancode.F19, F20 = SDL.Scancode.F20, F21 = SDL.Scancode.F21,
-        F22 = SDL.Scancode.F22, F23 = SDL.Scancode.F23, F24 = SDL.Scancode.F24,
+        F1 = 58, F2 = 59, F3 = 60,
+        F4 = 61, F5 = 62, F6 = 63,
+        F7 = 64, F8 = 65, F9 = 66,
+        F10 = 67, F11 = 68, F12 = 69,
+        F13 = 104, F14 = 105, F15 = 106,
+        F16 = 107, F17 = 108, F18 = 109,
+        F19 = 110, F20 = 111, F21 = 112,
+        F22 = 113, F23 = 114, F24 = 115,
 
         // Navigation
-        Insert = SDL.Scancode.Insert, Home = SDL.Scancode.Home,
-        PageUp = SDL.Scancode.Pageup, Delete = SDL.Scancode.Delete,
-        End = SDL.Scancode.End, PageDown = SDL.Scancode.Pagedown,
-        Right = SDL.Scancode.Right, Left = SDL.Scancode.Left,
-        Down = SDL.Scancode.Down, Up = SDL.Scancode.Up,
+        Insert = 73, Home = 74,
+        PageUp = 75, Delete = 76,
+        End = 77, PageDown = 78,
+        Right = 79, Left = 80,
+        Down = 81, Up = 82,
 
         // Modifiers
-        LeftCtrl = SDL.Scancode.LCtrl, LeftShift = SDL.Scancode.LShift,
-        LeftAlt = SDL.Scancode.LAlt, LeftGui = SDL.Scancode.LGUI,
-        RightCtrl = SDL.Scancode.RCtrl, RightShift = SDL.Scancode.RShift,
-        RightAlt = SDL.Scancode.RAlt, RightGui = SDL.Scancode.RGUI,
+        LeftCtrl = 224, LeftShift = 225,
+        LeftAlt = 226, LeftGui = 227,
+        RightCtrl = 228, RightShift = 229,
+        RightAlt = 230, RightGui = 231,
 
         // Numpad
-        NumLockClear = SDL.Scancode.NumLockClear,
-        NumpadDivide = SDL.Scancode.KpDivide,
-        NumpadMultiply = SDL.Scancode.KpMultiply,
-        NumpadMinus = SDL.Scancode.KpMinus,
-        NumpadPlus = SDL.Scancode.KpPlus,
-        NumpadEnter = SDL.Scancode.KpEnter,
-        Numpad0 = SDL.Scancode.Kp0, Numpad1 = SDL.Scancode.Kp1,
-        Numpad2 = SDL.Scancode.Kp2, Numpad3 = SDL.Scancode.Kp3,
-        Numpad4 = SDL.Scancode.Kp4, Numpad5 = SDL.Scancode.Kp5,
-        Numpad6 = SDL.Scancode.Kp6, Numpad7 = SDL.Scancode.Kp7,
-        Numpad8 = SDL.Scancode.Kp8, Numpad9 = SDL.Scancode.Kp9,
-        NumpadPeriod = SDL.Scancode.KpPeriod,
+        NumLockClear = 83,
+        NumpadDivide = 84,
+        NumpadMultiply = 85,
+        NumpadMinus = 86,
+        NumpadPlus = 87,
+        NumpadEnter = 88,
+        Numpad0 = 98, Numpad1 = 89,
+        Numpad2 = 90, Numpad3 = 91,
+        Numpad4 = 92, Numpad5 = 93,
+        Numpad6 = 94, Numpad7 = 95,
+        Numpad8 = 96, Numpad9 = 97,
+        NumpadPeriod = 99,
 
         // Locks / system
-        CapsLock = SDL.Scancode.Capslock,
-        PrintScreen = SDL.Scancode.Printscreen,
-        ScrollLock = SDL.Scancode.Scrolllock,
-        Pause = SDL.Scancode.Pause,
-        Menu = SDL.Scancode.Menu,
+        CapsLock = 57,
+        PrintScreen = 70,
+        ScrollLock = 71,
+        Pause = 72,
+        Menu = 118,
 
-        Unknown = SDL.Scancode.Unknown,
+        Unknown = 0,
     }
 
     /// <summary>Represents mouse buttons.</summary>
