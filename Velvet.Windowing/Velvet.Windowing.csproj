@@ -1,14 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RuntimeIdentifiers>win-x64;osx-arm64;linux-x64</RuntimeIdentifiers>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <PackageId>Velvet.Windowing</PackageId>
+    <Description>A library providing cross-platform window management and event-processing, built with SDL3.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md"
+          Pack="true"
+          PackagePath="/" 
+          Link="README.md" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
@@ -30,5 +36,4 @@
   <ItemGroup Condition="$([System.OperatingSystem]::IsMacOS())">
     <PackageReference Include="SDL3-CS.MacOS" Version="3.4.10.5" />
   </ItemGroup>
-
 </Project>

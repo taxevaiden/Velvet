@@ -2,8 +2,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
 
-using SixLabors.ImageSharp.Processing;
-
 using Velvet.Graphics;
 using Velvet.Graphics.Shaders;
 using Velvet.Graphics.Textures;

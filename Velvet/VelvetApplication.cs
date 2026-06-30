@@ -4,8 +4,6 @@ using SDL3;
 
 using Serilog;
 
-using SixLabors.ImageSharp.Processing.Processors.Normalization;
-
 using Velvet.Graphics;
 using Velvet.Input;
 using Velvet.Windowing;

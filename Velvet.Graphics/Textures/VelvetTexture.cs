@@ -1,9 +1,7 @@
 using Serilog;
 
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-
 using Veldrid;
+using StbImageSharp;
 
 namespace Velvet.Graphics.Textures
 {
@@ -51,14 +49,12 @@ namespace Velvet.Graphics.Textures
         /// <summary>Loads a texture from a file.</summary>
         public VelvetTexture(VelvetRenderer renderer, string imageFilePath)
         {
-            using var image = Image.Load<Rgba32>(imageFilePath);
+            byte[] buffer = File.ReadAllBytes(imageFilePath);
+            ImageResult image = ImageResult.FromMemory(buffer, ColorComponents.RedGreenBlueAlpha);
             Width = (uint)image.Width;
             Height = (uint)image.Height;
 
-            byte[] pixels = new byte[image.Width * image.Height * 4];
-            image.CopyPixelDataTo(pixels);
-
-            InitFromPixels(renderer, pixels, Width, Height);
+            InitFromPixels(renderer, image.Data, Width, Height);
         }
 
         /// <summary>Creates a texture from raw RGBA pixel data. Every pixel is represented as four items in an array:  
