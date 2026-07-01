@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-
+using System.Security.Cryptography;
 using SDL3;
 
 using Serilog;
@@ -7,7 +7,44 @@ using Serilog;
 namespace Velvet.Windowing
 {
     /// <summary>
-    /// A window that can be drawn to and receive input. This is created by <c>VelvetApplication</c> and passed to the <c>VelvetRenderer</c> for drawing.
+    /// 
+    /// </summary>
+    [Flags]
+    public enum VelvetWindowFlags
+    {
+        /// <summary>
+        /// The window will be used with OpenGL. This allows you to use its OpenGL functions, such as <see cref="VelvetWindow.GetGLProcAddress"/>.
+        /// Do not combine this with <see cref="Vulkan"/>.
+        /// </summary>
+        OpenGL = 1 << 0,
+        /// <summary>
+        /// The window will be used with Vulkan. Do not combine this with <see cref="OpenGL"/>. 
+        /// </summary>
+        Vulkan = 1 << 1,
+        /// <summary>
+        /// The window will be minimized.
+        /// </summary>
+        Minimized = 1 << 2,
+        /// <summary>
+        /// The window will be maximized.
+        /// </summary>
+        Maximized = 1 << 3,
+        /// <summary>
+        /// The window can be resized.
+        /// </summary>
+        Resizable = 1 << 4,
+        /// <summary>
+        /// The window has no decoration (no frame, no title bar).
+        /// </summary>
+        Borderless = 1 << 5,
+        /// <summary>
+        /// The window will be in fullscreen mode.
+        /// </summary>
+        Fullscreen = 1 << 6,
+    }
+
+    /// <summary>
+    /// A class providing window management, along with native windowing handles and OpenGL functions. 
     /// </summary>
     public class VelvetWindow : IDisposable
     {
@@ -187,16 +224,36 @@ namespace Velvet.Windowing
             }
         }
 
+        private static SDL.WindowFlags GetWindowFlags(VelvetWindowFlags flags)
+        {
+            SDL.WindowFlags sdlFlags = 0;
+            
+            if (flags.HasFlag(VelvetWindowFlags.OpenGL))
+                sdlFlags |= SDL.WindowFlags.OpenGL;
+            if (flags.HasFlag(VelvetWindowFlags.Vulkan))
+                sdlFlags |= SDL.WindowFlags.Vulkan;
+            if (flags.HasFlag(VelvetWindowFlags.Borderless))
+                sdlFlags |= SDL.WindowFlags.Borderless;
+            if (flags.HasFlag(VelvetWindowFlags.Fullscreen))
+                sdlFlags |= SDL.WindowFlags.Fullscreen;
+            if (flags.HasFlag(VelvetWindowFlags.Resizable))
+                sdlFlags |= SDL.WindowFlags.Resizable;
+
+            return sdlFlags;
+        }
+
         // Construction
 
         /// <summary>Creates and shows a new window.</summary>
         /// <exception cref="WindowingException">Thrown if window creation fails.</exception>
-        public VelvetWindow(string title, int width, int height)
+        public VelvetWindow(string title, int width, int height, VelvetWindowFlags flags)
         {
+            SDL.WindowFlags sdlFlags = GetWindowFlags(flags);
+
             _logger.Information("Creating window...");
             WindowPtr = SDL.CreateWindow(
                 title, width, height,
-                SDL.WindowFlags.MouseFocus | SDL.WindowFlags.Vulkan
+                sdlFlags
             );
 
             if (WindowPtr == IntPtr.Zero)

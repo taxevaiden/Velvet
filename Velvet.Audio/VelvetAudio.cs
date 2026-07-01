@@ -7,11 +7,9 @@ using Serilog;
 namespace Velvet.Audio
 {
     /// <summary>
-    /// A loaded sound that can be played, paused, stopped, and configured.
-    /// Supports volume, pitch, panning, looping, and spatial (3D) audio.
+    /// A sound that can be played, paused, stopped, and configured.
     /// 
     /// Construct with a file path and a <see cref="VelvetAudioEngine"/>, then call <see cref="Play"/>.
-    /// Dispose when the sound is no longer needed.
     /// </summary>
     public sealed class VelvetAudio : IDisposable
     {

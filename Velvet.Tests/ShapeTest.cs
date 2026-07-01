@@ -11,7 +11,7 @@ using Velvet.Windowing;
 namespace Velvet.Tests
 {
     /// <summary>
-    /// A test application for drawing with VelvetRenderer, along with input handling
+    /// A test application for drawing with VelvetRenderer, along with input handling.
     /// </summary>
     class ShapeTest : VelvetApplication
     {

@@ -5,8 +5,7 @@ using Serilog;
 namespace Velvet.Audio
 {
     /// <summary>
-    /// Manages the audio device, context, resource manager, and engine.
-    /// Create one instance per application and dispose it on shutdown.
+    /// An audio engine that allows you to play <see cref="VelvetAudio"/>s.
     /// </summary>
     public sealed class VelvetAudioEngine : IDisposable
     {
@@ -27,7 +26,7 @@ namespace Velvet.Audio
         // Construction
 
         /// <summary>
-        /// Initializes the audio engine, creating the audio context, device, and resource manager, and starting the device.
+        /// Initializes an instance of the <see cref="VelvetAudioEngine"> class.
         /// </summary>
         public VelvetAudioEngine()
         {

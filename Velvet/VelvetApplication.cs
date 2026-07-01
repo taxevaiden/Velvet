@@ -118,7 +118,24 @@ namespace Velvet
 
         private SDL.AppResult InitCallback(ref nint appstate, int argc, string[]? argv)
         {
-            Window = new VelvetWindow(_title, _width, _height);
+            switch (_graphicsAPI)
+            {
+                case GraphicsAPI.Vulkan:
+                    {
+                        Window = new VelvetWindow(_title, _width, _height, VelvetWindowFlags.Vulkan);
+                        break;
+                    }
+                case GraphicsAPI.OpenGL:
+                    {
+                        Window = new VelvetWindow(_title, _width, _height, VelvetWindowFlags.OpenGL);
+                        break;
+                    }
+                default:
+                    {
+                        Window = new VelvetWindow(_title, _width, _height, 0);
+                        break;
+                    }
+            }
 
             VelvetRendererEnvironment environment;
 

@@ -6,7 +6,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <PackageId>taxevaiden.Velvet.Audio</PackageId>
-    <Description>A library providing cross-platform spatialized audio playback, built with MiniAudio.</Description>
+    <Description>A library providing cross-platform spatialized audio playback, built with miniaudio.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

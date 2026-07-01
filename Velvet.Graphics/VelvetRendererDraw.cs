@@ -130,7 +130,7 @@ namespace Velvet.Graphics
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, RgbaColor color)
             => DrawRectangle(pos, size, GetFullUV(), rotation, AnchorPosition.TopLeft, color);
 
-        /// <summary>Draws a rectangle with rotation and an anchor.</summary>
+        /// <summary>Draws a rectangle with rotation around an anchor.</summary>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, AnchorPosition anchor, RgbaColor color)
             => DrawRectangle(pos, size, GetFullUV(), rotation, anchor, color);
 
@@ -258,30 +258,7 @@ namespace Velvet.Graphics
         }
 
         /// <summary>Draws a string using a <see cref="VelvetFont"/>.</summary>
-        public void DrawText(VelvetFont font, string text, Vector2 position, RgbaColor color)
-        {
-            if (string.IsNullOrEmpty(text)) return;
-
-            VelvetTexture previousTex = CurrentTexture;
-            ApplyTexture(font.TextureAtlas);
-
-            float x = position.X;
-            float y = position.Y;
-
-            foreach (char c in text)
-            {
-                if (c < 0 || c >= 128) continue;
-                var glyph = font.glyphs[c];
-                var uv = new Rectangle(glyph.x0, glyph.y0, glyph.x1 - glyph.x0, glyph.y1 - glyph.y0);
-                DrawRectangle(
-                    new Vector2(x + glyph.x_off, y - glyph.y_off + font.FontSize),
-                    new Vector2(uv.Width, uv.Height),
-                    uv, 0f, AnchorPosition.TopLeft, color);
-                x += glyph.advance;
-            }
-
-            ApplyTexture(previousTex);
-        }
+        public void DrawText(VelvetFont font, string text, Vector2 position, RgbaColor color) => DrawText(font, text, font.FontSize, position, color);
 
         /// <summary>Draws a string using a <see cref="VelvetFont"/>.</summary>
         public void DrawText(VelvetFont font, string text, int pxSize, Vector2 position, RgbaColor color)
@@ -306,6 +283,41 @@ namespace Velvet.Graphics
                     uv, 0f, AnchorPosition.TopLeft, color);
                 x += glyph.advance * scale;
             }
+
+            ApplyTexture(previousTex);
+        }
+
+        /// <summary>Draws a <see cref="VelvetTexture"/>.</summary>
+        public void DrawTexture(VelvetTexture texture, Vector2 pos) => 
+            DrawTexture(texture, pos, new Vector2(texture.Width, texture.Height), GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, Color.White);
+        
+        /// <summary>Draws a <see cref="VelvetTexture"/> with a specific size.</summary>
+        public void DrawTexture(VelvetTexture texture, Vector2 pos, Vector2 size) => 
+            DrawTexture(texture, pos, size, GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, Color.White);
+
+        /// <summary>Draws a <see cref="VelvetTexture"/> with a specific color.</summary>
+        public void DrawTexture(VelvetTexture texture, Vector2 pos, RgbaColor color) => 
+            DrawTexture(texture, pos, new Vector2(texture.Width, texture.Height), GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, color);
+
+        /// <summary>Draws a <see cref="VelvetTexture"/> with a specific size and color.</summary>
+        public void DrawTexture(VelvetTexture texture, Vector2 pos, Vector2 size, RgbaColor color) => 
+            DrawTexture(texture, pos, size, GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, color);
+
+        /// <summary>Draws a <see cref="VelvetTexture"/> with rotation.</summary>
+        public void DrawTexture(VelvetTexture texture, Vector2 pos, Vector2 size, float rotation, RgbaColor color) => 
+            DrawTexture(texture, pos, size, GetTextureFullUV(texture), rotation, AnchorPosition.TopLeft, color);
+
+        /// <summary>Draws a <see cref="VelvetTexture"/> with rotation around an anchor.</summary>
+        public void DrawTexture(VelvetTexture texture, Vector2 pos, Vector2 size, float rotation, AnchorPosition anchor, RgbaColor color) => 
+            DrawTexture(texture, pos, size, GetTextureFullUV(texture), rotation, anchor, color);
+
+        /// <summary>Draws a <see cref="VelvetTexture"/> with a custom UV region.</summary>
+        public void DrawTexture(VelvetTexture texture, Vector2 pos, Vector2 size, Rectangle uv, float rotation, AnchorPosition anchor, RgbaColor color)
+        {
+            VelvetTexture previousTex = CurrentTexture;
+            ApplyTexture(texture);
+
+            DrawRectangle(pos, size, uv, rotation, anchor, color);
 
             ApplyTexture(previousTex);
         }

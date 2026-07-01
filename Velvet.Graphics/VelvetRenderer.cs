@@ -3,7 +3,7 @@
 namespace Velvet.Graphics
 {
     /// <summary>
-    /// Essential for drawing anything to the screen.
+    /// Allows you to draw simple 2D primitives with <see cref="Textures.VelvetTexture"/>s, <see cref="Textures.VelvetRenderTexture"/>, and <see cref="Shaders.VelvetShader"/>s.  
     /// </summary>
     public partial class VelvetRenderer : IDisposable
     {

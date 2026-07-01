@@ -128,7 +128,7 @@ namespace Velvet.Tests
 
             Renderer.DrawCircle(new Vector2(cx, cy), 10f, System.Drawing.Color.LightGray);
 
-            float screenX = cx + (_spatialX / MaxDistance) * cx * 0.8f;
+            float screenX = cx + _spatialX / MaxDistance * cx * 0.8f;
             Renderer.DrawCircle(
                 new Vector2(screenX, cy), 14f,
                 _spatialSound.IsPlaying

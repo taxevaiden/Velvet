@@ -3,6 +3,8 @@ using System.Numerics;
 
 using Veldrid;
 
+using Velvet.Graphics.Textures;
+
 namespace Velvet.Graphics
 {
     public partial class VelvetRenderer
@@ -22,10 +24,9 @@ namespace Velvet.Graphics
             return new Vector2(_width, _height);
         }
 
-        private Rectangle GetFullUV()
-        {
-            return new Rectangle(0, 0, (int)CurrentTexture.Width, (int)CurrentTexture.Height);
-        }
+        private Rectangle GetFullUV() => GetTextureFullUV(CurrentTexture);
+
+        private Rectangle GetTextureFullUV(VelvetTexture texture) => new Rectangle(0, 0, (int)texture.Width, (int)texture.Height);
 
         /// <summary>
         /// Resizes the VelvetRenderer.
