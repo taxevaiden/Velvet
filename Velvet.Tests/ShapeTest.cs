@@ -81,7 +81,7 @@ namespace Velvet.Tests
             fps = 1.0f / DeltaTime;
             fpsSamples.Add(fps);
 
-            while (fpsSamples.Count > fps*2)
+            while (fpsSamples.Count > 1000)
                 fpsSamples.RemoveAt(0);
         }
 
