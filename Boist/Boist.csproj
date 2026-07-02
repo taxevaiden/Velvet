@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <PackageId>taxevaiden.Boist</PackageId>
+    <Description>A suite of cross-platform libraries for building applications.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../README.md"
+          Pack="true"
+          PackagePath="/" 
+          Link="README.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Boist.Windowing/Boist.Windowing.csproj" />
+    <ProjectReference Include="../Boist.Graphics/Boist.Graphics.csproj" />
+    <ProjectReference Include="../Boist.Input/Boist.Input.csproj" />
+  </ItemGroup>
+</Project>

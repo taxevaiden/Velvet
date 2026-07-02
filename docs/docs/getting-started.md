@@ -1,6 +1,6 @@
 ## Getting started
 
-The examples below use the abstract `VelvetApplication` class, which manages a `VelvetWindow`, `VelvetRenderer` and the `InputManager` for you. You don't need to use it of course, as you can easily manage your resources. Just provided for convenience :)
+The examples below use the abstract `BoistApplication` class, which manages a `BoistWindow`, `BoistRenderer` and the `InputManager` for you. You don't need to use it of course, as you can easily manage your resources. Just provided for convenience :)
 
 Getting a window open is as easy as doing...
 
@@ -8,7 +8,7 @@ Getting a window open is as easy as doing...
 // Game.cs
 namespace MyGame
 {
-    class Game : VelvetApplication
+    class Game : BoistApplication
     {
         public Game(int width = 1600, int height = 900, string title = "Hello, world!")
             : base(width, height, title)
@@ -32,7 +32,7 @@ namespace MyGame
 }
 ```
 
-...and you have a window! `Window` and `Renderer` are exposed to whatever class you derive from `VelvetApplication`, so you can do whatever you want with them.
+...and you have a window! `Window` and `Renderer` are exposed to whatever class you derive from `BoistApplication`, so you can do whatever you want with them.
 
 Here's a more complete example using a texture, a custom shader, and uniforms:
 
@@ -42,8 +42,8 @@ protected override void OnInit()
 {
     base.OnInit();
     stopwatch = new();
-    usagi = new VelvetTexture(Renderer, "assets/image.png");
-    testShader = new VelvetShader(
+    usagi = new BoistTexture(Renderer, "assets/image.png");
+    testShader = new BoistShader(
         Renderer,
         "assets/shaders/shader.vert",
         null,

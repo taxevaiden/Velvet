@@ -6,10 +6,11 @@
         {
           "src": "../",
           "files": [
-            "Velvet/*.csproj",
-            "Velvet.Graphics/*.csproj",
-            "Velvet.Input/*.csproj",
-            "Velvet.Windowing/*.csproj"
+            "Boist/*.csproj",
+            "Boist.Audio/*.csproj",
+            "Boist.Graphics/*.csproj",
+            "Boist.Input/*.csproj",
+            "Boist.Windowing/*.csproj"
           ]
         }
       ],
@@ -50,8 +51,8 @@
       "modern"
     ],
     "globalMetadata": {
-      "_appName": "Velvet Framework",
-      "_appTitle": "Velvet Framework",
+      "_appName": "Boist Framework",
+      "_appTitle": "Boist Framework",
       "_enableSearch": true,
       "pdf": true
     }

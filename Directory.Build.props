@@ -8,10 +8,10 @@
     <Authors>taxevaiden</Authors>
     <Version>0.1.0</Version>
 
-    <RepositoryUrl>https://github.com/taxevaiden/Velvet</RepositoryUrl>
+    <RepositoryUrl>https://github.com/taxevaiden/Boist</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
 
-    <PackageProjectUrl>https://github.com/taxevaiden/Velvet</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/taxevaiden/Boist</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
   </PropertyGroup>

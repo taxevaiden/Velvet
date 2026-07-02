@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="assets\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    
+    <ProjectReference Include="..\Boist\Boist.csproj" />
+    <ProjectReference Include="..\Boist.Audio\Boist.Audio.csproj" />
+    <ProjectReference Include="..\Boist.Windowing\Boist.Windowing.csproj" />
+    <ProjectReference Include="..\Boist.Input\Boist.Input.csproj" />
+    <ProjectReference Include="..\Boist.Graphics\Boist.Graphics.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([System.OperatingSystem]::IsWindows())">
+    <PackageReference Include="SDL3-CS.Windows" Version="3.4.10.5" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([System.OperatingSystem]::IsLinux())">
+    <PackageReference Include="SDL3-CS.Linux" Version="3.4.10.5" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([System.OperatingSystem]::IsMacOS())">
+    <PackageReference Include="SDL3-CS.MacOS" Version="3.4.10.5" />
+  </ItemGroup>
+</Project>

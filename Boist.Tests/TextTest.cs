@@ -1,0 +1,44 @@
+using System.Drawing;
+using System.Numerics;
+
+using Boist.Graphics;
+
+namespace Boist.Tests
+{
+    /// <summary>
+    /// A text rendering test application for Boist, demonstrating the ability to render text using a custom font. It loads a TTF font and renders a sample sentence at different sizes on the screen.
+    /// </summary>
+    class TextTest : Application
+    {
+        Font font = null!;
+        public TextTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 720, string title = "Window")
+            : base(width, height, title, graphicsAPI)
+        { }
+
+        protected override void OnInit(int argc, string[]? argv)
+        {
+            font = new Font(Renderer, "assets/sans.ttf", 48);
+        }
+
+        protected override void Draw()
+        {
+            Renderer.Begin();
+            Renderer.ClearColor(Color.White);
+
+            // Draw text at different sizes
+            int size = 48;
+            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", size, new Vector2(150, 150), Color.Black); size -= 8;
+            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", size, new Vector2(150, 200), Color.Black); size -= 8;
+            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", size, new Vector2(150, 250), Color.Black); size -= 8;
+            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", size, new Vector2(150, 300), Color.Black); size -= 8;
+            Renderer.DrawText(font, "The quick brown fox jumps over the lazy dog.", size, new Vector2(150, 350), Color.Black); size -= 8;
+
+            Renderer.End();
+        }
+
+        protected override void OnShutdown()
+        {
+            font.Dispose();
+        }
+    }
+}

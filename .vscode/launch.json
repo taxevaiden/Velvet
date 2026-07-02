@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "C#: Velvet.Tests Debug",
+            "name": "C#: Boist.Tests Debug",
             "type": "dotnet",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/Velvet.Tests/Velvet.Tests.csproj",
+            "projectPath": "${workspaceFolder}/Boist.Tests/Boist.Tests.csproj",
         }
 
     ]

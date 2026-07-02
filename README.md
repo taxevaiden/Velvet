@@ -1,12 +1,16 @@
-# Velvet
+# Boist
 
-Heavily unfinished suite of libraries for .NET 10 inspired by [raylib](https://github.com/raysan5/raylib) and [LOVE2D](https://github.com/love2d/love)
+As in *boisterous*. Gracefully rough.
+
+A suite of libraries for .NET 10 inspired by [raylib](https://github.com/raysan5/raylib) and [LOVE2D](https://github.com/love2d/love).
+
+***This project is under active development and may introduce breaking changes!***
 
 ---
 
 ## Getting started
 
-The examples below use the abstract `VelvetApplication` class, which manages a `VelvetWindow`, `VelvetRenderer` and the `InputManager` for you. You don't need to use it of course, as you can easily manage your resources. Just provided for convenience :)
+The examples below use the abstract `Application` class, which manages a `Window`, `Renderer` and the `Manager` for you. You don't need to use it of course, as you are able to manage your resources. Just provided for convenience :)
 
 Getting a window open is as easy as doing...
 
@@ -14,7 +18,7 @@ Getting a window open is as easy as doing...
 // Game.cs
 namespace MyGame
 {
-    class Game : VelvetApplication
+    class Game : Application
     {
         public Game(int width = 1600, int height = 900, string title = "Hello, world!")
             : base(width, height, title)
@@ -38,7 +42,32 @@ namespace MyGame
 }
 ```
 
-...and you have a window! `Window` and `Renderer` are exposed to whatever class you derive from `VelvetApplication`, so you can do whatever you want with them.
+...and you have a window! `Window` and `Renderer` are exposed to whatever class you derive from `Application`, so you can do whatever you want with them.
+
+> [!IMPORTANT]
+> `Boist.Windowing` depends on `SDL3-CS`, which requires native runtime libraries to function.  
+> To install these libraries, simply install the package for your platform:  
+>
+> | Platform | Package         |
+> | -        | -               |
+> | Windows  | SDL3-CS.Windows |
+> | macOS    | SDL3-CS.MacOS   |
+> | Linux    | SDL3-CS.Linux   |
+>
+> You can also insert this into your .csproj if you're building an application for multiple platforms:
+> ```xml
+> <ItemGroup Condition="$([System.OperatingSystem]::IsWindows())">
+>   <PackageReference Include="SDL3-CS.Windows" Version="3.4.10.5" />
+> </ItemGroup>
+>
+> <ItemGroup Condition="$([System.OperatingSystem]::IsLinux())">
+>   <PackageReference Include="SDL3-CS.Linux" Version="3.4.10.5" />
+> </ItemGroup>
+>
+> <ItemGroup Condition="$([System.OperatingSystem]::IsMacOS())">
+>   <PackageReference Include="SDL3-CS.MacOS" Version="3.4.10.5" />
+> </ItemGroup>
+> ```
 
 Here's a more complete example using a texture, a custom shader, and uniforms:
 
@@ -46,10 +75,9 @@ Here's a more complete example using a texture, a custom shader, and uniforms:
 // Game.cs
 protected override void OnInit()
 {
-    base.OnInit();
     stopwatch = new();
-    usagi = new VelvetTexture(Renderer, "assets/image.png");
-    testShader = new VelvetShader(
+    usagi = new Texture(Renderer, "assets/image.png");
+    testShader = new Shader(
         Renderer,
         "assets/shaders/shader.vert",
         null,
@@ -84,7 +112,6 @@ protected override void Draw()
 
 protected override void OnShutdown()
 {
-    base.OnShutdown();
     stopwatch.Stop();
     usagi.Dispose();
     testShader.Dispose();
@@ -121,7 +148,7 @@ void main()
 }
 ```
 
-More examples can be found in `Velvet.Tests`.
+More examples can be found in `Boist.Tests`.
 
 ---
 
@@ -143,8 +170,8 @@ More examples can be found in `Velvet.Tests`.
 
 ## Known issues
 
-- (OpenGL) Drawing a rectangle (that has a `VelvetTexture` applied to it) on a multisampled `VelvetRenderTexture` results in the rectangle being invisible
-- (Kinda fixed I haven't found a better solution for this) OpenGL has its texture coordinate origin in the bottom-left, whereas D3D11, Vulkan, and Metal have it in the top-left. This results in `VelvetRenderTexture`s being flipped across the X-axis, so to compensate, **Velvet flips the UVs of any rectangle rendered with a `VelvetRenderTexture` applied.** Keep this in mind when writing custom shader code!
+- (OpenGL) Drawing a rectangle (that has a `Texture` applied to it) on a multisampled `RenderTexture` results in the rectangle being invisible
+- (Kinda fixed I haven't found a better solution for this) OpenGL has its texture coordinate origin in the bottom-left, whereas D3D11, Vulkan, and Metal have it in the top-left. This results in `RenderTexture`s being flipped across the X-axis, so to compensate, **Boist flips the UVs of any rectangle rendered with a `RenderTexture` applied.** Keep this in mind when writing custom shader code!
 
 ---
 
@@ -157,8 +184,8 @@ More examples can be found in `Velvet.Tests`.
 ## Running a test locally
 
 ```sh
-git clone https://github.com/taxevaiden/Velvet.git
-cd Velvet
+git clone https://github.com/taxevaiden/Boist.git
+cd Boist
 dotnet restore
 dotnet run
 ```
