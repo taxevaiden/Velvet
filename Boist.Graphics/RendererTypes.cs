@@ -222,6 +222,49 @@ namespace Boist.Graphics
     }
 
     /// <summary>
+    /// Where the center of a shape (e.g. rectangles) will be rotated around.
+    /// </summary>
+    public enum CenterPosition
+    {
+        /// <summary>
+        /// Centered at the top-left.
+        /// </summary>
+        TopLeft,
+        /// <summary>
+        /// Centered at the top.
+        /// </summary>
+        Top,
+        /// <summary>
+        /// Centered at the top right.
+        /// </summary>
+        TopRight,
+        /// <summary>
+        /// Centered at the left.
+        /// </summary>
+        Left,
+        /// <summary>
+        /// Centered at the center.
+        /// </summary>
+        Center,
+        /// <summary>
+        /// Centered at the right.
+        /// </summary>
+        Right,
+        /// <summary>
+        /// Centered at the bottom-left.
+        /// </summary>
+        BottomLeft,
+        /// <summary>
+        /// Centered at the bottom.
+        /// </summary>
+        Bottom,
+        /// <summary>
+        /// Centered atthe botton-right.
+        /// </summary>
+        BottomRight
+    }
+
+    /// <summary>
     /// Where a shape (e.g. rectangles) will be rotated around.
     /// </summary>
     public enum AnchorPosition

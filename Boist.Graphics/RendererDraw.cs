@@ -29,6 +29,21 @@ namespace Boist.Graphics
         // Helpers
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector2 GetCenter(CenterPosition center) => center switch
+        {
+            CenterPosition.TopLeft => new Vector2(0f, 0f),
+            CenterPosition.Top => new Vector2(0.5f, 0f),
+            CenterPosition.TopRight => new Vector2(1f, 0f),
+            CenterPosition.Left => new Vector2(0f, 0.5f),
+            CenterPosition.Center => new Vector2(0.5f, 0.5f),
+            CenterPosition.Right => new Vector2(1f, 0.5f),
+            CenterPosition.BottomLeft => new Vector2(0f, 1f),
+            CenterPosition.Bottom => new Vector2(0.5f, 1f),
+            CenterPosition.BottomRight => new Vector2(1f, 1f),
+            _ => Vector2.Zero
+        };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector2 GetAnchor(AnchorPosition anchor) => anchor switch
         {
             AnchorPosition.TopLeft => new Vector2(0f, 0f),
@@ -123,26 +138,31 @@ namespace Boist.Graphics
 
         /// <summary>Draws a rectangle.</summary>
         public void DrawRectangle(Vector2 pos, Vector2 size, RgbaColor color)
-            => DrawRectangle(pos, size, GetFullUV(), 0f, AnchorPosition.TopLeft, color);
+            => DrawRectangle(pos, size, GetFullUV(), 0f, AnchorPosition.TopLeft, CenterPosition.TopLeft, color);
 
         /// <summary>Draws a rectangle with rotation.</summary>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, RgbaColor color)
-            => DrawRectangle(pos, size, GetFullUV(), rotation, AnchorPosition.TopLeft, color);
+            => DrawRectangle(pos, size, GetFullUV(), rotation, AnchorPosition.TopLeft, CenterPosition.TopLeft, color);
 
         /// <summary>Draws a rectangle with rotation around an anchor.</summary>
         public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, AnchorPosition anchor, RgbaColor color)
-            => DrawRectangle(pos, size, GetFullUV(), rotation, anchor, color);
+            => DrawRectangle(pos, size, GetFullUV(), rotation, anchor, CenterPosition.TopLeft, color);
+
+        /// <summary>Draws a rectangle centered at specific point with rotation around an anchor.</summary>
+        public void DrawRectangle(Vector2 pos, Vector2 size, float rotation, AnchorPosition anchor, CenterPosition center, RgbaColor color)
+            => DrawRectangle(pos, size, GetFullUV(), rotation, anchor, center, color);
 
         /// <summary>Draws a rectangle with a custom UV region.</summary>
         public void DrawRectangle(
             Vector2 pos, Vector2 size, Rectangle uv,
-            float rotation, AnchorPosition anchor, RgbaColor color)
+            float rotation, AnchorPosition anchor, CenterPosition center, RgbaColor color)
         {
             bool flipY = CurrentTexture.FromRenderTexture &&
                          _graphicsDevice.BackendType == GraphicsBackend.OpenGL;
 
             var (uvPos, uvSize) = NormalizeUV(uv, flipY);
 
+            Vector2 centerW = GetCenter(center) * size;
             Vector2 anchorW = pos + GetAnchor(anchor) * size;
 
             EnsureSpaceFor(4, 6);
@@ -151,10 +171,10 @@ namespace Boist.Graphics
 
             uint baseIndex = (uint)batch.VertexCount;
 
-            AppendVertex(batch, new Vertex(Translate2DVertex(pos, anchorW, rotation), uvPos, color));
-            AppendVertex(batch, new Vertex(Translate2DVertex(pos + size * Vector2.UnitY, anchorW, rotation), uvPos + Vector2.UnitY * uvSize, color));
-            AppendVertex(batch, new Vertex(Translate2DVertex(pos + size, anchorW, rotation), uvPos + uvSize, color));
-            AppendVertex(batch, new Vertex(Translate2DVertex(pos + size * Vector2.UnitX, anchorW, rotation), uvPos + Vector2.UnitX * uvSize, color));
+            AppendVertex(batch, new Vertex(Translate2DVertex(pos - centerW, anchorW - centerW, rotation), uvPos, color));
+            AppendVertex(batch, new Vertex(Translate2DVertex(pos + size * Vector2.UnitY - centerW, anchorW - centerW, rotation), uvPos + Vector2.UnitY * uvSize, color));
+            AppendVertex(batch, new Vertex(Translate2DVertex(pos + size - centerW, anchorW - centerW, rotation), uvPos + uvSize, color));
+            AppendVertex(batch, new Vertex(Translate2DVertex(pos + size * Vector2.UnitX - centerW, anchorW - centerW, rotation), uvPos + Vector2.UnitX * uvSize, color));
 
             AppendIndex(batch, baseIndex);
             AppendIndex(batch, baseIndex + 1);
@@ -253,7 +273,7 @@ namespace Boist.Graphics
             if (length < 0.0001f) return;
 
             float rot = MathF.Atan2(dir.Y, dir.X) - MathF.PI * 0.5f;
-            DrawRectangle(a, new Vector2(thickness, length), rot, AnchorPosition.Top, color);
+            DrawRectangle(a, new Vector2(thickness, length), rot, AnchorPosition.Top, CenterPosition.Top, color);
         }
 
         /// <summary>Draws a string using a <see cref="Font"/>.</summary>
@@ -279,7 +299,7 @@ namespace Boist.Graphics
                 DrawRectangle(
                     new Vector2(x + glyph.x_off * scale, y - glyph.y_off * scale + pxSize),
                     new Vector2(uv.Width, uv.Height) * scale,
-                    uv, 0f, AnchorPosition.TopLeft, color);
+                    uv, 0f, AnchorPosition.TopLeft, CenterPosition.TopLeft, color);
                 x += glyph.advance * scale;
             }
 
@@ -288,35 +308,39 @@ namespace Boist.Graphics
 
         /// <summary>Draws a <see cref="Texture"/>.</summary>
         public void DrawTexture(Textures.Texture texture, Vector2 pos) => 
-            DrawTexture(texture, pos, new Vector2(texture.Width, texture.Height), GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, Color.White);
+            DrawTexture(texture, pos, new Vector2(texture.Width, texture.Height), GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, CenterPosition.TopLeft, Color.White);
         
         /// <summary>Draws a <see cref="Texture"/> with a specific size.</summary>
         public void DrawTexture(Textures.Texture texture, Vector2 pos, Vector2 size) => 
-            DrawTexture(texture, pos, size, GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, Color.White);
+            DrawTexture(texture, pos, size, GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, CenterPosition.TopLeft, Color.White);
 
         /// <summary>Draws a <see cref="Texture"/> with a specific color.</summary>
         public void DrawTexture(Textures.Texture texture, Vector2 pos, RgbaColor color) => 
-            DrawTexture(texture, pos, new Vector2(texture.Width, texture.Height), GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, color);
+            DrawTexture(texture, pos, new Vector2(texture.Width, texture.Height), GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, CenterPosition.TopLeft, color);
 
         /// <summary>Draws a <see cref="Texture"/> with a specific size and color.</summary>
         public void DrawTexture(Textures.Texture texture, Vector2 pos, Vector2 size, RgbaColor color) => 
-            DrawTexture(texture, pos, size, GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, color);
+            DrawTexture(texture, pos, size, GetTextureFullUV(texture), 0.0f, AnchorPosition.TopLeft, CenterPosition.TopLeft, color);
 
         /// <summary>Draws a <see cref="Texture"/> with rotation.</summary>
         public void DrawTexture(Textures.Texture texture, Vector2 pos, Vector2 size, float rotation, RgbaColor color) => 
-            DrawTexture(texture, pos, size, GetTextureFullUV(texture), rotation, AnchorPosition.TopLeft, color);
+            DrawTexture(texture, pos, size, GetTextureFullUV(texture), rotation, AnchorPosition.TopLeft, CenterPosition.TopLeft, color);
 
         /// <summary>Draws a <see cref="Texture"/> with rotation around an anchor.</summary>
         public void DrawTexture(Textures.Texture texture, Vector2 pos, Vector2 size, float rotation, AnchorPosition anchor, RgbaColor color) => 
-            DrawTexture(texture, pos, size, GetTextureFullUV(texture), rotation, anchor, color);
+            DrawTexture(texture, pos, size, GetTextureFullUV(texture), rotation, anchor, CenterPosition.TopLeft, color);
+
+            /// <summary>Draws a <see cref="Texture"/> centered at a specific point with rotation around an anchor.</summary>
+        public void DrawTexture(Textures.Texture texture, Vector2 pos, Vector2 size, float rotation, AnchorPosition anchor, CenterPosition center, RgbaColor color) => 
+            DrawTexture(texture, pos, size, GetTextureFullUV(texture), rotation, anchor, center, color);
 
         /// <summary>Draws a <see cref="Texture"/> with a custom UV region.</summary>
-        public void DrawTexture(Textures.Texture texture, Vector2 pos, Vector2 size, Rectangle uv, float rotation, AnchorPosition anchor, RgbaColor color)
+        public void DrawTexture(Textures.Texture texture, Vector2 pos, Vector2 size, Rectangle uv, float rotation, AnchorPosition anchor, CenterPosition center, RgbaColor color)
         {
             Textures.Texture previousTex = CurrentTexture;
             ApplyTexture(texture);
 
-            DrawRectangle(pos, size, uv, rotation, anchor, color);
+            DrawRectangle(pos, size, uv, rotation, anchor, center, color);
 
             ApplyTexture(previousTex);
         }
