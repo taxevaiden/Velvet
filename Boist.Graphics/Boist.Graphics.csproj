@@ -8,6 +8,7 @@
     <PackageId>Boist.Graphics</PackageId>
     <Description>A simple cross-platform graphics library supporting Direct3D 11, Vulkan, Metal, and OpenGL.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Version>0.1.1</Version>
 
     <NoWarn>NU5104</NoWarn>
   </PropertyGroup>

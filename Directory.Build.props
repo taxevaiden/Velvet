@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
 
     <Authors>taxevaiden</Authors>
-    <Version>0.1.1</Version>
 
     <RepositoryUrl>https://github.com/taxevaiden/Boist</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
