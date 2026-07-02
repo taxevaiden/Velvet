@@ -230,6 +230,23 @@ namespace Velvet.Windowing
         /// <exception cref="WindowingException">Thrown if window creation fails.</exception>
         public Window(string title, int width, int height, WindowFlags flags)
         {
+            try
+            {
+                if (!SDL.Init(SDL.InitFlags.Video))
+                {
+                    throw new WindowingException($"SDL3 initialization failed: {SDL.GetError()}");
+                }
+
+            }
+            catch (DllNotFoundException ex)
+            {
+                throw new InvalidOperationException(
+                    """
+                    SDL3 native runtime not found. Install the appropriate SDL3-CS.<Platform> package.
+                    """, 
+                ex);
+            }
+
             SDL.WindowFlags sdlFlags = GetWindowFlags(flags);
 
             _logger.Information("Creating window...");

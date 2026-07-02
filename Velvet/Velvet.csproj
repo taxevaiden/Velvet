@@ -23,7 +23,6 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
   </ItemGroup>
 
-
   <ItemGroup>
     <ProjectReference Include="../Velvet.Windowing/Velvet.Windowing.csproj" />
     <ProjectReference Include="../Velvet.Graphics/Velvet.Graphics.csproj" />

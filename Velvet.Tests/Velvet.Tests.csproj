@@ -22,4 +22,16 @@
     <ProjectReference Include="..\Velvet.Input\Velvet.Input.csproj" />
     <ProjectReference Include="..\Velvet.Graphics\Velvet.Graphics.csproj" />
   </ItemGroup>
+
+  <ItemGroup Condition="$([System.OperatingSystem]::IsWindows())">
+    <PackageReference Include="SDL3-CS.Windows" Version="3.4.10.5" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([System.OperatingSystem]::IsLinux())">
+    <PackageReference Include="SDL3-CS.Linux" Version="3.4.10.5" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([System.OperatingSystem]::IsMacOS())">
+    <PackageReference Include="SDL3-CS.MacOS" Version="3.4.10.5" />
+  </ItemGroup>
 </Project>
