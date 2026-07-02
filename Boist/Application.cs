@@ -48,8 +48,8 @@ namespace Boist
         private readonly bool _vsync;
         private ConcurrentQueue<InputEvent> _events = new();
         private readonly bool _multithreaded;
-        private readonly Thread _iterThread;
-        private readonly Thread _inputThread;
+        private readonly Thread? _iterThread;
+        private readonly Thread? _inputThread;
 
         // Constructors
 
@@ -161,15 +161,15 @@ namespace Boist
         {
             Init(argc, argv);
 
-            _iterThread.Start(); _inputThread.Start();
+            _iterThread?.Start(); _inputThread?.Start();
 
             while (Window.Running)
             {
                 PumpEvents();
             }
 
-            _iterThread.Join();
-            _inputThread.Join();
+            _iterThread?.Join();
+            _inputThread?.Join();
 
             Quit();
         }
