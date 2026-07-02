@@ -173,14 +173,6 @@ More examples can be found in `Boist.Tests`.
 - (OpenGL) Drawing a rectangle (that has a `Texture` applied to it) on a multisampled `RenderTexture` results in the rectangle being invisible
 - (Kinda fixed I haven't found a better solution for this) OpenGL has its texture coordinate origin in the bottom-left, whereas D3D11, Vulkan, and Metal have it in the top-left. This results in `RenderTexture`s being flipped across the X-axis, so to compensate, **Boist flips the UVs of any rectangle rendered with a `RenderTexture` applied.** Keep this in mind when writing custom shader code!
 
----
-
-![Stress Test](assets/image.png)
-
-*~60 FPS with ~100,000 rectangles, Apple M1*
-
----
-
 ## Running a test locally
 
 ```sh
