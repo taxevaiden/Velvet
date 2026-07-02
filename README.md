@@ -155,7 +155,7 @@ More examples can be found in `Boist.Tests`.
 ## What's done?
 
 - Optional application layer
-    - Support for multi-threading (running main loop, input processing, and event handling on separate threads)
+    - Support for multi-threading (running main loop (update, render, input processing) and event handling on separate threads)
 - Four components that can be used independent of each other 
     - Windowing
     - Graphics

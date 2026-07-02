@@ -14,7 +14,7 @@ namespace Boist
     /// </summary>
     /// <remarks>
     /// Multi-threading generally provides better performance than single-threading, however it can be disabled if desired. 
-    /// When multi-threading is enabled, the main loop (update and rendering), event handling, and input processing are run in parallel.
+    /// When multi-threading is enabled, the main loop (update, rendering, input processing) and event handling are run in parallel.
     /// </remarks>
     public abstract class Application
     {
@@ -49,7 +49,6 @@ namespace Boist
         private ConcurrentQueue<InputEvent> _events = new();
         private readonly bool _multithreaded;
         private readonly Thread? _iterThread;
-        private readonly Thread? _inputThread;
 
         // Constructors
 
@@ -116,15 +115,9 @@ namespace Boist
                 {
                     while (Window.Running)
                     {
-                        Iterate();
-                    }
-                });
-
-                _inputThread = new Thread(() =>
-                {
-                    while (Window.Running)
-                    {
                         ProcessEvents(_events);
+                        Iterate();
+                        Input.Update();
                     }
                 });
             }
@@ -161,7 +154,7 @@ namespace Boist
         {
             Init(argc, argv);
 
-            _iterThread?.Start(); _inputThread?.Start();
+            _iterThread?.Start();
 
             while (Window.Running)
             {
@@ -169,7 +162,6 @@ namespace Boist
             }
 
             _iterThread?.Join();
-            _inputThread?.Join();
 
             Quit();
         }
@@ -266,8 +258,6 @@ namespace Boist
             {
                 Input.ProcessEvent(@event);
             }
-            Thread.Sleep(1);
-            Input.Update();
         }
 
         private void Iterate()
