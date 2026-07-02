@@ -9,13 +9,13 @@ namespace Velvet.Audio
     /// <summary>
     /// A sound that can be played, paused, stopped, and configured.
     /// 
-    /// Construct with a file path and a <see cref="VelvetAudioEngine"/>, then call <see cref="Play"/>.
+    /// Construct with a file path and a <see cref="AudioEngine"/>, then call <see cref="Play"/>.
     /// </summary>
-    public sealed class VelvetAudio : IDisposable
+    public sealed class Sound : IDisposable
     {
-        private readonly ILogger _logger = Log.ForContext<VelvetAudio>();
+        private readonly ILogger _logger = Log.ForContext<Sound>();
         private readonly ma_sound_ptr _sound;
-        private readonly VelvetAudioEngine _engine;
+        private readonly AudioEngine _engine;
 
         private bool _disposed = false;
 
@@ -27,7 +27,7 @@ namespace Velvet.Audio
         /// <param name="engine">The active audio engine.</param>
         /// <param name="filePath">Path to the audio file (wav, mp3, ogg, flac, etc.).</param>
         /// <param name="flags">Optional miniaudio sound flags. Defaults to none.</param>
-        public VelvetAudio(VelvetAudioEngine engine, string filePath, ma_sound_flags flags = 0)
+        public Sound(AudioEngine engine, string filePath, ma_sound_flags flags = 0)
         {
             if (!File.Exists(filePath))
                 throw new FileNotFoundException($"Audio file not found: {filePath}", filePath);
@@ -44,7 +44,7 @@ namespace Velvet.Audio
             if (result != ma_result.success)
                 throw new AudioException($"Failed to load audio file '{filePath}': {result}");
 
-            _logger.Information("Audio loaded: {Path}", filePath);
+            _logger.Information("Sound loaded: {Path}", filePath);
         }
 
         // Playback
@@ -203,7 +203,7 @@ namespace Velvet.Audio
         private void ThrowIfDisposed()
         {
             if (_disposed)
-                throw new ObjectDisposedException(nameof(VelvetAudio));
+                throw new ObjectDisposedException(nameof(Sound));
         }
 
         // IDisposable
@@ -219,7 +219,7 @@ namespace Velvet.Audio
             MiniAudioNative.ma_sound_uninit(_sound);
             _sound.Free();
 
-            _logger.Debug("VelvetAudio disposed.");
+            _logger.Debug("Sound disposed.");
         }
     }
 }

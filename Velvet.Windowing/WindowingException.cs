@@ -1,6 +1,6 @@
 namespace Velvet.Windowing
 {
-    /// <summary>Thrown when a <see cref="VelvetWindow"/> operation fails.</summary>
+    /// <summary>Thrown when a <see cref="Window"/> operation fails.</summary>
     public sealed class WindowingException : Exception
     {
         /// <summary>Initializes a new instance of the <see cref="WindowingException"/> class with a specified error message.</summary>

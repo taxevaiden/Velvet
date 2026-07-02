@@ -6,13 +6,13 @@ using StbImageSharp;
 namespace Velvet.Graphics.Textures
 {
     /// <summary>
-    /// A texture is an image that can be drawn to the screen. It can be loaded from a file or created from raw pixel data. A texture can also be used as a render target (see <see cref="VelvetRenderTexture"/>).
+    /// A texture is an image that can be drawn to the screen. It can be loaded from a file or created from raw pixel data. A texture can also be used as a render target (see <see cref="RenderTexture"/>).
     /// </summary>
-    public class VelvetTexture : IDisposable
+    public class Texture : IDisposable
     {
-        private readonly ILogger _logger = Log.ForContext<VelvetTexture>();
+        private readonly ILogger _logger = Log.ForContext<Texture>();
 
-        internal Texture DeviceTexture = null!;
+        internal Veldrid.Texture DeviceTexture = null!;
         internal TextureView View = null!;
         internal Sampler Sampler = null!;
 
@@ -47,7 +47,7 @@ namespace Velvet.Graphics.Textures
         // Constructors
 
         /// <summary>Loads a texture from a file.</summary>
-        public VelvetTexture(VelvetRenderer renderer, string imageFilePath)
+        public Texture(Renderer renderer, string imageFilePath)
         {
             byte[] buffer = File.ReadAllBytes(imageFilePath);
             ImageResult image = ImageResult.FromMemory(buffer, ColorComponents.RedGreenBlueAlpha);
@@ -68,7 +68,7 @@ namespace Velvet.Graphics.Textures
         /// ]
         /// </code>
         /// </summary>
-        public VelvetTexture(VelvetRenderer renderer, byte[] imageData, uint width, uint height)
+        public Texture(Renderer renderer, byte[] imageData, uint width, uint height)
         {
             InitFromPixels(renderer, imageData, width, height);
         }
@@ -76,20 +76,20 @@ namespace Velvet.Graphics.Textures
         /// <summary>
         /// Creates a texture from raw RGBA pixel data in an unmanaged memory location.
         /// </summary>
-        public VelvetTexture(VelvetRenderer renderer, IntPtr imageData, uint bytesPerPixel, uint width, uint height)
+        public Texture(Renderer renderer, IntPtr imageData, uint bytesPerPixel, uint width, uint height)
         {
             InitFromPixels(renderer, imageData, bytesPerPixel, width, height);
         }
 
         /// <summary>Internal constructor for render-texture backing textures.</summary>
-        internal VelvetTexture(VelvetRenderer renderer, uint width, uint height, SampleCount sampleCount)
+        internal Texture(Renderer renderer, uint width, uint height, SampleCount sampleCount)
         {
             InitForRenderTexture(renderer, width, height, sampleCount);
         }
 
         // Initialization
 
-        private void InitFromPixels(VelvetRenderer renderer, byte[] pixels, uint width, uint height)
+        private void InitFromPixels(Renderer renderer, byte[] pixels, uint width, uint height)
         {
             Width = width;
             Height = height;
@@ -123,7 +123,7 @@ namespace Velvet.Graphics.Textures
                 width, height, mipLevels, pixels.Length);
         }
 
-        private void InitFromPixels(VelvetRenderer renderer, IntPtr pixels, uint bytesPerPixel, uint width, uint height)
+        private void InitFromPixels(Renderer renderer, IntPtr pixels, uint bytesPerPixel, uint width, uint height)
         {
             Width = width;
             Height = height;
@@ -157,7 +157,7 @@ namespace Velvet.Graphics.Textures
                 width, height, mipLevels, (byte)bytesPerPixel * width * height);
         }
 
-        private void InitForRenderTexture(VelvetRenderer renderer, uint width, uint height, SampleCount sampleCount)
+        private void InitForRenderTexture(Renderer renderer, uint width, uint height, SampleCount sampleCount)
         {
             Width = width;
             Height = height;

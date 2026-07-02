@@ -5,12 +5,12 @@ using Velvet.Graphics.Textures;
 
 namespace Velvet.Graphics
 {
-    public partial class VelvetRenderer : IDisposable
+    public partial class Renderer : IDisposable
     {
         // State management
 
-        /// <summary>Sets the current render target to a <see cref="VelvetRenderTexture"/>.</summary>
-        public void SetRenderTarget(VelvetRenderTexture rt)
+        /// <summary>Sets the current render target to a <see cref="RenderTexture"/>.</summary>
+        public void SetRenderTarget(RenderTexture rt)
         {
             if (CurrentRenderTarget == rt) return;
             CurrentRenderTarget = rt;
@@ -24,7 +24,7 @@ namespace Velvet.Graphics
         }
 
         /// <summary>Applies a texture for subsequent draw calls. If null, the default white texture is used.</summary>
-        public void ApplyTexture(VelvetTexture? texture = null)
+        public void ApplyTexture(Texture? texture = null)
         {
             texture ??= DefaultTexture;
             if (CurrentTexture == texture) return;
@@ -32,7 +32,7 @@ namespace Velvet.Graphics
         }
 
         /// <summary>Applies a shader for subsequent draw calls. If null, the default shader is used.</summary>
-        public void ApplyShader(VelvetShader? shader = null)
+        public void ApplyShader(Shader? shader = null)
         {
             shader ??= DefaultShader;
             if (CurrentShader == shader) return;
@@ -63,7 +63,7 @@ namespace Velvet.Graphics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Batch GetCurrentBatch(VelvetRenderTexture? renderTarget)
+        private Batch GetCurrentBatch(RenderTexture? renderTarget)
         {
             if (_batches.Count > 0)
             {

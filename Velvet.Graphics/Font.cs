@@ -16,14 +16,14 @@ namespace Velvet.Graphics
     /// <summary>
     /// Represents a font that can be used for text rendering.
     /// </summary>
-    public unsafe class VelvetFont : IDisposable
+    public unsafe class Font : IDisposable
     {
         private FT_FaceRec_* _face;
         private FT_LibraryRec_* _library;
         /// <summary>
         /// The texture atlas containing the glyphs for this font. Each glyph is rendered into the texture atlas at initialization.
         /// </summary>
-        public VelvetTexture TextureAtlas { get; private set; } = null!;
+        public Texture TextureAtlas { get; private set; } = null!;
         /// <summary>
         /// The font size in pixels. This is determined at initialization and cannot be changed. To use a different font size, create a new instance of VelvetFont with the desired size.
         /// </summary>
@@ -37,7 +37,7 @@ namespace Velvet.Graphics
         /// </summary>
         /// <param name="renderer">The VelvetRenderer to use for creating the texture atlas.</param>
         /// <param name="fontPath">The path to the font file.</param>
-        public VelvetFont(VelvetRenderer renderer, string fontPath)
+        public Font(Renderer renderer, string fontPath)
         {
             FT_Error err;
 
@@ -69,7 +69,7 @@ namespace Velvet.Graphics
         /// <param name="renderer">The VelvetRenderer to use for creating the texture atlas.</param>
         /// <param name="fontPath">The path to the font file.</param>
         /// <param name="size">The font size.</param>
-        public VelvetFont(VelvetRenderer renderer, string fontPath, int size)
+        public Font(Renderer renderer, string fontPath, int size)
         {
             FT_Error err;
 
@@ -97,7 +97,7 @@ namespace Velvet.Graphics
 
         // Helpers
 
-        private void CreateAtlas(VelvetRenderer renderer, int size = 48)
+        private void CreateAtlas(Renderer renderer, int size = 48)
         {
             FontSize = size;
 
@@ -162,7 +162,7 @@ namespace Velvet.Graphics
             }
 
 
-            TextureAtlas = new VelvetTexture(renderer, rgba, (uint)tex_width, (uint)tex_height);
+            TextureAtlas = new Texture(renderer, rgba, (uint)tex_width, (uint)tex_height);
         }
 
         // IDisposable

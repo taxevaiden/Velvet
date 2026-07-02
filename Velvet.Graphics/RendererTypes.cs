@@ -1,4 +1,3 @@
-using System;
 using System.Numerics;
 
 using Velvet.Graphics.Shaders;
@@ -7,13 +6,13 @@ using Velvet.Graphics.Textures;
 namespace Velvet.Graphics
 {
     /// <summary>
-    /// Represents all native platform state required to initialize a <see cref="VelvetRenderer"/>.
+    /// Represents all native platform state required to initialize a <see cref="Renderer"/>.
     ///
     /// The <c>Width</c> and <c>Height</c> fields **must** be populated.
     ///
     /// Native window handles appropriate for the target platform must also be populated.
     ///
-    /// To use the OpenGL backend, the <c>VelvetOpenGLPlatform</c> field must be populated
+    /// To use the OpenGL backend, the <c>VelvetOpenGLPlatform</c> field must be populated.
     ///
     /// ### Platform-specific fields
     ///
@@ -32,7 +31,7 @@ namespace Velvet.Graphics
     /// macOS
     /// - <c>CocoaWindow</c>
     /// </summary>
-    public struct VelvetRendererEnvironment
+    public struct RendererEnvironment
     {
         /// <summary>
         /// The native Win32 window handle (HWMD) for the window.
@@ -73,12 +72,12 @@ namespace Velvet.Graphics
         public int WindowHeight;
 
         /// <summary>
-        /// Various pieces of OpenGL context, required to initialize a <see cref="VelvetRenderer"/> with OpenGL.
+        /// Various pieces of OpenGL context, required to initialize a <see cref="Renderer"/> with OpenGL.
         /// </summary>
-        public VelvetOpenGLPlatform OpenGLPlatform;
+        public RendererOpenGLPlatform OpenGLPlatform;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VelvetRendererEnvironment"/> struct
+        /// Initializes a new instance of the <see cref="RendererEnvironment"/> struct
         /// with platform-specific native window handles and rendering configuration.
         /// </summary>
         /// <param name="windowWidth">The width of the window in pixels.</param>
@@ -94,10 +93,10 @@ namespace Velvet.Graphics
         /// <param name="x11Display">The X11 display (<c>Display*</c>) handle. Defaults to <c>default</c> if not used.</param>
         /// <param name="x11Window">The X11 window identifier (<c>Window</c>). Defaults to <c>default</c> if not used.</param>
         /// <param name="cocoaWindow">The Cocoa <c>NSWindow</c> handle. Defaults to <c>default</c> if not used.</param>
-        public VelvetRendererEnvironment(
+        public RendererEnvironment(
             int windowWidth,
             int windowHeight,
-            VelvetOpenGLPlatform openGLPlatform,
+            RendererOpenGLPlatform openGLPlatform = default,
             nint hwnd = default,
             nint hInstance = default,
             nint waylandDisplay = default,
@@ -124,9 +123,9 @@ namespace Velvet.Graphics
     }
 
     /// <summary>
-    /// Represents platform-specific OpenGL function bindings and context handlers. Required to initialize a <see cref="VelvetRenderer"/> with OpenGL.
+    /// Represents platform-specific OpenGL function bindings and context handlers. Required to initialize a <see cref="Renderer"/> with OpenGL.
     /// </summary>
-    public struct VelvetOpenGLPlatform
+    public struct RendererOpenGLPlatform
     {
         /// <summary>The native OpenGL context handle.</summary>
         public nint Context;
@@ -155,7 +154,7 @@ namespace Velvet.Graphics
         public Action<bool> SetVSync;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VelvetOpenGLPlatform"/> struct
+        /// Initializes a new instance of the <see cref="RendererOpenGLPlatform"/> struct
         /// with all required platform-specific OpenGL function bindings and context handlers.
         /// </summary>
         /// <param name="glContext">The native OpenGL context handle.</param>
@@ -166,7 +165,7 @@ namespace Velvet.Graphics
         /// <param name="glDestroyContext">Destroys the specified OpenGL context.</param>
         /// <param name="glSwapBuffers">Swaps the front and back buffers to present the frame.</param>
         /// <param name="glSetVSync">Enables or disables vertical synchronization.</param>
-        public VelvetOpenGLPlatform(
+        public RendererOpenGLPlatform(
             nint glContext,
             Func<string, nint> glGetProcAddress,
             Action<nint> glMakeCurrent,
@@ -274,11 +273,11 @@ namespace Velvet.Graphics
         public uint[] Indices;
         public int VertexCount;
         public int IndexCount;
-        public VelvetTexture Texture;
-        public VelvetRenderTexture? RenderTarget;
-        public VelvetShader Shader;
+        public Texture Texture;
+        public RenderTexture? RenderTarget;
+        public Shader Shader;
 
-        public Batch(VelvetTexture texture, VelvetShader shader, VelvetRenderTexture? renderTarget = null, int vertexCapacity = 256, int indexCapacity = 384)
+        public Batch(Texture texture, Shader shader, RenderTexture? renderTarget = null, int vertexCapacity = 256, int indexCapacity = 384)
         {
             Texture = texture;
             Shader = shader;
@@ -314,7 +313,7 @@ namespace Velvet.Graphics
     }
 
     /// <summary>
-    /// Represents a color with 4 bytes (R, G, B, A). Used for vertex colors in the <see cref="VelvetRenderer"/>. 
+    /// Represents a color with 4 bytes (R, G, B, A). Used for vertex colors in the <see cref="Renderer"/>. 
     /// </summary>
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct RgbaColor

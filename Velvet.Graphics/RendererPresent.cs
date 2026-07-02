@@ -2,7 +2,7 @@ using Veldrid;
 
 namespace Velvet.Graphics
 {
-    public partial class VelvetRenderer : IDisposable
+    public partial class Renderer : IDisposable
     {
         // Frame lifecycle
 

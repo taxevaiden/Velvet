@@ -1,4 +1,3 @@
-using System;
 using System.Drawing;
 using System.Numerics;
 
@@ -11,7 +10,7 @@ using Velvet.Input;
 
 // Did this for fun kinda impressed at how well it did LOL
 
-public class GeminiApp : VelvetApplication
+public class GeminiApp : Application
 {
     // Store player position and speed
     private Vector2 _playerPosition = new Vector2(375, 275);
@@ -19,17 +18,17 @@ public class GeminiApp : VelvetApplication
 
     public GeminiApp(GraphicsAPI graphicsAPI) : base(800, 600, "Velvet Framework Example", graphicsAPI) { }
 
-    protected override void OnInit()
+    protected override void OnInit(int argc, string[]? argv)
     {
         Console.WriteLine("Game Initialized!");
     }
 
     protected override void Update()
     {
-        if (Input.IsKeyDown(KeyCode.W)) _playerPosition.Y -= _moveSpeed * DeltaTime;
-        if (Input.IsKeyDown(KeyCode.S)) _playerPosition.Y += _moveSpeed * DeltaTime;
-        if (Input.IsKeyDown(KeyCode.A)) _playerPosition.X -= _moveSpeed * DeltaTime;
-        if (Input.IsKeyDown(KeyCode.D)) _playerPosition.X += _moveSpeed * DeltaTime;
+        if (Input.IsKeyDown(KeyCode.W)) _playerPosition.Y -= _moveSpeed * (float)DeltaTime;
+        if (Input.IsKeyDown(KeyCode.S)) _playerPosition.Y += _moveSpeed * (float)DeltaTime;
+        if (Input.IsKeyDown(KeyCode.A)) _playerPosition.X -= _moveSpeed * (float)DeltaTime;
+        if (Input.IsKeyDown(KeyCode.D)) _playerPosition.X += _moveSpeed * (float)DeltaTime;
     }
 
     protected override void Draw()

@@ -1,6 +1,8 @@
 using System.Numerics;
 using System.Text;
 
+using Serilog;
+
 using Veldrid;
 using Veldrid.SPIRV;
 
@@ -8,67 +10,13 @@ using Velvet.Graphics.Textures;
 
 namespace Velvet.Graphics.Shaders
 {
-    // Public types
-
-    /// <summary>
-    /// The type of a shader uniform. This is used to determine the size and alignment of the uniform in the shader's uniform buffer.
-    /// </summary>
-    public enum UniformType
-    {
-        /// <summary>
-        /// A single float value.
-        /// </summary>
-        Float,
-        /// <summary>
-        /// A single int value.
-        /// </summary>
-        Int,
-        /// <summary>
-        /// A single uint value.
-        /// </summary>
-        UInt,
-        /// <summary>
-        /// A 2D vector of floats.
-        /// </summary>
-        Vector2,
-        /// <summary>
-        /// A 3D vector of floats. Note that in std140 layout, a vec3 takes up 16 bytes of space (the same as a vec4) to ensure proper alignment.
-        /// </summary>
-        Vector3,
-        /// <summary>
-        /// A 4D vector of floats.
-        /// </summary>
-        Vector4,
-        /// <summary>
-        /// A 4x4 matrix of floats, stored in column-major order. This takes up 64 bytes of space in the uniform buffer.
-        /// </summary>
-        Matrix4x4
-    }
-
-    /// <summary>
-    /// A description of a shader uniform, including its name and type.
-    /// </summary>
-    /// <param name="Name">The name of the uniform.</param>
-    /// <param name="Type">The type of the uniform.</param>
-    public readonly record struct UniformDescription(
-        string Name,
-        UniformType Type);
-
-    // Internal layout type
-
-    internal readonly record struct PackedUniform(
-        string Name,
-        UniformType Type,
-        uint Offset,
-        uint Size);
-
-    // VelvetShader
-
     /// <summary>
     /// A shader that can be used for rendering.
     /// </summary>
-    public sealed class VelvetShader : IDisposable
+    public sealed class Shader : IDisposable
     {
+        private readonly ILogger _logger = Log.ForContext<Shader>();
+        
         // Pipeline cache key: record struct gives structural Equals/GetHashCode for free.
         private readonly record struct PipelineKey(OutputDescription Outputs);
 
@@ -117,7 +65,7 @@ namespace Velvet.Graphics.Shaders
         // Veldrid objects
 
         internal Pipeline Pipeline = null!;
-        internal Shader[] Shaders = null!;
+        internal Veldrid.Shader[] Shaders = null!;
         internal ResourceSet ResourceSet = null!;
         internal DeviceBuffer? GlobalsBuffer;
         internal DeviceBuffer? UniformBuffer;
@@ -127,12 +75,12 @@ namespace Velvet.Graphics.Shaders
         private readonly Dictionary<string, PackedUniform> _uniforms = new();
 
         private ResourceLayout _resourceLayout = null!;
-        private VelvetTexture _texture = null!;
+        private Textures.Texture _texture = null!;
 
         private byte[] _cpuGlobalsBuffer = Array.Empty<byte>();
         private byte[] _cpuUniformBuffer = Array.Empty<byte>();
         private OutputDescription _currentOutputs;
-        private VelvetRenderTexture? _currentRenderTarget;
+        private RenderTexture? _currentRenderTarget;
 
         private bool _globalsDirty;
         private bool _uniformsDirty;
@@ -142,14 +90,14 @@ namespace Velvet.Graphics.Shaders
         // Construction
 
         /// <summary>
-        /// Creates a new <see cref="VelvetShader"/>. In your shader, uniforms will be defined in a uniform block.
+        /// Creates a new <see cref="Shader"/>. In your shader, uniforms will be defined in a uniform block.
         /// </summary>
         /// <param name="renderer">The owning renderer.</param>
         /// <param name="vertPath">Path to a SPIR-V vertex shader, or <c>null</c> for the built-in default.</param>
         /// <param name="fragPath">Path to a SPIR-V fragment shader, or <c>null</c> for the built-in default.</param>
         /// <param name="uniforms">Optional uniform layout. Pass <c>null</c> if the shader has no custom uniforms.</param>
-        public VelvetShader(
-            VelvetRenderer renderer,
+        public Shader(
+            Renderer renderer,
             string? vertPath,
             string? fragPath,
             UniformDescription[]? uniforms = null)
@@ -271,6 +219,7 @@ namespace Velvet.Graphics.Shaders
             string? fragPath,
             UniformDescription[]? uniformDescriptions)
         {
+            _logger.Information("Creating shader...");
             // Build resource layout elements (texture + sampler always present)
             var layoutElements = new List<ResourceLayoutElementDescription>
             {
@@ -291,6 +240,8 @@ namespace Velvet.Graphics.Shaders
                 _uniforms[u.Name] = packed;
                 userUniforms.Add(packed);
                 uniformTotalSize = offset + size;
+
+                _logger.Information("\t{Name}: {Type}", u.Name, u.Type);
             }
 
             uint uniformBufferSize = Math.Max(Align(uniformTotalSize, 16), 16u);
@@ -359,6 +310,8 @@ namespace Velvet.Graphics.Shaders
 
             RebuildResourceSet();
             RebuildPipeline();
+
+            _logger.Information("Shader created:, {Uniforms} uniforms, Vertex shader path: {VertPath}, Fragment shader path: {FragPath}", userUniforms.Count(), vertPath is null ? "Default" : vertPath, fragPath is null ? "Default" : fragPath);
         }
 
         // Rebuild helpers
@@ -429,14 +382,14 @@ namespace Velvet.Graphics.Shaders
 
         // Internal state setters (called by the renderer)
 
-        internal void SetTexture(VelvetTexture texture)
+        internal void SetTexture(Textures.Texture texture)
         {
             if (_texture == texture) return;
             _texture = texture;
             _resourceSetDirty = true;
         }
 
-        internal void SetRenderTexture(VelvetRenderTexture? rt)
+        internal void SetRenderTexture(RenderTexture? rt)
         {
             var newOutputs = rt?.Framebuffer.OutputDescription
                              ?? _gd.SwapchainFramebuffer.OutputDescription;
@@ -519,6 +472,8 @@ namespace Velvet.Graphics.Shaders
             if (Shaders is not null)
                 foreach (var shader in Shaders)
                     shader.Dispose();
+
+            
         }
     }
 }

@@ -5,11 +5,11 @@ using Serilog;
 namespace Velvet.Audio
 {
     /// <summary>
-    /// An audio engine that allows you to play <see cref="VelvetAudio"/>s.
+    /// An audio engine that allows you to play <see cref="Sound"/>s.
     /// </summary>
-    public sealed class VelvetAudioEngine : IDisposable
+    public sealed class AudioEngine : IDisposable
     {
-        private readonly ILogger _logger = Log.ForContext<VelvetAudioEngine>();
+        private readonly ILogger _logger = Log.ForContext<AudioEngine>();
 
         private readonly ma_engine_ptr _engine;
         private readonly ma_context_ptr _context;
@@ -26,9 +26,9 @@ namespace Velvet.Audio
         // Construction
 
         /// <summary>
-        /// Initializes an instance of the <see cref="VelvetAudioEngine"> class.
+        /// Initializes an instance of the <see cref="AudioEngine"/> class.
         /// </summary>
-        public VelvetAudioEngine()
+        public AudioEngine()
         {
             _engine = new ma_engine_ptr(true);
             _context = new ma_context_ptr(true);
@@ -42,7 +42,7 @@ namespace Velvet.Audio
             InitEngine();
             StartDevice();
 
-            _logger.Information("VelvetAudioEngine ready.");
+            _logger.Information("AudioEngine ready.");
         }
 
         // Init steps
@@ -158,7 +158,7 @@ namespace Velvet.Audio
             if (_disposed) return;
             _disposed = true;
 
-            _logger.Information("Shutting down VelvetAudioEngine...");
+            _logger.Information("Shutting down AudioEngine...");
 
             MiniAudioNative.ma_engine_uninit(_engine);
             MiniAudioNative.ma_device_uninit(_device);

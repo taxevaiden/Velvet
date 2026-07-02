@@ -4,7 +4,6 @@ using System.Numerics;
 using Velvet.Graphics;
 using Velvet.Graphics.Shaders;
 using Velvet.Graphics.Textures;
-using Velvet.Input;
 
 namespace Velvet.Tests
 {
@@ -12,19 +11,19 @@ namespace Velvet.Tests
     /// A shader test application for Velvet, demonstrating basic shader usage by applying a custom shader to a textured rectangle.
     /// More shaders can be found in the assets/shaders folder.
     /// </summary>
-    class ShaderTest : VelvetApplication
+    class ShaderTest : Application
     {
-        private VelvetTexture _usagi;
-        private VelvetShader _testShader;
+        private Texture _usagi;
+        private Shader _testShader;
 
         public ShaderTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 720, string title = "Hello, world!")
             : base(width, height, title, graphicsAPI)
         { }
 
-        protected override void OnInit()
+        protected override void OnInit(int argc, string[]? argv)
         {
-            _usagi = new VelvetTexture(Renderer, "assets/image.png");
-            _testShader = new VelvetShader(Renderer, null, "assets/shaders/test.frag");
+            _usagi = new Texture(Renderer, "assets/image.png");
+            _testShader = new Shader(Renderer, null, "assets/shaders/test.frag");
         }
 
 

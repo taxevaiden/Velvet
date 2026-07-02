@@ -1,19 +1,14 @@
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
-using System.Threading.Tasks;
 
 using Velvet.Graphics;
-using Velvet.Input;
-using Velvet.Windowing;
 
 namespace Velvet.Tests
 {
     /// <summary>
     /// A stress test application for Velvet, designed to test the performance of the renderer under heavy load by simulating a large number of moving particles on the screen.
     /// </summary>
-    class StressTest : VelvetApplication
+    class StressTest : Application
     {
         private List<Vector2> particles;
         private List<Vector2> velocities;
@@ -29,9 +24,8 @@ namespace Velvet.Tests
             random = new Random();
         }
 
-        protected override void OnInit()
+        protected override void OnInit(int argc, string[]? argv)
         {
-            base.OnInit();
             // Prepopulate some particles
             for (int i = 0; i < 100; i++)
             {

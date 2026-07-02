@@ -1,54 +1,19 @@
 ﻿using System.Numerics;
 using System.Security.Cryptography;
+
 using SDL3;
 
 using Serilog;
 
 namespace Velvet.Windowing
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    [Flags]
-    public enum VelvetWindowFlags
-    {
-        /// <summary>
-        /// The window will be used with OpenGL. This allows you to use its OpenGL functions, such as <see cref="VelvetWindow.GetGLProcAddress"/>.
-        /// Do not combine this with <see cref="Vulkan"/>.
-        /// </summary>
-        OpenGL = 1 << 0,
-        /// <summary>
-        /// The window will be used with Vulkan. Do not combine this with <see cref="OpenGL"/>. 
-        /// </summary>
-        Vulkan = 1 << 1,
-        /// <summary>
-        /// The window will be minimized.
-        /// </summary>
-        Minimized = 1 << 2,
-        /// <summary>
-        /// The window will be maximized.
-        /// </summary>
-        Maximized = 1 << 3,
-        /// <summary>
-        /// The window can be resized.
-        /// </summary>
-        Resizable = 1 << 4,
-        /// <summary>
-        /// The window has no decoration (no frame, no title bar).
-        /// </summary>
-        Borderless = 1 << 5,
-        /// <summary>
-        /// The window will be in fullscreen mode.
-        /// </summary>
-        Fullscreen = 1 << 6,
-    }
 
     /// <summary>
     /// A class providing window management, along with native windowing handles and OpenGL functions. 
     /// </summary>
-    public class VelvetWindow : IDisposable
+    public class Window : IDisposable
     {
-        private readonly ILogger _logger = Log.ForContext<VelvetWindow>();
+        private readonly ILogger _logger = Log.ForContext<Window>();
 
         private uint _props;
         private nint _glContext = IntPtr.Zero;
@@ -224,19 +189,36 @@ namespace Velvet.Windowing
             }
         }
 
-        private static SDL.WindowFlags GetWindowFlags(VelvetWindowFlags flags)
+        /// <summary>
+        /// 
+        /// </summary>
+        public ulong PerformanceCounter
+        {
+            get => SDL.GetPerformanceCounter();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ulong PerformanceFrequency
+        {
+            get => SDL.GetPerformanceFrequency();
+        }
+
+
+        private static SDL.WindowFlags GetWindowFlags(WindowFlags flags)
         {
             SDL.WindowFlags sdlFlags = 0;
-            
-            if (flags.HasFlag(VelvetWindowFlags.OpenGL))
+
+            if (flags.HasFlag(WindowFlags.OpenGL))
                 sdlFlags |= SDL.WindowFlags.OpenGL;
-            if (flags.HasFlag(VelvetWindowFlags.Vulkan))
+            if (flags.HasFlag(WindowFlags.Vulkan))
                 sdlFlags |= SDL.WindowFlags.Vulkan;
-            if (flags.HasFlag(VelvetWindowFlags.Borderless))
+            if (flags.HasFlag(WindowFlags.Borderless))
                 sdlFlags |= SDL.WindowFlags.Borderless;
-            if (flags.HasFlag(VelvetWindowFlags.Fullscreen))
+            if (flags.HasFlag(WindowFlags.Fullscreen))
                 sdlFlags |= SDL.WindowFlags.Fullscreen;
-            if (flags.HasFlag(VelvetWindowFlags.Resizable))
+            if (flags.HasFlag(WindowFlags.Resizable))
                 sdlFlags |= SDL.WindowFlags.Resizable;
 
             return sdlFlags;
@@ -246,7 +228,7 @@ namespace Velvet.Windowing
 
         /// <summary>Creates and shows a new window.</summary>
         /// <exception cref="WindowingException">Thrown if window creation fails.</exception>
-        public VelvetWindow(string title, int width, int height, VelvetWindowFlags flags)
+        public Window(string title, int width, int height, WindowFlags flags)
         {
             SDL.WindowFlags sdlFlags = GetWindowFlags(flags);
 
@@ -275,6 +257,87 @@ namespace Velvet.Windowing
                 WindowID, width, height, WindowPtr);
 
             Running = true;
+        }
+
+        /// <summary>
+        /// Poll for currently pending events.
+        /// </summary>
+        /// <returns>
+        /// True if there are pending events, 
+        /// false if otherwise.
+        /// </returns>
+        public bool PollEvent(ref WindowEvent @event)
+        {
+            SDL.Event e;
+            if (SDL.PollEvent(out e))
+            {
+                switch ((SDL.EventType)e.Type)
+                {
+                    case SDL.EventType.WindowResized:
+                        if (e.Window.WindowID == WindowID)
+                        {
+                            @event.WindowSize = new Vector2(e.Window.Data1, e.Window.Data2);
+                            @event.Type = WindowEventType.WindowResized;
+                        }
+                        break;
+                    case SDL.EventType.WindowMoved:
+                        if (e.Window.WindowID == WindowID)
+                        {
+                            @event.WindowPosition = new Vector2(e.Window.Data1, e.Window.Data2);
+                            @event.Type = WindowEventType.WindowMoved;
+                        }
+                        break;
+                    case SDL.EventType.WindowCloseRequested:
+                        if (e.Window.WindowID == WindowID)
+                        {
+                            _logger.Information("(Window-{WindowId}): Close requested.", WindowID);
+                            @event.Type = WindowEventType.WindowCloseRequested;
+                            Running = false;
+                        }
+                        break;
+                    case SDL.EventType.Quit:
+                        _logger.Information("(Window-{WindowId}): Quit event received.", WindowID);
+                        @event.Type = WindowEventType.Quit;
+                        Running = false;
+                        break;
+                    case SDL.EventType.MouseMotion:
+                        @event.MousePosition = new Vector2(e.Motion.X, e.Motion.Y);
+                        @event.Type = WindowEventType.MouseMotion;
+                        break;
+
+                    case SDL.EventType.MouseWheel:
+                        @event.MouseScroll = new Vector2(e.Wheel.X, e.Wheel.Y);
+                        if (e.Wheel.Direction == SDL.MouseWheelDirection.Flipped)
+                        {
+                            @event.MouseScroll = -@event.MouseScroll;
+                        }
+                        @event.Type = WindowEventType.MouseWheel;
+                        break;
+
+                    case SDL.EventType.MouseButtonDown:
+                        @event.MouseButton = (uint)e.Button.Button - 1;
+                        @event.Type = WindowEventType.MouseButtonDown;
+                        break;
+
+                    case SDL.EventType.MouseButtonUp:
+                        @event.MouseButton = (uint)e.Button.Button - 1;
+                        @event.Type = WindowEventType.MouseButtonUp;
+                        break;
+                    case SDL.EventType.KeyDown:
+                        @event.Key = (uint)e.Key.Scancode;
+                        @event.Type = WindowEventType.KeyDown;
+                        break;
+                    case SDL.EventType.KeyUp:
+                        @event.Key = (uint)e.Key.Scancode;
+                        @event.Type = WindowEventType.KeyUp;
+                        break;
+                    default:
+                        return false;
+                }
+                return true;
+            }
+
+            return false;
         }
 
         // Window actions
@@ -518,7 +581,7 @@ namespace Velvet.Windowing
         // IDisposable
 
         /// <summary>
-        /// Disposes the <see cref="VelvetWindow"/> and its resources.
+        /// Disposes the <see cref="Window"/> and its resources.
         /// </summary>
         public void Dispose()
         {

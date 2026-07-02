@@ -3,50 +3,19 @@ using Veldrid;
 namespace Velvet.Graphics.Textures
 {
     /// <summary>
-    /// The number of samples to use for MSAA render textures. Higher sample counts can produce smoother edges at the cost of performance and VRAM usage. The default is Count1 (no MSAA).
-    /// </summary>
-    public enum SampleCount
-    {
-        /// <summary>
-        /// No MSAA. This is the default sample count for render textures.
-        /// </summary>
-        Count1 = TextureSampleCount.Count1,
-        /// <summary>
-        /// 2x MSAA. This uses 2 samples per pixel for anti-aliasing.
-        /// </summary>
-        Count2 = TextureSampleCount.Count2,
-        /// <summary>
-        /// 4x MSAA. This uses 4 samples per pixel for anti-aliasing.
-        /// </summary>
-        Count4 = TextureSampleCount.Count4,
-        /// <summary>
-        /// 8x MSAA. This uses 8 samples per pixel for anti-aliasing.
-        /// </summary>
-        Count8 = TextureSampleCount.Count8,
-        /// <summary>
-        /// 16x MSAA. This uses 16 samples per pixel for anti-aliasing.
-        /// </summary>
-        Count16 = TextureSampleCount.Count16,
-        /// <summary>
-        /// 32x MSAA. This uses 32 samples per pixel for anti-aliasing. This is the highest sample count currently supported by Velvet.
-        /// </summary>
-        Count32 = TextureSampleCount.Count32,
-    }
-
-    /// <summary>
     /// A render texture is a texture that can be drawn to. This is useful for post-processing effects, dynamic textures, and more. A render texture can also be multi-sampled for anti-aliasing (MSAA).
     /// </summary>
-    public class VelvetRenderTexture : IDisposable
+    public class RenderTexture : IDisposable
     {
         // The texture that the framebuffer renders into.
         // For MSAA this is the multi-sampled texture; for non-MSAA it IS Texture.
-        private readonly VelvetTexture _mainTexture;
+        private readonly Texture _mainTexture;
 
         /// <summary>
         /// The resolved (single-sample) texture, safe to sample in a shader.
         /// For non-MSAA render textures this is the same object as the backing texture.
         /// </summary>
-        public VelvetTexture Texture { get; }
+        public Texture Texture { get; }
 
         internal Framebuffer Framebuffer { get; }
 
@@ -78,8 +47,8 @@ namespace Velvet.Graphics.Textures
         /// <param name="width">Width in pixels.</param>
         /// <param name="height">Height in pixels.</param>
         /// <param name="sampleCount">MSAA sample count (default: no MSAA).</param>
-        public VelvetRenderTexture(
-            VelvetRenderer renderer,
+        public RenderTexture(
+            Renderer renderer,
             uint width,
             uint height,
             SampleCount sampleCount = SampleCount.Count1)
@@ -88,7 +57,7 @@ namespace Velvet.Graphics.Textures
             SampleCount = sampleCount;
 
             // The framebuffer always draws into _mainTexture.
-            _mainTexture = new VelvetTexture(renderer, width, height, sampleCount);
+            _mainTexture = new Texture(renderer, width, height, sampleCount);
 
             var fbDesc = new FramebufferDescription(depthTarget: null, _mainTexture.DeviceTexture);
             Framebuffer = _gd.ResourceFactory.CreateFramebuffer(ref fbDesc);
@@ -97,7 +66,7 @@ namespace Velvet.Graphics.Textures
             // before it can be sampled. For non-MSAA _mainTexture is already
             // single-sample so we reuse it directly (no extra allocation).
             Texture = IsMultiSampled
-                ? new VelvetTexture(renderer, width, height, SampleCount.Count1)
+                ? new Texture(renderer, width, height, SampleCount.Count1)
                 : _mainTexture;
         }
 

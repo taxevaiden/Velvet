@@ -3,7 +3,6 @@ using System.Numerics;
 using Velvet.Audio;
 using Velvet.Graphics;
 using Velvet.Input;
-using Velvet.Windowing;
 
 namespace Velvet.Tests
 {
@@ -18,38 +17,36 @@ namespace Velvet.Tests
     ///   L                     toggle looping on the spatial sound
     ///   Up / Down             raise / lower the spatial sound volume
     /// </summary>
-    class AudioTest : VelvetApplication
+    class AudioTest : Application
     {
         private const string OneShotPath = "assets/audio/boom.mp3";
         private const string SpatialPath = "assets/audio/funny.mp3";
 
-        private VelvetAudioEngine _audioEngine = null!;
+        private AudioEngine _audioEngine = null!;
 
-        private readonly List<VelvetAudio> _oneShotPool = new();
+        private readonly List<Audio.Sound> _oneShotPool = new();
         private const int PoolSize = 8;
 
-        private VelvetAudio _spatialSound = null!;
+        private Audio.Sound _spatialSound = null!;
         private float _spatialX = 0f;
 
         private const float MoveSpeed = 200f;
         private const float MaxDistance = 500f;
-        private VelvetFont font;
+        private Font font;
 
         public AudioTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 800, string title = "Audio Test")
             : base(width, height, title, graphicsAPI) { }
 
-        protected override void OnInit()
+        protected override void OnInit(int argc, string[]? argv)
         {
-            base.OnInit();
+            font = new Font(Renderer, "assets/sans.ttf", 16);
 
-            font = new VelvetFont(Renderer, "assets/sans.ttf", 16);
-
-            _audioEngine = new VelvetAudioEngine();
+            _audioEngine = new AudioEngine();
 
             for (int i = 0; i < PoolSize; i++)
-                _oneShotPool.Add(new VelvetAudio(_audioEngine, OneShotPath));
+                _oneShotPool.Add(new Sound(_audioEngine, OneShotPath));
 
-            _spatialSound = new VelvetAudio(_audioEngine, SpatialPath)
+            _spatialSound = new Sound(_audioEngine, SpatialPath)
             {
                 Loop = true,
                 Spatialization = true,
@@ -66,19 +63,19 @@ namespace Velvet.Tests
                 PlayOneShot();
 
             if (Input.IsKeyDown(KeyCode.Left))
-                _spatialX -= MoveSpeed * DeltaTime;
+                _spatialX -= MoveSpeed * (float)DeltaTime;
 
             if (Input.IsKeyDown(KeyCode.Right))
-                _spatialX += MoveSpeed * DeltaTime;
+                _spatialX += MoveSpeed * (float)DeltaTime;
 
             _spatialX = Math.Clamp(_spatialX, -MaxDistance, MaxDistance);
             _spatialSound.SetPosition(new Vector3(_spatialX, 0f, -10f));
 
             if (Input.IsKeyDown(KeyCode.Up))
-                _spatialSound.Volume = Math.Min(2f, _spatialSound.Volume + DeltaTime);
+                _spatialSound.Volume = Math.Min(2f, _spatialSound.Volume + (float)DeltaTime);
 
             if (Input.IsKeyDown(KeyCode.Down))
-                _spatialSound.Volume = Math.Max(0f, _spatialSound.Volume - DeltaTime);
+                _spatialSound.Volume = Math.Max(0f, _spatialSound.Volume - (float)DeltaTime);
 
             if (Input.IsKeyPressed(KeyCode.P)) _spatialSound.Play();
             if (Input.IsKeyPressed(KeyCode.S)) _spatialSound.Stop();

@@ -5,32 +5,27 @@ using System.Numerics;
 using Velvet.Graphics;
 using Velvet.Graphics.Shaders;
 using Velvet.Graphics.Textures;
-using Velvet.Input;
-using Velvet.Windowing;
-
 namespace Velvet.Tests
 {
     /// <summary>
     /// A shader test application for Velvet, demonstrating basic shader usage by applying a custom shader to a textured rectangle.
     /// More shaders can be found in the assets/shaders folder.
     /// </summary>
-    class ShaderTest2 : VelvetApplication
+    class ShaderTest2 : Application
     {
-        VelvetTexture usagi;
-        VelvetShader testShader;
+        Texture usagi;
+        Shader testShader;
         Stopwatch stopwatch;
         public ShaderTest2(GraphicsAPI graphicsAPI, int width = 1280, int height = 720, string title = "Hello, world!")
             : base(width, height, title, graphicsAPI)
         { }
 
-        protected override void OnInit()
+        protected override void OnInit(int argc, string[]? argv)
         {
-            base.OnInit();
-
             stopwatch = new();
 
-            usagi = new VelvetTexture(Renderer, "assets/image.png");
-            testShader = new VelvetShader(Renderer, null, "assets/shaders/jpeg.frag", [new UniformDescription("Resolution", UniformType.Vector2)]);
+            usagi = new Texture(Renderer, "assets/image.png");
+            testShader = new Shader(Renderer, null, "assets/shaders/jpeg.frag", [new UniformDescription("Resolution", UniformType.Vector2)]);
             testShader.Set("Resolution", new Vector2(usagi.Width, usagi.Height));
             testShader.Flush();
 

@@ -3,11 +3,8 @@ using System.Runtime.CompilerServices;
 
 namespace Velvet.Input
 {
-
-
     /// <summary>
-    /// Provides access to keyboard and mouse input state.
-    /// All state reflects the current frame; call <see cref="EndFrame"/> at the end of each frame to advance it.
+    /// Processes <see cref="InputEvent"/>s and provides keyboard and mouse state. 
     /// </summary>
     public class InputManager
     {
@@ -65,13 +62,7 @@ namespace Velvet.Input
             // Snapshot previous input state.
             Array.Copy(_keyboardState, _prevKeyboardState, _keyboardState.Length);
             Array.Copy(_buttonState, _prevButtonState, _buttonState.Length);
-        }
 
-        /// <summary>
-        /// Advances the input state to the next frame. Should be called once per frame after all input queries.
-        /// </summary>
-        public void EndFrame()
-        {
             _prevMouseX = _mouseX;
             _prevMouseY = _mouseY;
             _scrollX = 0f;

@@ -5,7 +5,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <PackageId>taxevaiden.Velvet.Input</PackageId>
-    <Description>A library providing cross-platform input handling, built with SDL3.</Description>
+    <Description>A library that processes inputs and provides keyboard and mouse state.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

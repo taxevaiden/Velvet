@@ -1,27 +1,23 @@
 using System.Drawing;
 using System.Numerics;
 
-using Velvet;
 using Velvet.Graphics;
-using Velvet.Input;
-using Velvet.Windowing;
 
 namespace Velvet.Tests
 {
     /// <summary>
     /// A text rendering test application for Velvet, demonstrating the ability to render text using a custom font. It loads a TTF font and renders a sample sentence at different sizes on the screen.
     /// </summary>
-    class TextTest : VelvetApplication
+    class TextTest : Application
     {
-        VelvetFont font = null!;
+        Font font = null!;
         public TextTest(GraphicsAPI graphicsAPI, int width = 1280, int height = 720, string title = "Window")
             : base(width, height, title, graphicsAPI)
         { }
 
-        protected override void OnInit()
+        protected override void OnInit(int argc, string[]? argv)
         {
-            base.OnInit();
-            font = new VelvetFont(Renderer, "assets/sans.ttf", 48);
+            font = new Font(Renderer, "assets/sans.ttf", 48);
         }
 
         protected override void Draw()

@@ -3,7 +3,7 @@ using System.Numerics;
 namespace Velvet.Input
 {
     /// <summary>
-    /// The types of events that can be processed.
+    /// The types of <see cref="InputEvent"/>s that can be processed.
     /// </summary>
     public enum InputEventType
     {
