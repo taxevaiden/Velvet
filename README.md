@@ -154,19 +154,23 @@ More examples can be found in `Boist.Tests`.
 
 ## What's done?
 
-- Basic windowing
-- Drawing rectangles, circles, arbitrary polygons, and text with color
-- Textures
-- Shaders with uniform support
-- Render textures
-  - Multisampling supported
-- Keyboard and mouse input
-- All four major graphics APIs
-  - D3D11
-  - Vulkan
-  - Metal
-  - OpenGL
-- Audio (that can be 3D)
+- Optional application layer
+    - Support for multi-threading (running main loop, input processing, and event handling on separate threads)
+- Four components that can be used independent of each other 
+    - Windowing
+    - Graphics
+        - Drawing rectangles, circles, arbitrary polygons, and text with color
+        - Textures
+        - Shaders with uniform support
+        - Render textures
+            - Multisampling supported
+        - Support for four major graphics APIs
+          - D3D11
+          - Vulkan
+          - Metal
+          - OpenGL
+    - Input (Keyboard and mouse)
+    - Audio (that can be 3D)
 
 ## Known issues
 

@@ -5,7 +5,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <PackageId>taxevaiden.Boist.Audio</PackageId>
+    <PackageId>Boist.Audio</PackageId>
     <Description>A library providing cross-platform spatialized audio playback, built with miniaudio.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>

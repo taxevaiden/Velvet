@@ -4,7 +4,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <PackageId>taxevaiden.Boist.Input</PackageId>
+    <PackageId>Boist.Input</PackageId>
     <Description>A library that processes inputs and provides keyboard and mouse state.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>

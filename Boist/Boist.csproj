@@ -4,7 +4,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <PackageId>taxevaiden.Boist</PackageId>
+    <PackageId>Boist</PackageId>
     <Description>A suite of cross-platform libraries for building applications.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
